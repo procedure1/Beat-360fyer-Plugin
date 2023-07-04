@@ -7,9 +7,9 @@
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true'></toggle-setting>
         <text text="For wireless VR with no rotation restrictions and no tendencies to reverse direction." align="Left" fontSize="2" size-delta-y='8'/>
-        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="0" max="3600" formatter="AngleFormatter"></slider-setting>
+        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter"></slider-setting>
         <text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>
-        <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="10" min="0" max="180" formatter="AngleFormatter"></slider-setting>
+        <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="30" min="30" max="360" formatter="AngleFormatter"></slider-setting>
         <toggle-setting text='Enable Wall Generator' apply-on-change='true' value='EnableWallGenerator' bind-value='true'></toggle-setting>
         <text text="Walls are cool in 360! For visual interest." align="Left" fontSize="2" size-delta-y='8'/>
       </vertical>

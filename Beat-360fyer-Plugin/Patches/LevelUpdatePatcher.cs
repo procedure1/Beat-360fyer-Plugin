@@ -110,9 +110,9 @@ namespace Beat360fyerPlugin.Patches
 
                 //BW had to add this since
                 string basedOn;
-                if (Config.Instance.BasedOn.ToString() == "NinetyDegress")
+                if (Config.Instance.BasedOn.ToString() == "NinetyDegree")
                 {
-                    basedOn = "90Degrees";
+                    basedOn = "90Degree";
                 }
                 else
                 {
