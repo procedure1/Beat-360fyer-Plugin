@@ -2,6 +2,11 @@
 A Beat Saber plugin to play any beatmap in 360 or 90 degree mode. 
 
 [![showcase video](https://github.com/CodeStix/Beat-360fyer-Plugin/raw/master/preview.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
+## Beat Saber PC Version
+v1.29.0
+
+## Note
+360/90 maps currently do not support the default color scheme. Please use COLORS > OVERRIDE DEFAULT COLORS in-game to set a color scheme. Without doing this, maps appear very dull and colorless.
 
 ## Installation
 
@@ -14,34 +19,44 @@ After doing this, **every** beatmap will have the 360/90 degree gamemode enabled
 
 The algorithm is completely deterministic and does not use random chance, it generates rotation events based on the notes in the *Standard* beatmap. 
 
-**It also makes sure to not ruin your cable by rotating too much!**
+**It also makes sure to not ruin your cable by rotating too much!** 
 
 ## Config file
 
-Currently, there is no settings menu. You can tweak some settings in the `Beat Saber/UserData/Beat-360fyer-Plugin.json` config file. You should open this file with notepad or another text editor.
+There is a settings menu in-game. Or you can tweak settings in the `Beat Saber/UserData/Beat-360fyer-Plugin.json` config file. You should open this file with notepad or another text editor.
 
 ```js
 {
-  "ShowGenerated360": true,
-  "ShowGenerated90": true,
-  "AlwaysShowGenerated": false,
+  "Wireless360": false,
+  "LimitRotations360": 360.0,
+  "LimitRotations90": 90.0,
   "EnableWallGenerator": true,
-  "LimitRotations360": 28,
-  "LimitRotations90": 2,
-  "BasedOn": "Standard",
-  "OnlyOneSaber": false
+  "AllowCrouchWalls": false,
+  "AllowLeanWalls": false,
+  "RotationAngleMultiplier": 1.0,
+  "RotationSpeedMultiplier": 1.0,
+  "ShowGenerated360": true,
+  "ShowGenerated90": false,
+  "OnlyOneSaber": false,
+  "LeftHandedOneSaber": false,
+  "BasedOn": "Standard"
 }
 ```
 |Option|Description|
 |---|---|
-|`ShowGenerated360`| `true` if you want to enable 360 degree mode generation (default = `true`)|
-|`ShowGenerated90`| `true` if you want to enable 90 degree mode generation (default = `true`)|
-|`AlwaysShowGenerated`| `true` if you always want to show the generated 360 gamemode, also if there is already a 360 mode available. (default = `false`)|
+|`Wireless360`| `false` For wireless VR with no rotation restrictions and no tendencies to reverse direction. (default = `false`)|
+|`LimitRotations360`| For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!). (default = `360`)|
+|`LimitRotations90`| For wired headsets in 90 degree mode. Add more or less rotation if you want. (default = `90`)|
 |`EnableWallGenerator`| Set to `false` to disable wall generation (default = `true`). Walls are not generated for NoodleExtension levels by default.|
-|`LimitRotations360`| The max amount of rotation steps to the left or right in 360 degree mode. (default = `28`)|
-|`LimitRotations90`|The max amount of rotation steps to the left or right in 90 degree mode. (default = `2`)|
-|`BasedOn`|Which game mode to generate the 360 mode from, can be `"Standard"` (default), `"OneSaber"` or `"NoArrows"`|
-|`OnlyOneSaber`|`true` if you want to only keep one color during generation, this allows you to play `OneSaber` in 360 degree on any level, also the ones that don't have a OneSaber gamemode. (default = `false`, caution: experimental)|
+|`AllowCrouchWalls`| Allow crouch walls. This can be difficult to see coming in a fast 360 map. (default = `false`)|
+|`AllowLeanWalls`| Allow lean walls. This can be difficult to see coming in a fast 360 map. (default = `false`)|
+|`RotationAngleMultiplier`| Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc. (default = `1.0`)|
+|`RotationSpeedMultiplier`| Change how frequently rotations are spawned. (default = `1.0`)|
+|`ShowGenerated360`| `true` If you want to enable 360 degree mode generation (default = `true`)|
+|`ShowGenerated90`| `true` If you want to enable 90 degree mode generation (default = `false`)|
+|`OnlyOneSaber`|`true` If you want to only keep one color during generation, this allows you to play `OneSaber` in 360 degree on any level, also the ones that don't have a OneSaber gamemode. (default = `false`, caution: experimental)|
+|`LeftHandedOneSaber`|`true` If you want to play left handed one saber mode (default = `false`, caution: experimental)|
+|`BasedOn`|Which game mode to generate the 360 mode from, can be `"Standard"` (default), `"OneSaber"` or `"NoArrows"` or  `"90Degree"`|
 
 **Not working? Config not doing anything?** Make sure you saved the file in the original location, and make sure you didn't place a comma after the last option (see working example config above).
 
@@ -55,4 +70,5 @@ To test and build this project locally, do the following:
 
 ## Todo
 
-- Settings menu
+- Fix noodle crashes
+- Fix arc's that don't line-up at the end
