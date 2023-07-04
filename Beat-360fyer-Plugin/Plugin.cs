@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Beat360fyerPlugin;//BW UI
+using Beat360fyerPlugin.UI;//BW UI
 using IPALogger = IPA.Logging.Logger;
 using IPAConfig = IPA.Config.Config;
 
@@ -33,6 +35,9 @@ namespace Beat360fyerPlugin
         {
             Harmony harmony = new Harmony("nl.codestix.Beat360fyerPlugin");
             harmony.PatchAll();
+
+            //BW UI
+            BeatSaberMarkupLanguage.GameplaySetup.GameplaySetup.instance.AddTab("360Fyer", "Beat360fyerPlugin.UI.GameplaySetupView.bsml", new GameplaySetupView());
         }
 
         [OnExit]
