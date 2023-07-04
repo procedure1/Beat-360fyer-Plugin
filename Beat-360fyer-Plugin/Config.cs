@@ -1,6 +1,9 @@
 ﻿
+using System;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
+using IPA.Config.Stores.Converters;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace Beat360fyerPlugin
@@ -9,13 +12,33 @@ namespace Beat360fyerPlugin
     internal class Config
     {
         public static Config Instance { get; set; }
+        public virtual bool Wireless360 { get; set; } = false;//BW This assumes the user doesn't want rotation limits and it sets LimitRotations to 999 and BottleneckRotations to 999. only for 360 not 90.
+        public virtual float LimitRotations360 { get; set; } = 360;//BW changed this to Degrees. Previously Default 28 where 24 is 360 degree circle. designed to avoid riping a cable
+        public virtual float LimitRotations90 { get; set; } = 90;//BW changed this to Degrees
+        public virtual bool EnableWallGenerator { get; set; } = true;
+        
+        //BW Disable scoring on all below------------------------
+        public virtual bool AllowCrouchWalls { get; set; } = false;//BW added this
+        public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
+        public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
+        public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
+        //-------------------------------------------------------
+
+        //BW Requires Beat Saber restart
         public virtual bool ShowGenerated360 { get; set; } = true;
         public virtual bool ShowGenerated90 { get; set; } = true;
-        public virtual bool EnableWallGenerator { get; set; } = true;
-        public virtual int LimitRotations360 { get; set; } = 28;
-        public virtual int LimitRotations90 { get; set; } = 2;
-        public virtual string BasedOn { get; set; } = "Standard"; // Can be Standard,OneSaber,NoArrows
-        public virtual bool OnlyOneSaber { get; set; } = false;
+        public virtual bool OnlyOneSaber { get; set; } = false;//BW Disables scoring also
+        public virtual bool LeftHandedOneSaber { get; set; } = false;
+        //BW added this baseded on NoteLimiter UI. enums cannot use a digit so had to change 90Degree to NinetyDegree
+        public enum Base
+        {
+            Standard,
+            OneSaber,
+            NoArrows,
+            NinetyDegree
+        }
+        [UseConverter(typeof(EnumConverter<Base>))]
+        public virtual Base BasedOn { get; set; } = Base.Standard;//BW Can be Standard,OneSaber,NoArrows,90Degree (but may keep old 90 rotation events. need to investigate)
 
 
         /// <summary>

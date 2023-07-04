@@ -59,6 +59,9 @@
     <Reference Include="Core">
       <HintPath>..\..\..\Beat Saber 1.29.0 Modded Backup\Beat Saber_Data\Managed\Core.dll</HintPath>
     </Reference>
+    <Reference Include="CustomJSONData">
+      <HintPath>..\..\..\Beat Saber 1.29.0 Modded Backup\Plugins\CustomJSONData.dll</HintPath>
+    </Reference>
     <Reference Include="GameplayCore">
       <HintPath>..\..\..\Beat Saber 1.29.0 Modded Backup\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
     </Reference>
@@ -125,6 +128,7 @@
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="Directory.Build.targets" Condition="Exists('Directory.Build.targets')" />
+    <EmbeddedResource Include="UI\GameplaySetupView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
