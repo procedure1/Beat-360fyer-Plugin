@@ -145,9 +145,9 @@ namespace Beat360fyerPlugin
 
             // Align PreferredBarDuration to beatDuration
             float barLength = beatDuration;
-            while (barLength >= PreferredBarDuration * 1.25f * RotationSpeedMultiplier)
+            while (barLength >= PreferredBarDuration * 1.25f / RotationSpeedMultiplier)
                 barLength /= 2f;
-            while (barLength < PreferredBarDuration * 0.75f * RotationSpeedMultiplier)
+            while (barLength < PreferredBarDuration * 0.75f / RotationSpeedMultiplier)
                 barLength *= 2f;
 
             List<NoteData> notes = dataItems.OfType<NoteData>().ToList();
