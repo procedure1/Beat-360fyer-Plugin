@@ -12,6 +12,7 @@ v1.29.0
 
 - You can install this mod using ModAssistant.
 - Or install this mod manually by downloading a release from the [releases](https://github.com/CodeStix/Beat-360fyer-Plugin/releases) tab and placing it in the `Plugins/` directory of your modded Beat Saber installation.
+- Requires CustomJSONData Mod
 
 After doing this, **every** beatmap will have the 360/90 degree gamemode enabled. Just choose `360` when you select a song. The level will be generated once you start the level.
 
