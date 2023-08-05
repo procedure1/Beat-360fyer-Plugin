@@ -5,31 +5,30 @@
       <text text="360/90 maps currently do not support the default color scheme." fontSize="3" align="Center" />
       <text text="Please use COLORS > OVERRIDE DEFAULT COLORS" fontSize="3" align="Center" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
-        <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true'></toggle-setting>
-        <text text="For wireless VR with no rotation restrictions and no tendencies to reverse direction." align="Left" fontSize="2" size-delta-y='8'/>
-        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter"></slider-setting>
-        <text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>
-        <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="30" min="30" max="360" formatter="AngleFormatter"></slider-setting>
-        <toggle-setting text='Enable Wall Generator' apply-on-change='true' value='EnableWallGenerator' bind-value='true'></toggle-setting>
-        <text text="Walls are cool in 360! For visual interest." align="Left" fontSize="2" size-delta-y='8'/>
+        <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true' hover-hint="For wireless VR with no rotation restrictions and no tendencies to reverse direction."></toggle-setting>
+        <!--<text text="For wireless VR with no rotation restrictions and no tendencies to reverse direction." align="Left" fontSize="2" size-delta-y='8'/>-->
+        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" rich-text='true' font-color='~TextColor' hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc." interactable="~EnableSlider"></slider-setting>
+        <!--<text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>-->
+        <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="30" min="30" max="360" formatter="AngleFormatter" hover-hint="Limit or expand the rotation amount for 90° maps. Works the same as the setting above for 360° maps."></slider-setting>
+        <toggle-setting text='Enable Wall Generator' apply-on-change='true' value='EnableWallGenerator' bind-value='true' hover-hint="Walls are cool in 360! Adds more walls for visual interest."></toggle-setting>
+        <!--<text text="Walls are cool in 360! Adds more walls for visual interest." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
       <text text="Will disable score submission:" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
-        <toggle-setting text='Allow Crouch Walls' apply-on-change='true' value='AllowCrouchWalls' bind-value='true'></toggle-setting>
-        <toggle-setting text='Allow Lean Walls' apply-on-change='true' value='AllowLeanWalls' bind-value='true'></toggle-setting>
-        <slider-setting text="Rotation Angle Multiplier" apply-on-change="true" value="RotationAngleMultiplier" bind-value="true" show-buttons="true" increment=".01" min="0" max="3"></slider-setting>
-        <text text="Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc." align="Left" fontSize="2" size-delta-y='8'/>
-        <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".01" min=".1" max="3"></slider-setting>
-        <text text="Change how frequently rotations are spawned." align="Left" fontSize="2" size-delta-y='8'/>
+        <toggle-setting text='Allow Crouch Walls' apply-on-change='true' value='AllowCrouchWalls' bind-value='true' hover-hint="It's hard to see these walls coming on faster maps."></toggle-setting>
+        <toggle-setting text='Allow Lean Walls' apply-on-change='true' value='AllowLeanWalls' bind-value='true' hover-hint="It's hard to see these walls coming on faster maps."></toggle-setting>
+        <!--<slider-setting text="Rotation Angle Multiplier" apply-on-change="true" value="RotationAngleMultiplier" bind-value="true" show-buttons="true" increment=".01" min="0" max="3"></slider-setting>-->
+        <!--<text text="Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc." align="Left" fontSize="2" size-delta-y='8'/>-->
+        <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".01" min=".1" max="3" hover-hint="Change how frequently rotations are spawned."></slider-setting>
+        <!--<text text="Change how frequently rotations are spawned." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
       <text text="Requires Restart:" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
-        <toggle-setting text='Show Generated 360' apply-on-change='true' value='ShowGenerated360' bind-value='true'></toggle-setting>
-        <toggle-setting text='Show Generated 90' apply-on-change='true' value='ShowGenerated90' bind-value='true'></toggle-setting>
-        <toggle-setting text='Only One Saber' apply-on-change='true' value='OnlyOneSaber' bind-value='true'></toggle-setting>
+        <toggle-setting text='Show Generated 360 Maps' apply-on-change='true' value='ShowGenerated360' bind-value='true'></toggle-setting>
+        <toggle-setting text='Show Generated 90 Maps' apply-on-change='true' value='ShowGenerated90' bind-value='true'></toggle-setting>
+        <toggle-setting text='Only One Saber' apply-on-change='true' value='OnlyOneSaber' bind-value='true' hover-hint="360 and 90 maps with only one saber."></toggle-setting>
         <toggle-setting text='Left Handed One Saber' apply-on-change='true' value='LeftHandedOneSaber' bind-value='true'></toggle-setting>
-        <dropdown-list-setting text='Based On' value='BasedOn' choices='available-bases' bind-value='true' apply-on-change='true'/>
-      </vertical>
+        <dropdown-list-setting text='Based On' value='BasedOn' choices='available-bases' bind-value='true' apply-on-change='true' hover-hint="Base map for generated 360 and 90 maps."/></vertical>
     </vertical>
   </settings-scroll-view >
 </vertical>

@@ -14,13 +14,19 @@ namespace Beat360fyerPlugin
         public static Config Instance { get; set; }
         public virtual bool Wireless360 { get; set; } = false;//BW This assumes the user doesn't want rotation limits and it sets LimitRotations to 999 and BottleneckRotations to 999. only for 360 not 90.
         public virtual float LimitRotations360 { get; set; } = 360;//BW changed this to Degrees. Previously Default 28 where 24 is 360 degree circle. designed to avoid riping a cable
+
+        public virtual string TextColor { get; set; } = "#555555";//BW sets the color of the LimitRotations360 menu text. Dims it if deactivated by Wireless360;
+
         public virtual float LimitRotations90 { get; set; } = 90;//BW changed this to Degrees
         public virtual bool EnableWallGenerator { get; set; } = true;
         
         //BW Disable scoring on all below------------------------
         public virtual bool AllowCrouchWalls { get; set; } = false;//BW added this
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
-        public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
+        
+        //BW Not needed since feels the same as the speed multiplier
+        //public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
+
         public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
         //-------------------------------------------------------
 

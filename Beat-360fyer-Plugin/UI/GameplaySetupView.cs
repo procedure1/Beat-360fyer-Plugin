@@ -7,17 +7,48 @@ using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
 using Beat360fyerPlugin;//for access to config file
 using UnityEngine;
+using IPA.Config.Data;
 
 namespace Beat360fyerPlugin.UI
 {
-    internal class GameplaySetupView
+    internal class GameplaySetupView : BSMLAutomaticViewController//BW added BSMLAutomaticViewController so could use NotifyPropertyChanged() which is needed for interactable bsml
     {
+
         [UIValue("Wireless360")]
         public bool Wireless360
         {
             get => Config.Instance.Wireless360;
-            set => Config.Instance.Wireless360 = value;
-        }      
+            set {
+                Config.Instance.Wireless360 = value;
+                EnableSlider = !value;
+                if (EnableSlider) TextColor = "#ffffff"; else TextColor = "#555555";
+                NotifyPropertyChanged();
+            }
+            //set => Config.Instance.Wireless360 = value;//before i added interactable bsml slider
+        }
+        //BW need a variable to be !Wireless360 to disable or enable the LimitRotations360 Slider so created this
+        [UIValue("EnableSlider")]
+        public bool EnableSlider
+        {
+            get => !Config.Instance.Wireless360;
+            set
+            {
+                Config.Instance.Wireless360 = !value;
+                NotifyPropertyChanged();
+            }
+        }
+        //BW LimitRotations360 slider text dimmed if Wireless360 enabled
+        [UIValue("TextColor")]
+        public String TextColor
+        {
+            get => Config.Instance.TextColor;
+            set
+            {
+                Config.Instance.TextColor = value;
+                NotifyPropertyChanged();
+                Plugin.Log.Info($"BW    TextColor is: {TextColor}");
+            }
+        }
         [UIValue("LimitRotations360")]
         public float LimitRotations360
         {
@@ -53,12 +84,15 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.AllowLeanWalls;
             set => Config.Instance.AllowLeanWalls = value;
         }
+        /*
+        //Don't need this. Feels same as the speed multiplier
         [UIValue("RotationAngleMultiplier")]
         public float RotationAngleMultiplier
         {
             get => Config.Instance.RotationAngleMultiplier;
             set => Config.Instance.RotationAngleMultiplier = value;
         }
+        */
         [UIValue("RotationSpeedMultiplier")]
         public float RotationSpeedMultiplier
         {
@@ -98,19 +132,5 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.BasedOn.ToString();
             set => Config.Instance.BasedOn = (Config.Base)Enum.Parse(typeof(Config.Base), value);
         }
-        /*
-        //BW couldn't get this to work
-        [UIAction("EnableDisable")]
-        public bool EnableDisable
-        {
-            get => !Wireless360;
-        }
-        */
-        /*
-        public bool EnableDisable(bool value)//BW This will disable a slider when Wireless360 is enabled and vice-versa
-        {
-            return !Wireless360; // Example condition: Set interactable to the opposite value of Wireless360 toggle
-        }
-        */
     }
 }

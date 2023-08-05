@@ -81,6 +81,9 @@
       <HintPath>..\..\..\..\Beat Saber 1.29.0 Modded Backup\Beat Saber_Data\Managed\Main.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="SongCore">
+      <HintPath>..\..\..\..\Beat Saber 1.29.0 Modded Backup\Plugins\SongCore.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

@@ -66,7 +66,7 @@ namespace Beat360fyerPlugin
         /// Use to increase or decrease general rotation amount. This doesn't alter the number of rotations - .5 will reduce rotations size by 50% and 2 will double the rotation size.
         /// Set to default for rotations in increments of 15 degrees. 2 would make increments of 30 degrees etc.
         /// </summary>
-        public float RotationAngleMultiplier { get; set; } = 1f;//BW added this to lessen/increase rotation angle amount. 1 means 15 decre
+        //public float RotationAngleMultiplier { get; set; } = 1f;//BW added this to lessen/increase rotation angle amount. 1 means 15 decre
         /// <summary>
         /// Allow crouch obstacles
         /// </summary>
@@ -137,7 +137,7 @@ namespace Beat360fyerPlugin
                 wallCutMoments.Add((time, amount));
 
                 //BW Discord help said to change InsertBeatmapEventData to InsertBeatmapEventDataInOrder which allowed content to be stored to data.
-                data.InsertBeatmapEventDataInOrder(new SpawnRotationBeatmapEventData(time, moment, amount * 15.0f * RotationAngleMultiplier));//discord suggestion
+                data.InsertBeatmapEventDataInOrder(new SpawnRotationBeatmapEventData(time, moment, amount * 15.0f));// * RotationAngleMultiplier));//discord suggestion
 
             }
 
