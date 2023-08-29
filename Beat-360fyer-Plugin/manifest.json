@@ -1,14 +1,14 @@
 ﻿{
-  "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
-  "id": "Beat360fyerPlugin",
-  "name": "Beat-360fyer-Plugin",
-  "author": "codestix",
-  "version": "1.2.7",
-  "description": "A Beat Saber plugin that lets you play every map in 360/90 degrees.",
-  "gameVersion": "1.29.0",
-  "dependsOn": {
-    "BSIPA": "^4.2.2",
-    "SongCore": "^3.10.2",
-    "CustomJSONData": "^2.4.7"
-  }
+    "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
+    "id": "Beat360fyerPlugin",
+    "name": "Beat-360fyer-Plugin",
+    "author": "codestix",
+    "version": "1.2.8",
+    "description": "A Beat Saber plugin that lets you play every map in 360/90 degrees.",
+    "gameVersion": "1.31.0",
+    "dependsOn": {
+        "BSIPA": "^4.3.0",
+        "SongCore": "^3.10.4",
+        "CustomJSONData": "^2.5.1"
+    }
 }

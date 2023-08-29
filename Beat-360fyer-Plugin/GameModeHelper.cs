@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Beat360fyerPlugin
 {
+    //BW v1.31.0 changed 3 BeatmapCharacteristicSO to BeatmapCharacteristicCollection which is the new location in main.dll
     public static class GameModeHelper
     {
         private static Dictionary<string, BeatmapCharacteristicSO> customGamesModes = new Dictionary<string, BeatmapCharacteristicSO>();
@@ -27,8 +29,10 @@ namespace Beat360fyerPlugin
         public static BeatmapCharacteristicSO GetCustomGameMode(string serializedName, Sprite icon, string name, string description, bool requires360Movement = true, bool containsRotationEvents = true, int numberOfColors = 2)
         {
             if (customGamesModes.TryGetValue(serializedName, out BeatmapCharacteristicSO bcso))
+            {
+                Plugin.Log.Info($"BW 1 GameModeHelper {bcso}");
                 return bcso;
-
+            }
             if (icon == null)
             {
                 Texture2D tex = new Texture2D(50, 50);
@@ -40,15 +44,65 @@ namespace Beat360fyerPlugin
             FieldHelper.Set(customGameMode, "_characteristicNameLocalizationKey", name);
             FieldHelper.Set(customGameMode, "_descriptionLocalizationKey", description);
             FieldHelper.Set(customGameMode, "_serializedName", serializedName);
-            FieldHelper.Set(customGameMode, "_compoundIdPartName", serializedName); // What is _compoundIdPartName?
+            FieldHelper.Set(customGameMode, "_compoundIdPartName", serializedName); // What is _compoundIdPartName? It gets added to the IDifficultyBeatMap serializedName 
             FieldHelper.Set(customGameMode, "_sortingOrder", 100);
             FieldHelper.Set(customGameMode, "_containsRotationEvents", containsRotationEvents);
             FieldHelper.Set(customGameMode, "_requires360Movement", requires360Movement);
             FieldHelper.Set(customGameMode, "_numberOfColors", numberOfColors);
+            
+            customGameMode.name = "360DegreeBeatmapCharacteristic";//BW added. not sure if it matters
+
+            // Logging the properties of the customGameMode object
+            Plugin.Log.Info("BW 2 GameModeHelper - Properties of customGameMode:");
+            Type customGameModeType = customGameMode.GetType();
+            foreach (FieldInfo field in customGameModeType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                object value = field.GetValue(customGameMode);
+                Plugin.Log.Info($"{field.Name}: {value}");
+            }
+
+            //BW--------try to see all data related to set---------------------------------------------------------------------
+            List<IDifficultyBeatmapSet> thesets = new List<IDifficultyBeatmapSet>();
+
+            Plugin.Log.Info(" ");
+            Plugin.Log.Info("BW 3 NEW GameModeHelper GetCustomGameMode IDifficultyBeatmapSet get ALL:");
+            Plugin.Log.Info("");
+            foreach (IDifficultyBeatmapSet theset in thesets)
+            {
+                Type setElementType = theset.GetType();
+                PropertyInfo[] setProperties = setElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                foreach (PropertyInfo setProperty in setProperties)
+                {
+                    object setPropertyValue = setProperty.GetValue(theset);
+                    Plugin.Log.Info($"{setProperty.Name}: {setPropertyValue}");
+                }
+                Plugin.Log.Info("");
+
+                foreach (IDifficultyBeatmap difficultyBeatmap in theset.difficultyBeatmaps)
+                {
+                    Plugin.Log.Info("");
+                    Plugin.Log.Info($"Properties of difficultyBeatmap: ");
+                    Plugin.Log.Info("");
+                    Type difficultyBeatmapType = difficultyBeatmap.GetType();
+                    PropertyInfo[] difficultyBeatmapProperties = difficultyBeatmapType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                    foreach (PropertyInfo difficultyBeatmapProperty in difficultyBeatmapProperties)
+                    {
+                        object difficultyBeatmapPropertyValue = difficultyBeatmapProperty.GetValue(difficultyBeatmap);
+                        Plugin.Log.Info($"{difficultyBeatmapProperty.Name}: {difficultyBeatmapPropertyValue}");
+                    }
+                    Plugin.Log.Info("");
+                }
+                Plugin.Log.Info("");
+            }
+            //BW------------------------------------------------------------------------------
+
             return customGameMode;
         }
 
-        private static BeatmapCharacteristicCollectionSO GetDefaultGameModes()
+        //This is only used to get the icon from origianl 360 and 90 modes
+        private static BeatmapCharacteristicCollection GetDefaultGameModes()
         {
             CustomLevelLoader customLevelLoader = UnityEngine.Object.FindObjectOfType<CustomLevelLoader>();
             if (customLevelLoader == null)
@@ -56,11 +110,28 @@ namespace Beat360fyerPlugin
                 Plugin.Log.Info("customLevelLoader is null");
                 return null;
             }
-            BeatmapCharacteristicCollectionSO defaultGameModes = FieldHelper.Get<BeatmapCharacteristicCollectionSO>(customLevelLoader, "_beatmapCharacteristicCollection");
+            BeatmapCharacteristicCollection defaultGameModes = FieldHelper.Get<BeatmapCharacteristicCollection>(customLevelLoader, "_beatmapCharacteristicCollection");
             if (defaultGameModes == null)
             {
                 Plugin.Log.Warn("defaultGameModes is null");
             }
+
+            // Logging the properties of each element in defaultGameModes
+            Plugin.Log.Info("BW 4 GameModeHelper - Properties of elements in defaultGameModes:");
+            foreach (BeatmapCharacteristicSO element in defaultGameModes.beatmapCharacteristics)
+            {
+                Type elementType = element.GetType();
+                PropertyInfo[] properties = elementType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                Plugin.Log.Info($"Properties of {elementType.Name}:--------------------------");
+                foreach (PropertyInfo property in properties)
+                {
+                    object value = property.GetValue(element);
+                    Plugin.Log.Info($"{property.Name}: {value}");
+                }
+                Plugin.Log.Info(" "); // Add an empty line between elements
+            }
+
             return defaultGameModes;
         }
 
