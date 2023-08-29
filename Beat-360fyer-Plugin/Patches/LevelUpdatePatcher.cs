@@ -164,12 +164,12 @@ namespace Beat360fyerPlugin.Patches
             Plugin.Log.Info(" ");
 
             string currentCharacteristic = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
-            string correctCharacteristic = FindWhichIconWasSelectedByUser.LastSelectedSO.serializedName;
+            //string correctCharacteristic = FindWhichIconWasSelectedByUser.LastSelectedSO.serializedName;
 
 
             //AI Chatgpt to swap out the wrong IDifficultyBeatmap -----------------------------------------------
             //----------------------------------------------------------------------------------------------------
-            if (currentCharacteristic != correctCharacteristic && correctCharacteristic == "Generated360Degree")
+            /*if (currentCharacteristic != correctCharacteristic && correctCharacteristic == "Generated360Degree")
             {
                 BeatmapDifficulty targetDifficulty = difficultyBeatmap.difficulty;
 
@@ -189,8 +189,8 @@ namespace Beat360fyerPlugin.Patches
                             Plugin.Log.Info($"   Found These difficulties: {myBeatmap.difficulty}");
                             if (myBeatmap.difficulty == targetDifficulty)
                             {
-                                FieldHelper.Set(myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic, "_serializedName", correctCharacteristic);
-                                FieldHelper.Set(myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic, "_compoundIdPartName", correctCharacteristic);
+                                //FieldHelper.Set(myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic, "_serializedName", correctCharacteristic);
+                                //FieldHelper.Set(myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic, "_compoundIdPartName", correctCharacteristic);
                                 Plugin.Log.Info($"myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName: {myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
 
                                 Plugin.Log.Info($"myBeatmap.level.levelID: {myBeatmap.level.levelID}");
@@ -234,7 +234,7 @@ namespace Beat360fyerPlugin.Patches
                 //This will happen with Built-in levels like $100 Bills
                 Plugin.Log.Info("BW 3 TransitionPatcher - Did not need to change the IDifficultyBeatmap.");
             }
-
+            */
             //-----------------------------------------------------------------------------------
 
             Plugin.Log.Info(" ");
@@ -253,6 +253,7 @@ namespace Beat360fyerPlugin.Patches
     }
     //BW 2st item that runs.
     //Runs after user selects a level (Standard, OneSaber, Generated 360, etc
+    /*
     [HarmonyPatch(typeof(StandardLevelDetailView), "HandleBeatmapCharacteristicSegmentedControlControllerDidSelectBeatmapCharacteristic")]
     public class FindWhichIconWasSelectedByUser
     {
@@ -264,6 +265,7 @@ namespace Beat360fyerPlugin.Patches
             Plugin.Log.Info($"BW 1 FindWhichIconWasSelectedByUser prefix: {LastSelectedSO.serializedName}");
         }
     }
+    */
     //BW 1st item that runs. This calls GameModeHelper.cs next.
     //Called when a song's been selected and its levels are displayed in the right menu
     [HarmonyPatch(typeof(StandardLevelDetailView))]
@@ -473,7 +475,7 @@ namespace Beat360fyerPlugin.Patches
                     //Cast is used to convert the elements in the difficultyBeatmaps collection to CustomDifficultyBeatmap objects.
                     CustomDifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Cast<CustomDifficultyBeatmap>().Select((cbm) => new CustomDifficultyBeatmap(
                         cbm.level,
-                        cbm.parentDifficultyBeatmapSet,//BW v1.31.0 added
+                        customSet,//cbm.parentDifficultyBeatmapSet,//BW v1.31.0 added
                         cbm.difficulty, 
                         cbm.difficultyRank, 
                         cbm.noteJumpMovementSpeed, 
