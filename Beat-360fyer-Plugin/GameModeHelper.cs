@@ -30,7 +30,7 @@ namespace Beat360fyerPlugin
         {
             if (customGamesModes.TryGetValue(serializedName, out BeatmapCharacteristicSO bcso))
             {
-                Plugin.Log.Info($"BW 1 GameModeHelper {bcso}");
+                //Plugin.Log.Info($"BW 1 GameModeHelper {bcso}");
                 return bcso;
             }
             if (icon == null)
@@ -52,6 +52,7 @@ namespace Beat360fyerPlugin
             
             customGameMode.name = "360DegreeBeatmapCharacteristic";//BW added. not sure if it matters
 
+            /*
             // Logging the properties of the customGameMode object
             Plugin.Log.Info("BW 2 GameModeHelper - Properties of customGameMode:");
             Type customGameModeType = customGameMode.GetType();
@@ -60,13 +61,14 @@ namespace Beat360fyerPlugin
                 object value = field.GetValue(customGameMode);
                 Plugin.Log.Info($"{field.Name}: {value}");
             }
+            */
 
+            /*
             //BW--------try to see all data related to set---------------------------------------------------------------------
             List<IDifficultyBeatmapSet> thesets = new List<IDifficultyBeatmapSet>();
 
-            Plugin.Log.Info(" ");
-            Plugin.Log.Info("BW 3 NEW GameModeHelper GetCustomGameMode IDifficultyBeatmapSet get ALL:");
-            Plugin.Log.Info("");
+            Plugin.Log.Info("\nBW 3 NEW GameModeHelper GetCustomGameMode IDifficultyBeatmapSet get ALL:\n");
+
             foreach (IDifficultyBeatmapSet theset in thesets)
             {
                 Type setElementType = theset.GetType();
@@ -97,6 +99,7 @@ namespace Beat360fyerPlugin
                 Plugin.Log.Info("");
             }
             //BW------------------------------------------------------------------------------
+            */
 
             return customGameMode;
         }
@@ -115,7 +118,7 @@ namespace Beat360fyerPlugin
             {
                 Plugin.Log.Warn("defaultGameModes is null");
             }
-
+            /*
             // Logging the properties of each element in defaultGameModes
             Plugin.Log.Info("BW 4 GameModeHelper - Properties of elements in defaultGameModes:");
             foreach (BeatmapCharacteristicSO element in defaultGameModes.beatmapCharacteristics)
@@ -129,9 +132,9 @@ namespace Beat360fyerPlugin
                     object value = property.GetValue(element);
                     Plugin.Log.Info($"{property.Name}: {value}");
                 }
-                Plugin.Log.Info(" "); // Add an empty line between elements
+                Plugin.Log.Info(" ");
             }
-
+            */
             return defaultGameModes;
         }
 

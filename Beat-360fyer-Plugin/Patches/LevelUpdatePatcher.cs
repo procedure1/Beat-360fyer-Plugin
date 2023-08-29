@@ -25,22 +25,7 @@ using System.Threading;
 
 namespace Beat360fyerPlugin.Patches
 {
-
-    //Testing Kyle 1413 says trying patching CustomLevelLoader.LoadCustomBeatmapLevelAsync or BeatmapLevelLoader.LoadBeatmapLevelAsync
-    //Afaik the game uses these methods to load the map initially so you could try patching them with a postfix containing the logic to add the new difficultybeatmapsets from your setdata prefix
-    /*
-    [HarmonyPatch(typeof(CustomLevelLoader))]
-    [HarmonyPatch("LoadCustomBeatmapLevelAsync")]
-    public class Patch
-    {
-        static void Postfix(ref CustomPreviewBeatmapLevel customPreviewBeatmapLevel, CancellationToken cancellationToken)
-        {
-            StandardLevelInfoSaveData standardLevelInfoSaveData = customPreviewBeatmapLevel.standardLevelInfoSaveData;
-        }
-    }
-    */
-
-    //BW 4rd item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher
+    //BW 3rd item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher https://harmony.pardeike.net/articles/patching-prefix.html
     //This runs after 3rd item automatically
     //This alters the beat map data such as rotation events...
     [HarmonyPatch(typeof(BeatmapDataTransformHelper), "CreateTransformedBeatmapData")]
@@ -48,19 +33,23 @@ namespace Beat360fyerPlugin.Patches
     {
         static void Postfix(ref IReadonlyBeatmapData __result, IReadonlyBeatmapData beatmapData, IPreviewBeatmapLevel beatmapLevel, GameplayModifiers gameplayModifiers, bool leftHanded, EnvironmentEffectsFilterPreset environmentEffectsFilterPreset, EnvironmentIntensityReductionOptions environmentIntensityReductionOptions, MainSettingsModelSO mainSettingsModel)
         {
+            
+            /*
             Plugin.Log.Info("BW 00 postfix:");
             int i = 0;
             foreach (PreviewDifficultyBeatmapSet difficultyBeatmapSet in beatmapLevel.previewDifficultyBeatmapSets)
             {
                 {
-                    Plugin.Log.Info(" ");
-                    Plugin.Log.Info("Set index: " + i);
+                    Plugin.Log.Info("\nSet index: " + i);
                     Plugin.Log.Info("SerializedName: " + difficultyBeatmapSet.beatmapCharacteristic.serializedName);
                     i++;
                 }
             }
+            */
+            
             if (beatmapData is CustomBeatmapData customBeatmapData)
             {
+                /*
                 Plugin.Log.Info("BW 0 postfix beatmapLevel.previewDifficultyBeatmapSets: " + beatmapLevel.previewDifficultyBeatmapSets);
                 int j = 0;
                 foreach (PreviewDifficultyBeatmapSet previewDifficultyBeatmapSet in beatmapLevel.previewDifficultyBeatmapSets)
@@ -69,21 +58,19 @@ namespace Beat360fyerPlugin.Patches
                     Plugin.Log.Info("SerializedName: " + previewDifficultyBeatmapSet.beatmapCharacteristic.serializedName);
                     j++;
                 }
-                Plugin.Log.Info(" ");
-                Plugin.Log.Info($"BW 1 postfix beatmapLevel.levelID: {beatmapLevel.levelID}");
-                Plugin.Log.Info(" ");
+                Plugin.Log.Info($"\nBW 1 postfix beatmapLevel.levelID: {beatmapLevel.levelID}\n");
                 Plugin.Log.Info($"BW 1 postfix TransitionPatcher.startingGameMode: {TransitionPatcher.startingGameMode}");
-              
-                //v1.31.0 can't get past this if statement
+                */
+
                 if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_360DEGREE_MODE || TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_90DEGREE_MODE)
                 {
-                    Plugin.Log.Info(" ");
-                    Plugin.Log.Info($"Generating rotation events for {TransitionPatcher.startingGameMode}...");
+
+                    Plugin.Log.Info($"\nGenerating rotation events for {TransitionPatcher.startingGameMode}...");
 
                     Generator360 gen = new Generator360();
                     gen.WallGenerator = Config.Instance.EnableWallGenerator;
                     gen.OnlyOneSaber = Config.Instance.OnlyOneSaber;
-                    //gen.RotationAngleMultiplier = Config.Instance.RotationAngleMultiplier;
+                    //gen.RotationAngleMultiplier = Config.Instance.RotationAngleMultiplier;//decided to remove this.
                     gen.RotationSpeedMultiplier = Config.Instance.RotationSpeedMultiplier;
                     gen.AllowCrouchWalls = Config.Instance.AllowCrouchWalls;
                     gen.AllowLeanWalls = Config.Instance.AllowLeanWalls;
@@ -120,20 +107,8 @@ namespace Beat360fyerPlugin.Patches
             }
         }
     }
-    /*
-    //https://harmony.pardeike.net/articles/patching-prefix.html
-    [HarmonyPatch(typeof(StandardLevelDetailView))]
-    [HarmonyPatch("HandleBeatmapCharacteristicSegmentedControlControllerDidSelectBeatmapCharacteristic")]
-    class PatchTemp
-    {
-        static void Prefix(BeatmapCharacteristicSegmentedControlController controller, BeatmapCharacteristicSO beatmapCharacteristic)
-        {
-            Plugin.Log.Info("HandleBeatmapCharacteristicSegmentedControlControllerDidSelectBeatmapCharacteristic: " + beatmapCharacteristic.serializedName);
-        }
-    }
-    */
-
-    //BW 3nd item that runs after LevelUpdatePatcher & GameModeHelper
+    
+    //BW 2nd item that runs after LevelUpdatePatcher & GameModeHelper
     //Runs when you click play button
     //BW v1.31.0 Class MenuTransitionsHelper method StartStandardLevel has 1 new item added. After 'ColorScheme overrideColorScheme', 'ColorScheme beatmapOverrideColorScheme' has been added. so i added: typeof(ColorScheme) after typeof(ColorScheme)
     [HarmonyPatch(typeof(MenuTransitionsHelper))]
@@ -143,14 +118,12 @@ namespace Beat360fyerPlugin.Patches
         public static string startingGameMode;
         static void Prefix(string gameMode, ref IDifficultyBeatmap difficultyBeatmap, IPreviewBeatmapLevel previewBeatmapLevel, OverrideEnvironmentSettings overrideEnvironmentSettings, ColorScheme overrideColorScheme, GameplayModifiers gameplayModifiers, PlayerSpecificSettings playerSpecificSettings, PracticeSettings practiceSettings, string backButtonText, bool useTestNoteCutSoundEffects, bool startPaused, Action beforeSceneSwitchCallback, Action<DiContainer> afterSceneSwitchCallback, Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback, Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults> levelRestartedCallback)
         {
-            //BW FIX!!!!  v1.31.0 didn't output the proper gameMode in this log. It should say "Generated360DegreeExpert" like in v1.29 in the serialized name instead of just Expert. and no log statements appear from postfix
-            Plugin.Log.Info(" ");
-            Plugin.Log.Info($"BW 0 TransitionPatcher - IDifficultyBeatmap contains these sets:");
+            /*
+            Plugin.Log.Info($"\nBW 0 TransitionPatcher - IDifficultyBeatmap contains these sets:\n");
             int i = 0;
             int Gen360Index = -1;
             foreach (IDifficultyBeatmapSet difficultyBeatmapSet in difficultyBeatmap.level.beatmapLevelData.difficultyBeatmapSets)
             {
-                Plugin.Log.Info(" ");
                 Plugin.Log.Info("Set index: " + i);
                 Plugin.Log.Info("SerializedName: " + difficultyBeatmapSet.beatmapCharacteristic.serializedName);
                 Plugin.Log.Info("compoundIdPartName: " + difficultyBeatmapSet.beatmapCharacteristic.compoundIdPartName);
@@ -159,130 +132,30 @@ namespace Beat360fyerPlugin.Patches
                 i++;
             }
 
-            Plugin.Log.Info(" ");
-            Plugin.Log.Info("Current Difficulty: " + difficultyBeatmap.difficulty);
-            Plugin.Log.Info(" ");
-
-            string currentCharacteristic = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
-            //string correctCharacteristic = FindWhichIconWasSelectedByUser.LastSelectedSO.serializedName;
-
-
-            //AI Chatgpt to swap out the wrong IDifficultyBeatmap -----------------------------------------------
-            //----------------------------------------------------------------------------------------------------
-            /*if (currentCharacteristic != correctCharacteristic && correctCharacteristic == "Generated360Degree")
-            {
-                BeatmapDifficulty targetDifficulty = difficultyBeatmap.difficulty;
-
-                CustomDifficultyBeatmap gen360DifficultyBeatmap = null;
-
-                foreach (IDifficultyBeatmapSet myDifficultyBeatmapSet in difficultyBeatmap.level.beatmapLevelData.difficultyBeatmapSets)
-                {
-                    Plugin.Log.Info($"Found difficultyBeatmapSet with serializedName: {myDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
-
-                    if (myDifficultyBeatmapSet.beatmapCharacteristic.serializedName == correctCharacteristic)
-                    {
-                        
-                        Plugin.Log.Info($"Working on: {myDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
-
-                        foreach (CustomDifficultyBeatmap myBeatmap in myDifficultyBeatmapSet.difficultyBeatmaps)
-                        {
-                            Plugin.Log.Info($"   Found These difficulties: {myBeatmap.difficulty}");
-                            if (myBeatmap.difficulty == targetDifficulty)
-                            {
-                                //FieldHelper.Set(myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic, "_serializedName", correctCharacteristic);
-                                //FieldHelper.Set(myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic, "_compoundIdPartName", correctCharacteristic);
-                                Plugin.Log.Info($"myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName: {myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
-
-                                Plugin.Log.Info($"myBeatmap.level.levelID: {myBeatmap.level.levelID}");
-                                Plugin.Log.Info($"myBeatmap.difficulty.SerializedName(): {myBeatmap.difficulty.SerializedName()}");
-                                Plugin.Log.Info($"myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.compoundIdPartName: {myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.compoundIdPartName}");
-                                Plugin.Log.Info($"   Working on: {myBeatmap.difficulty}");
-                                Plugin.Log.Info($"       IDifficultyBeatmap Fullname: ({myBeatmap.GetType().FullName}) SerializedName: {myBeatmap.SerializedName()} Gamemode: {gameMode} Difficulty: {myBeatmap.difficulty} SongName: {myBeatmap.level.songName} SerializedName: {myBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
-
-                                gen360DifficultyBeatmap = myBeatmap;
-                                break; // Exit the loop once you find the desired difficulty level
-                            }
-                        }
-
-                        if (gen360DifficultyBeatmap != null)
-                        {
-                            // Now you have the correct IDifficultyBeatmap with the specified characteristic and difficulty
-                            // You can use gen360DifficultyBeatmap for further operations
-                            break; // Exit the outer loop since you've found the desired beatmap
-                        }
-                        else
-                        {
-                            Plugin.Log.Info("Desired difficulty not found in the specified characteristic.");
-                        }
-                    }
-                }
-
-                if (gen360DifficultyBeatmap == null)
-                {
-                    Plugin.Log.Info("BW 1 TransitionPatcher - Desired characteristic not found - unable to change to correct IDifficultyBeatmap.");
-                }
-                else
-                {
-                    difficultyBeatmap = gen360DifficultyBeatmap;
-                    Plugin.Log.Info($"BW 2 TransitionPatcher - CHANGED TO CORRECT IDifficultyBeatmap Fullname: ({gen360DifficultyBeatmap.GetType().FullName}) SerializedName: {gen360DifficultyBeatmap.SerializedName()} Gamemode: {gameMode} Difficulty: {gen360DifficultyBeatmap.difficulty} SongName: {gen360DifficultyBeatmap.level.songName} SerializedName: {gen360DifficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
-
-
-                }
-            }
-            else
-            {
-                //This will happen with Built-in levels like $100 Bills
-                Plugin.Log.Info("BW 3 TransitionPatcher - Did not need to change the IDifficultyBeatmap.");
-            }
-            */
-            //-----------------------------------------------------------------------------------
-
-            Plugin.Log.Info(" ");
+            Plugin.Log.Info("\nCurrent Difficulty: " + difficultyBeatmap.difficulty +"\n");
             Plugin.Log.Info($"BW 4 TransitionPatcher Starting Fullname: ({difficultyBeatmap.GetType().FullName}) SerializedName: {difficultyBeatmap.SerializedName()} Gamemode: {gameMode} Difficulty: {difficultyBeatmap.difficulty} SongName: {difficultyBeatmap.level.songName} SerializedName: {difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
+            */
 
             //Sets the variable to the name of the map being started (Standard, Generated360Degree, etc)          
             startingGameMode = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
 
-            //difficultyBeatmap = difficultyBeatmap.level.beatmapLevelData.difficultyBeatmapSets[1].difficultyBeatmaps[0];
-            //difficultyBeatmap = difficultyBeatmap.parentDifficultyBeatmapSet.difficultyBeatmaps[1];
-
-            Plugin.Log.Info(" ");
-            Plugin.Log.Info($"BW 5 TransitionPatcher startingGameMode: {startingGameMode} (should be Generated360Degree I think)");
-            Plugin.Log.Info(" ");
+            //Plugin.Log.Info($"\nBW 5 TransitionPatcher startingGameMode: {startingGameMode} (should be Generated360Degree I think)\n");
         }
     }
-    //BW 2st item that runs.
-    //Runs after user selects a level (Standard, OneSaber, Generated 360, etc
-    /*
-    [HarmonyPatch(typeof(StandardLevelDetailView), "HandleBeatmapCharacteristicSegmentedControlControllerDidSelectBeatmapCharacteristic")]
-    public class FindWhichIconWasSelectedByUser
-    {
-        public static BeatmapCharacteristicSO LastSelectedSO;
-        static void Prefix(BeatmapCharacteristicSO beatmapCharacteristic)
-        {
-            LastSelectedSO = beatmapCharacteristic;
 
-            Plugin.Log.Info($"BW 1 FindWhichIconWasSelectedByUser prefix: {LastSelectedSO.serializedName}");
-        }
-    }
-    */
     //BW 1st item that runs. This calls GameModeHelper.cs next.
     //Called when a song's been selected and its levels are displayed in the right menu
     [HarmonyPatch(typeof(StandardLevelDetailView))]
     [HarmonyPatch("SetContent")]
     public class LevelUpdatePatcher
     {
-        //public static List<IDifficultyBeatmapSet> myset;//bw i think
         static void Prefix(StandardLevelDetailView __instance, IBeatmapLevel level, BeatmapDifficulty defaultDifficulty, BeatmapCharacteristicSO defaultBeatmapCharacteristic, PlayerData playerData)//level actually is of the class CustomBeatmapLevel which impliments interface IBeatmapLevel
         {
             //This is an empty set
             List<BeatmapCharacteristicSO> toGenerate = new List<BeatmapCharacteristicSO>();
-            Plugin.Log.Info(" ");
-            Plugin.Log.Info($"BW 1 LevelUpdatePatcher toGenerate Count: {toGenerate.Count}");
 
-            //Plugin.Log.Info("__instance.selectedDifficultyBeatmap: " + __instance.selectedDifficultyBeatmap);
+            //Plugin.Log.Info($"\nBW 1 LevelUpdatePatcher toGenerate Count: {toGenerate.Count}");
 
-            //__instance.SetContent(level, defaultDifficulty, defaultBeatmapCharacteristic, playerData);  
 
             //these properties get added to the empty set: "icon", "_characteristicNameLocalizationKey", "GEN360","_descriptionLocalizationKey", "Generated 360 mode", "_serializedName", "Generated360Degree" and a few more...
             if (Config.Instance.ShowGenerated360)
@@ -290,10 +163,9 @@ namespace Beat360fyerPlugin.Patches
             if (Config.Instance.ShowGenerated90)
                 toGenerate.Add(GameModeHelper.GetGenerated90GameMode());
 
-            //BW Printing all elements in the list --------------------------------------------------
-            Plugin.Log.Info(" ");
-            Plugin.Log.Info("BW 2 LevelUpdatePatcher Elements in the toGenerate list:");
-            Plugin.Log.Info("");
+            /*
+            //BW Logging all elements in the list --------------------------------------------------
+            Plugin.Log.Info("\nBW 2 LevelUpdatePatcher Elements in the toGenerate list:\n");
             foreach (BeatmapCharacteristicSO element in toGenerate)
             {
                 Plugin.Log.Info(" ");
@@ -307,10 +179,12 @@ namespace Beat360fyerPlugin.Patches
                 }
                 Plugin.Log.Info(" "); // Add an empty line between elements
             }
+            */
 
             //This initializes the 'sets' list with the difficultyBeatmapSets of the chosen song
             List<IDifficultyBeatmapSet> sets = new List<IDifficultyBeatmapSet>(level.beatmapLevelData.difficultyBeatmapSets);
 
+            /*
             //BW Logging the properties of each element in the sets list --------------------------------------------
             foreach (IDifficultyBeatmapSet set in sets)
             {
@@ -362,49 +236,11 @@ namespace Beat360fyerPlugin.Patches
                 }
                 Plugin.Log.Info(" ");
             }
-                /*foreach (IDifficultyBeatmapSet set in sets)
-                {
-                    Plugin.Log.Info(" ");
-                    Plugin.Log.Info($"BW 3 LevelUpdatePatcher Properties of 'sets' IDifficultyBeatmapSet:---------------------------");
-                    Plugin.Log.Info(" ");
-                    Plugin.Log.Info($"'Set' serialized name: {set.beatmapCharacteristic.serializedName}");
-                    Plugin.Log.Info(" ");
+            //BW end -----------------------------------------------------------------------------------
+            */
 
-                    Type setElementType = set.GetType();
-                    PropertyInfo[] setProperties = setElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                    foreach (PropertyInfo setProperty in setProperties)
-                    {
-                        object setPropertyValue = setProperty.GetValue(set);
-                        Plugin.Log.Info($"{setProperty.Name}: {setPropertyValue}");
-                    }
-                    Plugin.Log.Info("");
-
-
-                    foreach (IDifficultyBeatmap difficultyBeatmap in set.difficultyBeatmaps)
-                    {
-                        Plugin.Log.Info(" ");
-                        Plugin.Log.Info($"Properties of IDifficultyBeatmap:");
-                        Plugin.Log.Info(" ");
-                        Type difficultyBeatmapType = difficultyBeatmap.GetType();
-                        PropertyInfo[] difficultyBeatmapProperties = difficultyBeatmapType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                        foreach (PropertyInfo difficultyBeatmapProperty in difficultyBeatmapProperties)
-                        {
-                            object difficultyBeatmapPropertyValue = difficultyBeatmapProperty.GetValue(difficultyBeatmap);
-                            Plugin.Log.Info($"{difficultyBeatmapProperty.Name}: {difficultyBeatmapPropertyValue}");
-                        }
-                        Plugin.Log.Info("");
-                    }
-                    Plugin.Log.Info("");
-                }
-
-                Plugin.Log.Info($"BW 4 LevelUpdatePatcher toGenerate Count: {toGenerate.Count}");
-                */
-                //BW end -----------------------------------------------------------------------------------
-
-                // Generate each custom gamemode
-                foreach (BeatmapCharacteristicSO customGameMode in toGenerate)
+            // Generate each custom gamemode
+            foreach (BeatmapCharacteristicSO customGameMode in toGenerate)
             {
                 if (level.beatmapLevelData.difficultyBeatmapSets.Any((e) => e.beatmapCharacteristic.serializedName == GameModeHelper.GENERATED_360DEGREE_MODE))
                 {
@@ -475,7 +311,7 @@ namespace Beat360fyerPlugin.Patches
                     //Cast is used to convert the elements in the difficultyBeatmaps collection to CustomDifficultyBeatmap objects.
                     CustomDifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Cast<CustomDifficultyBeatmap>().Select((cbm) => new CustomDifficultyBeatmap(
                         cbm.level,
-                        customSet,//cbm.parentDifficultyBeatmapSet,//BW v1.31.0 added
+                        customSet,//cbm.parentDifficultyBeatmapSet,//BW v1.31.0 added - this was the 1 line that ruined my life! futuremapper found it and correct. was causing 360 maps to have charactertics of Standard maps so never found a Gen 360 map
                         cbm.difficulty, 
                         cbm.difficultyRank, 
                         cbm.noteJumpMovementSpeed, 
@@ -491,14 +327,11 @@ namespace Beat360fyerPlugin.Patches
                     customSet.SetCustomDifficultyBeatmaps(difficultyBeatmaps);
                     newSet = customSet;
 
+                    /*
+                    Plugin.Log.Info($"\nBW 6 LevelUpdatePatcher {difficultyBeatmaps.ToString()}");
+                    Plugin.Log.Info("\nCustomDifficultyBeatmapSet:");
+                    Plugin.Log.Info($"\ncustomGameMode: Name: {customSet.beatmapCharacteristic.name} SerializedName: {customSet.beatmapCharacteristic.serializedName}\n");
 
-                    Plugin.Log.Info(" ");
-                    Plugin.Log.Info($"BW 6 LevelUpdatePatcher {difficultyBeatmaps.ToString()}");
-                    Plugin.Log.Info("");
-                    Plugin.Log.Info("CustomDifficultyBeatmapSet:");
-                    Plugin.Log.Info(" ");
-                    Plugin.Log.Info($"customGameMode: Name: {customSet.beatmapCharacteristic.name} SerializedName: {customSet.beatmapCharacteristic.serializedName}");
-                    Plugin.Log.Info(" ");
                     foreach (CustomDifficultyBeatmap cbm in difficultyBeatmaps)// Logging the properties of each CustomDifficultyBeatmap in the array
                     {
                         Plugin.Log.Info("CustomDifficultyBeatmap:");
@@ -516,6 +349,7 @@ namespace Beat360fyerPlugin.Patches
                         Plugin.Log.Info($"beatmapDataBasicInfo: {cbm.beatmapDataBasicInfo}");
                     }
                     Plugin.Log.Info(" ");
+                    */
                 }
                 else
                 {
@@ -527,10 +361,8 @@ namespace Beat360fyerPlugin.Patches
                 //This is working. v1.29 and v1.31 seem identical except beatmapColorSchemeIdx: 0 and environmentNameIdx: 0 has been added to every difficulty level in v1.31
                 sets.Add(newSet);
 
-
-                //myset = sets;//bw
-
-                // Logging the properties of each element in the sets list
+                /*
+                //BW Logging the properties of each element in the sets list
                 foreach (IDifficultyBeatmapSet set in sets)
                 {
                     Plugin.Log.Info(" ");
@@ -579,7 +411,7 @@ namespace Beat360fyerPlugin.Patches
                         Plugin.Log.Info(" ");
                     }
                     Plugin.Log.Info(" ");
-                }
+                }*/
             }
 
             /*
@@ -615,11 +447,8 @@ namespace Beat360fyerPlugin.Patches
 
             // Assuming 'level' is already defined
             LogPropertiesRecursively(level);
-            */
-
-            Plugin.Log.Info("");
-            Plugin.Log.Info("BW 8 LevelUpdatePatcher Properties of IBeatmapLevel ORIGINAL BEFORE update:");
-            Plugin.Log.Info("");
+            
+            Plugin.Log.Info("\nBW 8 LevelUpdatePatcher Properties of IBeatmapLevel ORIGINAL BEFORE update:\n");
 
             if (level is CustomBeatmapLevel customLevelPre)
             {
@@ -647,7 +476,7 @@ namespace Beat360fyerPlugin.Patches
                 FieldHelper.Set(defaultBeatmapCharacteristic, "_numberOfColors", 2);
             }
             //testChangeStandardsCharacteristicsInto360Directly();
-
+            */
 
             //**************************
             //Update difficultyBeatmapSets - This is where the actual set is altered! adds new List<IDifficultyBeatmapSet> to level.
@@ -686,10 +515,8 @@ namespace Beat360fyerPlugin.Patches
                 Plugin.Log.Info("Unsupported beatmapLevelData: " + (level.beatmapLevelData?.GetType().FullName ?? "null"));
             }
 
-
-            Plugin.Log.Info("");
-            Plugin.Log.Info("BW 9 LevelUpdatePatcher Properties of IBeatmapLevel AFTER update:");
-            Plugin.Log.Info("");
+            //Plugin.Log.Info("\nBW 9 LevelUpdatePatcher Properties of IBeatmapLevel AFTER update:\n");
+            /*
             if (level is CustomBeatmapLevel customLevelPost)
             {
                 BWCustomLevelLogger(customLevelPost);
@@ -856,7 +683,7 @@ namespace Beat360fyerPlugin.Patches
                     Plugin.Log.Info(" ");
                     i++;
                 }
-            }
+            }*/
         }
     }
 }
