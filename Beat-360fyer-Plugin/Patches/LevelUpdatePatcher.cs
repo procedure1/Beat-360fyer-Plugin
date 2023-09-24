@@ -22,9 +22,129 @@ using System.Collections;
 using static IPA.Logging.Logger;
 using System.Xml.Linq;
 using System.Threading;
+using static BeatmapObjectSpawnMovementData;
+using System.Windows.Markup;
 
 namespace Beat360fyerPlugin.Patches
 {
+    /*
+    //BW this runs everytime a slider is encountered (Standard, 360, Gen360, etc)
+    [HarmonyPatch(typeof(SliderController))]
+    [HarmonyPatch("Start")] // Specify the method you want to patch
+    public class ArcFix
+    {
+        static void Postfix(SliderController __instance) // Pass the instance of SliderController
+        {
+            if (__instance != null)
+            {
+                Plugin.Log.Info($"BW SliderController - sliderData.tailLineIndex: {__instance.sliderData.tailLineIndex}");
+                // Store the original position of the GameObject
+                //Vector3 originalPosition = __instance.transform.position;
+                //Plugin.Log.Info($"BW SliderController - original position: {originalPosition}");
+
+                // Define the anchor point around which you want to rotate
+                //Vector3 anchorPoint = new Vector3(0, 0, 0);
+
+                // Translate the GameObject to the anchor point
+                //__instance.transform.position = anchorPoint;
+
+                // Rotate the GameObject by 15 degrees around its up axis
+                //__instance.transform.Rotate(Vector3.up, -15.0f, Space.Self);
+
+                // Translate the GameObject back to its original position
+                //__instance.transform.position = originalPosition;
+
+                //rotates from the head and can see it rotated but the middle of the arc disappears and then the tail reappears just before tail note (on longer arcs)
+                __instance.transform.Rotate(Vector3.up, -5.0f);
+            }
+        }
+    }
+    */
+    //TO DO: get cuttable notes count for built in songs
+    //BW 4th item that runs. JDFixer uses this method so that the user can update the MaxJNS over and over. i tried it in LevelUpdatePatcher. it works but can only be updated before play song one time https://github.com/zeph-yr/JDFixer/blob/b51c659def0e9cefb9e0893b19647bb9d97ee9ae/HarmonyPatches.cs
+    [HarmonyPatch(typeof(BeatmapObjectSpawnMovementData), "Init")]
+    internal class SpawnMovementDataUpdatePatch
+    {
+        private static bool OriginalValuesSet = false; // Flag to ensure original values are only stored once
+        public static float OriginalNJS; // Store the original startNoteJumpMovementSpeed
+        public static float OriginalNJO;
+        internal static void Prefix(ref float startNoteJumpMovementSpeed, float startBpm, NoteJumpValueType noteJumpValueType, ref float noteJumpValue)//, IJumpOffsetYProvider jumpOffsetYProvider, Vector3 rightVec, Vector3 forwardVec)
+        {
+            //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
+            if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
+            {
+                OriginalNJS = startNoteJumpMovementSpeed;
+                OriginalNJO = noteJumpValue;
+                OriginalValuesSet = true;
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
+                //Plugin.Log.Info("Original noteJumpMovementSpeed: "   + OriginalNJS);
+                //Plugin.Log.Info("Original noteJumpStartBeatOffset: " + OriginalNJO);
+            }
+            if (Config.Instance.EnableNJS)
+            {
+                startNoteJumpMovementSpeed = Config.Instance.NJS;
+                noteJumpValue = Config.Instance.NJO;
+
+                Plugin.Log.Info("--------------------");
+                Plugin.Log.Info("SongName: " + LevelUpdatePatcher.SongName);
+                Plugin.Log.Info("New noteJumpMovementSpeed: "   + startNoteJumpMovementSpeed);
+                Plugin.Log.Info("New noteJumpStartBeatOffset: " + noteJumpValue);
+            }
+            else
+            {
+                startNoteJumpMovementSpeed = OriginalNJS;
+                noteJumpValue = OriginalNJO;
+
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
+                //Plugin.Log.Info("Using Original noteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
+                //Plugin.Log.Info("Using Original noteJumpStartBeatOffset: " + noteJumpValue);
+            }
+
+
+            /*
+            //BW Version 1, there is no enable/disable. But it will only change the NJS if the user sets it lower than the original NJS.
+            if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
+            {
+                OriginalNJS = startNoteJumpMovementSpeed;
+                OriginalNJO = noteJumpValue;
+                OriginalValuesSet = true;
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original noteJumpMovementSpeed: " + OriginalNJS);
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original noteJumpStartBeatOffset: " + OriginalNJO);
+            }
+
+            float MaxNJS = Config.Instance.MaxNJS;
+            float ModifiedNJS = startNoteJumpMovementSpeed;
+            float ModifiedNJO = noteJumpValue;
+          
+            if (MaxNJS < OriginalNJS)// Check if MaxNJS is lower than the original startNoteJumpMovementSpeed
+            {
+                if (LevelUpdatePatcher.CuttableNotesCount / LevelUpdatePatcher.SongDuration > 3.5f)
+                {
+                    ModifiedNJS = MaxNJS - 1;
+                }
+                else
+                {
+                    ModifiedNJS = MaxNJS;
+                }
+                ModifiedNJO = 0f;
+
+                startNoteJumpMovementSpeed = ModifiedNJS;
+                noteJumpValue = ModifiedNJO;
+
+                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch New noteJumpMovementSpeed: " + ModifiedNJS);
+                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch New noteJumpStartBeatOffset: " + ModifiedNJO);
+            }
+            else if (MaxNJS > OriginalNJS)// Check if MaxNJS is greater than the original startNoteJumpMovementSpeed
+            {
+                // Revert to original values
+                startNoteJumpMovementSpeed = OriginalNJS;
+                noteJumpValue = OriginalNJO;
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Reverted to original values.");
+            }
+            */
+        }
+    }
+
     //BW 3rd item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher https://harmony.pardeike.net/articles/patching-prefix.html
     //This runs after 3rd item automatically
     //This alters the beat map data such as rotation events...
@@ -107,7 +227,7 @@ namespace Beat360fyerPlugin.Patches
             }
         }
     }
-    
+
     //BW 2nd item that runs after LevelUpdatePatcher & GameModeHelper
     //Runs when you click play button
     //BW v1.31.0 Class MenuTransitionsHelper method StartStandardLevel has 1 new item added. After 'ColorScheme overrideColorScheme', 'ColorScheme beatmapOverrideColorScheme' has been added. so i added: typeof(ColorScheme) after typeof(ColorScheme)
@@ -116,7 +236,7 @@ namespace Beat360fyerPlugin.Patches
     public class TransitionPatcher
     {
         public static string startingGameMode;
-        static void Prefix(string gameMode, ref IDifficultyBeatmap difficultyBeatmap, IPreviewBeatmapLevel previewBeatmapLevel, OverrideEnvironmentSettings overrideEnvironmentSettings, ColorScheme overrideColorScheme, GameplayModifiers gameplayModifiers, PlayerSpecificSettings playerSpecificSettings, PracticeSettings practiceSettings, string backButtonText, bool useTestNoteCutSoundEffects, bool startPaused, Action beforeSceneSwitchCallback, Action<DiContainer> afterSceneSwitchCallback, Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback, Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults> levelRestartedCallback)
+        static void Prefix(string gameMode, IDifficultyBeatmap difficultyBeatmap, IPreviewBeatmapLevel previewBeatmapLevel, OverrideEnvironmentSettings overrideEnvironmentSettings, ColorScheme overrideColorScheme, GameplayModifiers gameplayModifiers, PlayerSpecificSettings playerSpecificSettings, PracticeSettings practiceSettings, string backButtonText, bool useTestNoteCutSoundEffects, bool startPaused, Action beforeSceneSwitchCallback, Action<DiContainer> afterSceneSwitchCallback, Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback, Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults> levelRestartedCallback)
         {
             /*
             Plugin.Log.Info($"\nBW 0 TransitionPatcher - IDifficultyBeatmap contains these sets:\n");
@@ -139,7 +259,7 @@ namespace Beat360fyerPlugin.Patches
             //Sets the variable to the name of the map being started (Standard, Generated360Degree, etc)          
             startingGameMode = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
 
-            //Plugin.Log.Info($"\nBW 5 TransitionPatcher startingGameMode: {startingGameMode} (should be Generated360Degree I think)\n");
+            //Plugin.Log.Info($"\nBW 5 TransitionPatcher startingGameMode: {startingGameMode} (should be Generated360Degree)\n");
         }
     }
 
@@ -149,8 +269,15 @@ namespace Beat360fyerPlugin.Patches
     [HarmonyPatch("SetContent")]
     public class LevelUpdatePatcher
     {
+        public static string SongName;
+        public static float  SongDuration;
+        //public static float CuttableNotesCount;
+
         static void Prefix(StandardLevelDetailView __instance, IBeatmapLevel level, BeatmapDifficulty defaultDifficulty, BeatmapCharacteristicSO defaultBeatmapCharacteristic, PlayerData playerData)//level actually is of the class CustomBeatmapLevel which impliments interface IBeatmapLevel
         {
+            SongDuration = level.songDuration;
+            SongName = level.songName;
+
             //This is an empty set
             List<BeatmapCharacteristicSO> toGenerate = new List<BeatmapCharacteristicSO>();
 
@@ -279,7 +406,7 @@ namespace Beat360fyerPlugin.Patches
 
                     if (requirements != null && requirements.Any(requirement => requirement == "Noodle Extensions"))
                     {
-                        Plugin.Log.Info($"{level.songName} - Requires Noodle - So skipping 360 Generation");
+                        Plugin.Log.Info($"{SongName} - Requires Noodle - So skipping 360 Generation");
                         continue;
                     }
                 }
@@ -288,15 +415,28 @@ namespace Beat360fyerPlugin.Patches
 
                 IDifficultyBeatmapSet newSet;
 
+                //Plugin.Log.Info(" ");
+                //Plugin.Log.Info("BW 1 StandardLevelDetailView Song Name: " + SongName);
+
                 //This is true for built-in songs
                 if (basedOnGameMode.difficultyBeatmaps[0] is BeatmapLevelSO.DifficultyBeatmap)
                 {
-                    BeatmapLevelSO.DifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Select((bm) => new BeatmapLevelSO.DifficultyBeatmap(bm.level, bm.difficulty, bm.difficultyRank, bm.noteJumpMovementSpeed, bm.noteJumpStartBeatOffset, bm.environmentNameIdx, FieldHelper.Get<BeatmapDataSO>(bm, "_beatmapData"))).ToArray();//BW v1.31.0 added bm.environmentNameIdx for new parameter environmentNameIdx
+                    BeatmapLevelSO.DifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Select((bm) => new BeatmapLevelSO.DifficultyBeatmap(
+                        
+                        bm.level,
+                        bm.difficulty,
+                        bm.difficultyRank,
+                        bm.noteJumpMovementSpeed,
+                        bm.noteJumpStartBeatOffset,
+                        bm.environmentNameIdx,
+                        FieldHelper.Get<BeatmapDataSO>(bm, "_beatmapData")
+                    )).ToArray();//BW v1.31.0 added bm.environmentNameIdx for new parameter environmentNameIdx
+
                     newSet = new BeatmapLevelSO.DifficultyBeatmapSet(customGameMode, difficultyBeatmaps);
                     foreach (BeatmapLevelSO.DifficultyBeatmap dbm in difficultyBeatmaps)
                     {
                         dbm.SetParents(level, newSet);
-                        Plugin.Log.Info($"BW 5 LevelUpdatePatcher {difficultyBeatmaps.ToString()}");
+                        //Plugin.Log.Info($"BW 5 LevelUpdatePatcher {difficultyBeatmaps.ToString()}");
                     }
                 }
                 //This is true for custom songs
@@ -307,24 +447,81 @@ namespace Beat360fyerPlugin.Patches
                     //creates a new instance of the CustomDifficultyBeatmapSet class and initializing it with data based on the customGameMode object
                     CustomDifficultyBeatmapSet customSet = new CustomDifficultyBeatmapSet(customGameMode);
 
+                    /*THIS IS WORKING-----------------------------------------------------
                     //retrieves the difficultyBeatmaps collection from the basedOnGameMode object, which seems to be an IDifficultyBeatmapSet
                     //Cast is used to convert the elements in the difficultyBeatmaps collection to CustomDifficultyBeatmap objects.
                     CustomDifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Cast<CustomDifficultyBeatmap>().Select((cbm) => new CustomDifficultyBeatmap(
                         cbm.level,
-                        customSet,//cbm.parentDifficultyBeatmapSet,//BW v1.31.0 added - this was the 1 line that ruined my life! futuremapper found it and correct. was causing 360 maps to have charactertics of Standard maps so never found a Gen 360 map
+                        customSet,//BW added cbm.parentDifficultyBeatmapSet added  for v1.31.0  - this was the 1 line that ruined my life! futuremapper found it and corrected it. was causing 360 maps to have charactertics of Standard maps so when user clicked on 360 icon and played map, it presented Standard map
                         cbm.difficulty, 
                         cbm.difficultyRank, 
                         cbm.noteJumpMovementSpeed, 
                         cbm.noteJumpStartBeatOffset, 
-                        cbm.beatsPerMinute,//BW v1.31.0 was in the wrong order
+                        cbm.beatsPerMinute,
                         cbm.beatmapColorSchemeIdx,//BW v1.31.0 added
                         cbm.environmentNameIdx,//BW v1.31.0 added
                         cbm.beatmapSaveData, 
                         cbm.beatmapDataBasicInfo)).ToArray();
+                    --------------------------------------------------------------------*/
 
-                    //allows you to set the custom difficulty beatmaps for a CustomDifficultyBeatmapSet instance.
-                    //effectively populating the instance with the provided difficulty beatmaps.
-                    customSet.SetCustomDifficultyBeatmaps(difficultyBeatmaps);
+                    //Testing this in its place: adjusting NJS and NJO
+                    CustomDifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Cast<CustomDifficultyBeatmap>().Select((cbm) => {
+
+                        //CuttableNotesCount = cbm.beatmapDataBasicInfo.cuttableNotesCount;
+
+                        //Plugin.Log.Info("BW 2 StandardLevelDetailView Average NPS: " + averageNPS);
+                        //Plugin.Log.Info("Total Notes in Map: " + cbm.beatmapDataBasicInfo.cuttableNotesCount);
+                        //Plugin.Log.Info("Total Duration: " + cbm.level.songDuration);
+
+                        /*
+                         * 
+                        //Moved to new harmony patch
+                        Plugin.Log.Info("Original noteJumpMovementSpeed: " + cbm.noteJumpMovementSpeed);
+                        Plugin.Log.Info("Original noteJumpStartBeatOffset: " + cbm.noteJumpStartBeatOffset);
+
+                        float MaxNJS = Config.Instance.MaxNJS;
+                        float modifiedNJS = cbm.noteJumpMovementSpeed;
+                        float modifiedNJO = cbm.noteJumpStartBeatOffset;
+
+                        //if the note jump speed is greater than the user desired max note jump speed
+                        //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
+                        if (cbm.noteJumpMovementSpeed > MaxNJS || (cbm.noteJumpMovementSpeed >= MaxNJS-1 && cbm.noteJumpStartBeatOffset < 0))
+                        {
+                            if (averageNPS > 3.5f)//for very fast maps, reduce it a little more.
+                            {
+                                modifiedNJS = MaxNJS - 1;
+                            }
+                            else
+                            {
+                                modifiedNJS = MaxNJS;
+                            }
+                            modifiedNJO = 0f;
+
+                            Plugin.Log.Info("New noteJumpMovementSpeed: " + modifiedNJS);
+                            Plugin.Log.Info("New noteJumpStartBeatOffset: " + modifiedNJO);
+                        }
+                        */
+
+
+                        return new CustomDifficultyBeatmap(
+                            cbm.level,
+                            customSet,
+                            cbm.difficulty,
+                            cbm.difficultyRank,
+                            cbm.noteJumpMovementSpeed,//modifiedNJS,
+                            cbm.noteJumpStartBeatOffset,//modifiedNJO,
+                            cbm.beatsPerMinute,
+                            cbm.beatmapColorSchemeIdx,//BW v1.31.0 added
+                            cbm.environmentNameIdx,//BW v1.31.0 added
+                            cbm.beatmapSaveData,
+                            cbm.beatmapDataBasicInfo);
+                        }).ToArray();
+
+
+
+                //allows you to set the custom difficulty beatmaps for a CustomDifficultyBeatmapSet instance.
+                //effectively populating the instance with the provided difficulty beatmaps.
+                customSet.SetCustomDifficultyBeatmaps(difficultyBeatmaps);
                     newSet = customSet;
 
                     /*

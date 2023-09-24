@@ -20,33 +20,29 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.Wireless360;
             set {
                 Config.Instance.Wireless360 = value;
-                EnableSlider = !value;
-                if (EnableSlider) TextColor = "#ffffff"; else TextColor = "#555555";
+                EnableSliderLimitRotations360 = !value;
+                if (EnableSliderLimitRotations360) TextColorSliderLimitRotations360 = "#ffffff"; else TextColorSliderLimitRotations360 = "#555555";
                 NotifyPropertyChanged();
             }
-            //set => Config.Instance.Wireless360 = value;//before i added interactable bsml slider
         }
         //BW need a variable to be !Wireless360 to disable or enable the LimitRotations360 Slider so created this
-        [UIValue("EnableSlider")]
-        public bool EnableSlider
+        [UIValue("EnableSliderLimitRotations360")]
+        public bool EnableSliderLimitRotations360
         {
             get => !Config.Instance.Wireless360;
-            set
-            {
+            set {
                 Config.Instance.Wireless360 = !value;
                 NotifyPropertyChanged();
             }
         }
         //BW LimitRotations360 slider text dimmed if Wireless360 enabled
-        [UIValue("TextColor")]
-        public String TextColor
+        [UIValue("TextColorSliderLimitRotations360")]
+        public String TextColorSliderLimitRotations360
         {
-            get => Config.Instance.TextColor;
+            get => Config.Instance.Wireless360 ? "#555555" : "#ffffff";
             set
             {
-                Config.Instance.TextColor = value;
                 NotifyPropertyChanged();
-                Plugin.Log.Info($"BW    TextColor is: {TextColor}");
             }
         }
         [UIValue("LimitRotations360")]
@@ -72,6 +68,77 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.EnableWallGenerator;
             set => Config.Instance.EnableWallGenerator = value;
         }
+        [UIValue("EnableSlidersNJS")]
+        public bool EnableSlidersNJS
+        {
+            get => Config.Instance.EnableNJS;
+            set
+            {
+                Config.Instance.EnableNJS = value;
+                NotifyPropertyChanged();
+            }
+        }
+        [UIValue("EnableNJS")]
+        public bool EnableNJS
+        {
+            get => Config.Instance.EnableNJS;
+            set
+            {
+                Config.Instance.EnableNJS = value;
+                EnableSlidersNJS = value;
+                if (EnableSlidersNJS) TextColorEnableSlidersNJS = "#ffffff"; else TextColorEnableSlidersNJS = "#555555";
+                NotifyPropertyChanged();
+            }
+        }
+        //BW NJS & NJO sliders text dimmed if EnableNJS disabled
+        [UIValue("TextColorEnableSlidersNJS")]
+        public String TextColorEnableSlidersNJS
+        {
+            get => Config.Instance.EnableNJS ? "#ffffff" : "#555555";
+            set
+            {
+                NotifyPropertyChanged();
+            }
+        }
+        [UIValue("NJS")]
+        public float NJS
+        {
+            get => Config.Instance.NJS;
+            set => Config.Instance.NJS = value;
+        }
+        [UIValue("NJO")]
+        public float NJO
+        {
+            get => Config.Instance.NJO;
+            set => Config.Instance.NJO = value;
+        }
+        /*
+        [UIValue("MaxNJS")]
+        public float MaxNJS
+        {
+            get => Config.Instance.MaxNJS;
+            set => Config.Instance.MaxNJS = value;
+        }
+        
+        [UIValue("AllowedRotationsPerSec")]
+        public float AllowedRotationsPerSec
+        {
+            get => Config.Instance.AllowedRotationsPerSec;
+            set => Config.Instance.AllowedRotationsPerSec = value;
+        }
+        [UIValue("FastMapPBD")]
+        public float FastMapPBD
+        {
+            get => Config.Instance.FastMapPBD;
+            set => Config.Instance.FastMapPBD = value;
+        }
+        [UIValue("SlowMapPBD")]
+        public float SlowMapPBD
+        {
+            get => Config.Instance.SlowMapPBD;
+            set => Config.Instance.SlowMapPBD = value;
+        }
+        */
         [UIValue("AllowCrouchWalls")]
         public bool AllowCrouchWalls
         {

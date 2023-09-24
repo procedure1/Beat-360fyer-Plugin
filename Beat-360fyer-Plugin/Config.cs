@@ -1,9 +1,9 @@
-﻿
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
 using IPA.Config.Stores.Attributes;
 using IPA.Config.Stores.Converters;
+
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace Beat360fyerPlugin
@@ -14,13 +14,17 @@ namespace Beat360fyerPlugin
         public static Config Instance { get; set; }
         public virtual bool Wireless360 { get; set; } = false;//BW This assumes the user doesn't want rotation limits and it sets LimitRotations to 999 and BottleneckRotations to 999. only for 360 not 90.
         public virtual float LimitRotations360 { get; set; } = 360;//BW changed this to Degrees. Previously Default 28 where 24 is 360 degree circle. designed to avoid riping a cable
-
-        public virtual string TextColor { get; set; } = "#555555";//BW sets the color of the LimitRotations360 menu text. Dims it if deactivated by Wireless360;
-
         public virtual float LimitRotations90 { get; set; } = 90;//BW changed this to Degrees
         public virtual bool EnableWallGenerator { get; set; } = true;
-        
+
         //BW Disable scoring on all below------------------------
+        public virtual bool EnableNJS { get; set; } = false;
+        public virtual float NJS { get; set; } = 14f;
+        public virtual float NJO { get; set; } = 0f;
+        //public virtual float MaxNJS { get; set; } = 30;//BW maximum desired note jump speed - can't be INT for some reason with BSML i think
+        //public virtual float AllowedRotationsPerSec { get; set; } = 10;
+        //public virtual float FastMapPBD { get; set; } = 3f;//BW Fast map preferred bar duration
+        //public virtual float SlowMapPBD { get; set; } = 1.5f;//BW Slow map preferred bar duration
         public virtual bool AllowCrouchWalls { get; set; } = false;//BW added this
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
         
@@ -32,10 +36,12 @@ namespace Beat360fyerPlugin
 
         //BW Requires Beat Saber restart
         public virtual bool ShowGenerated360 { get; set; } = true;
-        public virtual bool ShowGenerated90 { get; set; } = true;
+        public virtual bool ShowGenerated90 { get; set; } = false;
         public virtual bool OnlyOneSaber { get; set; } = false;//BW Disables scoring also
         public virtual bool LeftHandedOneSaber { get; set; } = false;
         //BW added this baseded on NoteLimiter UI. enums cannot use a digit so had to change 90Degree to NinetyDegree
+        //public virtual string TextColor { get; set; } = "#555555";//BW sets the color of the LimitRotations360 menu text. Dims it if deactivated by Wireless360;
+
         public enum Base
         {
             Standard,

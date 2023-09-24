@@ -49,11 +49,11 @@
     </Reference>
     <Reference Include="BeatmapCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
     </Reference>
-    <Reference Include="BSML, Version=1.6.10.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BSML, Version=1.7.6.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Plugins\BSML.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Plugins\BSML.dll</HintPath>
     </Reference>
     <Reference Include="BS_Utils, Version=1.12.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -73,15 +73,15 @@
     </Reference>
     <Reference Include="GameplayCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
     </Reference>
     <Reference Include="HMLib, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\HMLib.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\HMLib.dll</HintPath>
     </Reference>
     <Reference Include="HMUI, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\HMUI.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\HMUI.dll</HintPath>
     </Reference>
     <Reference Include="IPA.Injector, Version=4.2.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -93,7 +93,7 @@
     </Reference>
     <Reference Include="Main, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\Main.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\Main.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Build.Framework.16.5.0\lib\net472\Microsoft.Build.Framework.dll</HintPath>
@@ -108,6 +108,9 @@
     <Reference Include="Microsoft.VisualStudio.Setup.Configuration.Interop, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.VisualStudio.Setup.Configuration.Interop.1.16.30\lib\net35\Microsoft.VisualStudio.Setup.Configuration.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SongCore, Version=3.10.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -154,10 +157,6 @@
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
@@ -170,21 +169,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.VRModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
-    </Reference>
     <Reference Include="Zenject, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Beat Saber 1.31.0 Modded Backup\Beat Saber_Data\Managed\Zenject.dll</HintPath>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\Zenject.dll</HintPath>
+    </Reference>
+    <Reference Include="Zenject-usage, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Beat Saber 1.31.1 Modded Backup\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

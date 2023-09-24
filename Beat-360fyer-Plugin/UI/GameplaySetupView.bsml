@@ -3,26 +3,33 @@
   <settings-scroll-view background-color="transparent" >
     <vertical preferred-width="90" vertical-fit="PreferredSize"  anchor="UpperCenter">
       <text text="360/90 maps currently do not support the default color scheme." fontSize="3" align="Center" />
-      <text text="Please use COLORS > OVERRIDE DEFAULT COLORS" fontSize="3" align="Center" />
+      <text text="Please use COLORS > OVERRIDE DEFAULT COLORS" fontSize="3" align="Center" rich-text='true' font-color='#FFFF00'/>
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true' hover-hint="For wireless VR with no rotation restrictions and no tendencies to reverse direction."></toggle-setting>
         <!--<text text="For wireless VR with no rotation restrictions and no tendencies to reverse direction." align="Left" fontSize="2" size-delta-y='8'/>-->
-        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" rich-text='true' font-color='~TextColor' hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc." interactable="~EnableSlider"></slider-setting>
+        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc." rich-text='true' font-color='~TextColorSliderLimitRotations360' interactable="~EnableSliderLimitRotations360"></slider-setting>
         <!--<text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>-->
         <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="30" min="30" max="360" formatter="AngleFormatter" hover-hint="Limit or expand the rotation amount for 90° maps. Works the same as the setting above for 360° maps."></slider-setting>
         <toggle-setting text='Enable Wall Generator' apply-on-change='true' value='EnableWallGenerator' bind-value='true' hover-hint="Walls are cool in 360! Adds more walls for visual interest."></toggle-setting>
         <!--<text text="Walls are cool in 360! Adds more walls for visual interest." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
-      <text text="Will disable score submission:" align="Center" fontSize="2.5" />
+      <text text="The items below disable score submission:" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
+        <toggle-setting text='Note Jump Speed and Offset' apply-on-change='true' value='EnableNJS' bind-value='true' hover-hint='Please disable JDFixer and other similar mods to use this.'></toggle-setting>
+        <slider-setting text="NJS" apply-on-change="true" value="NJS" bind-value="true" show-buttons="true" increment="1"   min="1"   max="30" hover-hint="Desired Note Jump Speed for generated maps."  rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
+        <slider-setting text="NJO" apply-on-change="true" value="NJO" bind-value="true" show-buttons="true" increment=".01" min="-10" max="10" hover-hint="Desired Note Jump Offset for generated maps." rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
+        <!--<slider-setting text="Max NJS" apply-on-change="true" value="MaxNJS" bind-value="true" show-buttons="true" increment="1" min="1" max="30" hover-hint="Maximum desired Note Jump Speed for generated maps. Please disable JDFixer and other mods to use this."></slider-setting>-->
+        <!--<slider-setting text="Allowed Rotations" apply-on-change="true" value="AllowedRotationsPerSec" bind-value="true" show-buttons="true" increment="1" min="1" max="10" hover-hint="Max allowed rotations per sec."></slider-setting>-->
+        <!--<slider-setting text="Fast Map PBD" apply-on-change="true" value="FastMapPBD" bind-value="true" show-buttons="true" increment=".1" min="1.2" max="3.5" hover-hint="Preferred Bar Duration for fast maps of 10anps or more."></slider-setting>-->
+        <!--<slider-setting text="Slow Map PBD" apply-on-change="true" value="SlowMapPBD" bind-value="true" show-buttons="true" increment=".1" min="1.2" max="3.5" hover-hint="Preferred Bar Duration for slow maps of 0anps"></slider-setting>-->
         <toggle-setting text='Allow Crouch Walls' apply-on-change='true' value='AllowCrouchWalls' bind-value='true' hover-hint="It's hard to see these walls coming on faster maps."></toggle-setting>
         <toggle-setting text='Allow Lean Walls' apply-on-change='true' value='AllowLeanWalls' bind-value='true' hover-hint="It's hard to see these walls coming on faster maps."></toggle-setting>
         <!--<slider-setting text="Rotation Angle Multiplier" apply-on-change="true" value="RotationAngleMultiplier" bind-value="true" show-buttons="true" increment=".01" min="0" max="3"></slider-setting>-->
         <!--<text text="Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc." align="Left" fontSize="2" size-delta-y='8'/>-->
-        <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".01" min=".1" max="3" hover-hint="Change how frequently rotations are spawned."></slider-setting>
+        <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="3" hover-hint="Increase or decrease rotations. Default is 1."></slider-setting>
         <!--<text text="Change how frequently rotations are spawned." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
-      <text text="Requires Restart:" align="Center" fontSize="2.5" />
+      <text text="The items below require Restart:" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Show Generated 360 Maps' apply-on-change='true' value='ShowGenerated360' bind-value='true'></toggle-setting>
         <toggle-setting text='Show Generated 90 Maps' apply-on-change='true' value='ShowGenerated90' bind-value='true'></toggle-setting>
