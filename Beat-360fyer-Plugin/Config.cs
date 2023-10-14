@@ -16,10 +16,12 @@ namespace Beat360fyerPlugin
         public virtual float LimitRotations360 { get; set; } = 360;//BW changed this to Degrees. Previously Default 28 where 24 is 360 degree circle. designed to avoid riping a cable
         public virtual float LimitRotations90 { get; set; } = 90;//BW changed this to Degrees
         public virtual bool EnableWallGenerator { get; set; } = true;
+        public virtual bool BoostLighting { get; set; } = true;
+        public virtual bool FattenLasers { get; set; } = true;
 
         //BW Disable scoring on all below------------------------
         public virtual bool EnableNJS { get; set; } = false;
-        public virtual float NJS { get; set; } = 14f;
+        public virtual float NJS { get; set; } = 15f;
         public virtual float NJO { get; set; } = 0f;
         //public virtual float MaxNJS { get; set; } = 30;//BW maximum desired note jump speed - can't be INT for some reason with BSML i think
         //public virtual float AllowedRotationsPerSec { get; set; } = 10;
@@ -29,7 +31,7 @@ namespace Beat360fyerPlugin
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
         
         //BW Not needed since feels the same as the speed multiplier
-        //public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
+        public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
 
         public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
         //-------------------------------------------------------

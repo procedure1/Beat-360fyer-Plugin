@@ -24,9 +24,85 @@ using System.Xml.Linq;
 using System.Threading;
 using static BeatmapObjectSpawnMovementData;
 using System.Windows.Markup;
+using CustomJSONData;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics.Eventing.Reader;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
+using System.Security.Cryptography;
+using UnityEngine.PlayerLoop;
 
 namespace Beat360fyerPlugin.Patches
 {
+    #region Laser Fattener
+    //Used plugin.cs zenject installer in order to access ParametricBoxController() method. it seems to control lasers. but some unknown method calls it. so instead i scaled the gameObject that uses ParametricBoxController()
+    public class LaserFattener
+    {
+        public void Fatten()
+        {
+            // Get all ParametricBoxController objects in the scene
+            ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
+            // Modify the ParametricBoxController properties of all BoxLights
+            foreach (ParametricBoxController boxController in boxControllers)
+            {
+                if (Config.Instance.FattenLasers)
+                {
+                    //scale gameOject parent
+                    Transform transform  = boxController.gameObject.transform.parent;
+                    Vector3 currentScale = transform.localScale;
+                    transform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 8, currentScale.z * 8);
+                    Plugin.Log.Info($"BoxLights Scaled");
+                    /*
+                    Renderer renderer = boxController.gameObject.GetComponent<Renderer>(); // Get the renderer component
+
+                    if (renderer != null)
+                    {
+                        Material material = renderer.material; // Get the material
+                        Color currentColor = material.color;
+                        Plugin.Log.Info($"{i} ParametricBoxController\t --- material color: {currentColor} ");
+
+                        //float newAlpha = 1f; // You can set this to the desired alpha value (0.5 for 50% transparency)
+                        //material.color = new Color(currentColor.r, currentColor.g, currentColor.b, newAlpha);
+                    }
+                    */
+                    //have no effect!!!!
+                    //boxController.alphaMultiplier = 0.5f;
+                    //boxController.width    = 0.5f;//default is .05
+                    //boxController.length   = 0.5f;//default is .05
+                    //boxController.height = 500f//default is 500
+                    //boxController.minAlpha = 0;
+                    //boxController.color = new Color(0, 1, 0, 0);
+
+                    //Plugin.Log.Info($"{i} ParametricBoxController\t --- alphaMultiplier: {boxController.alphaMultiplier} width: {boxController.width} length: {boxController.length} height: {boxController.height} minAlpha: {boxController.minAlpha}");
+                    //i++;
+                }
+            }
+        }
+        public void Log()
+        {
+            // Get all ParametricBoxController objects in the scene
+            ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
+            int i = 1;
+            // Modify the ParametricBoxController properties of all BoxLights
+            foreach (ParametricBoxController boxController in boxControllers)
+            {
+                if (IsRotatingLaser(boxController))
+                {
+                    Plugin.Log.Info($"{i} ParametricBoxController\t -- alphaMultiplier: {boxController.alphaMultiplier} width: {boxController.width} length: {boxController.length} height: {boxController.height} minAlpha: {boxController.minAlpha}");
+                    i++;
+                }
+            }
+        }
+        //checks if is a Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight. if don't use this will select the high top lights that look like florescent bars.
+        public bool IsRotatingLaser(ParametricBoxController boxController) // Check if the parent hierarchy matches the desired structure - since ParametricBoxController appears on other unwanted lasers
+        {
+            return (boxController.gameObject.transform.parent != null &&
+                    boxController.gameObject.transform.parent.name == "Laser" &&
+                   (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL"));
+        }
+    }
+    #endregion
+    #region 6 Postfix - SliderController (USUSED AT THE MOMENT)  
     /*
     //BW this runs everytime a slider is encountered (Standard, 360, Gen360, etc)
     [HarmonyPatch(typeof(SliderController))]
@@ -60,8 +136,11 @@ namespace Beat360fyerPlugin.Patches
         }
     }
     */
-    //TO DO: get cuttable notes count for built in songs
-    //BW 4th item that runs. JDFixer uses this method so that the user can update the MaxJNS over and over. i tried it in LevelUpdatePatcher. it works but can only be updated before play song one time https://github.com/zeph-yr/JDFixer/blob/b51c659def0e9cefb9e0893b19647bb9d97ee9ae/HarmonyPatches.cs
+    #endregion
+    #region 5 Prefix - BeatmapObjectSpawnMovementData
+    //BW 5th item that runs. JDFixer uses this method so that the user can update the MaxJNS over and over. i tried it in LevelUpdatePatcher. it works but can only be updated before play song one time https://github.com/zeph-yr/JDFixer/blob/b51c659def0e9cefb9e0893b19647bb9d97ee9ae/HarmonyPatches.cs
+    //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
+
     [HarmonyPatch(typeof(BeatmapObjectSpawnMovementData), "Init")]
     internal class SpawnMovementDataUpdatePatch
     {
@@ -70,90 +149,108 @@ namespace Beat360fyerPlugin.Patches
         public static float OriginalNJO;
         internal static void Prefix(ref float startNoteJumpMovementSpeed, float startBpm, NoteJumpValueType noteJumpValueType, ref float noteJumpValue)//, IJumpOffsetYProvider jumpOffsetYProvider, Vector3 rightVec, Vector3 forwardVec)
         {
-            //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
-            if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree")//only do this for gen 360 or else it will do this for all maps
             {
-                OriginalNJS = startNoteJumpMovementSpeed;
-                OriginalNJO = noteJumpValue;
-                OriginalValuesSet = true;
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
-                //Plugin.Log.Info("Original noteJumpMovementSpeed: "   + OriginalNJS);
-                //Plugin.Log.Info("Original noteJumpStartBeatOffset: " + OriginalNJO);
-            }
-            if (Config.Instance.EnableNJS)
-            {
-                startNoteJumpMovementSpeed = Config.Instance.NJS;
-                noteJumpValue = Config.Instance.NJO;
-
-                Plugin.Log.Info("--------------------");
-                Plugin.Log.Info("SongName: " + LevelUpdatePatcher.SongName);
-                Plugin.Log.Info("New noteJumpMovementSpeed: "   + startNoteJumpMovementSpeed);
-                Plugin.Log.Info("New noteJumpStartBeatOffset: " + noteJumpValue);
-            }
-            else
-            {
-                startNoteJumpMovementSpeed = OriginalNJS;
-                noteJumpValue = OriginalNJO;
-
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
-                //Plugin.Log.Info("Using Original noteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
-                //Plugin.Log.Info("Using Original noteJumpStartBeatOffset: " + noteJumpValue);
-            }
+                LaserFattener myOtherInstance = new LaserFattener();
+                myOtherInstance.Fatten();
 
 
-            /*
-            //BW Version 1, there is no enable/disable. But it will only change the NJS if the user sets it lower than the original NJS.
-            if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
-            {
-                OriginalNJS = startNoteJumpMovementSpeed;
-                OriginalNJO = noteJumpValue;
-                OriginalValuesSet = true;
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original noteJumpMovementSpeed: " + OriginalNJS);
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original noteJumpStartBeatOffset: " + OriginalNJO);
-            }
-
-            float MaxNJS = Config.Instance.MaxNJS;
-            float ModifiedNJS = startNoteJumpMovementSpeed;
-            float ModifiedNJO = noteJumpValue;
-          
-            if (MaxNJS < OriginalNJS)// Check if MaxNJS is lower than the original startNoteJumpMovementSpeed
-            {
-                if (LevelUpdatePatcher.CuttableNotesCount / LevelUpdatePatcher.SongDuration > 3.5f)
+                //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
+                if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
                 {
-                    ModifiedNJS = MaxNJS - 1;
+                    OriginalNJS = TransitionPatcher.noteJumpMovementSpeed;
+                    OriginalNJO = TransitionPatcher.noteJumpStartBeatOffset;
+
+                    OriginalValuesSet = true;
+                    Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
+                    Plugin.Log.Info("Original noteJumpMovementSpeed: "   + OriginalNJS);
+                    Plugin.Log.Info("Original noteJumpStartBeatOffset: " + OriginalNJO);
+                }
+                if (Config.Instance.EnableNJS)
+                {
+                    startNoteJumpMovementSpeed = Config.Instance.NJS;
+                    noteJumpValue = Config.Instance.NJO;
+
+                    if (Config.Instance.NJS < OriginalNJS || Config.Instance.NJO > OriginalNJO)
+                    {
+                        ScoreSubmission.DisableSubmission("360Fyer");
+                        Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score disabled by NJS NJO - NJSOrig: " + OriginalNJS + " NewNJS " + Config.Instance.NJS + " OrigNJO " + OriginalNJO + " NewNJO: " + Config.Instance.NJO);
+                    }
+                    else
+                    {
+                        Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score NOT disabled by NJS NJO");
+
+                    }
+
+                    //Plugin.Log.Info("--------------------");
+                    //Plugin.Log.Info("SongName: " + LevelUpdatePatcher.SongName);
+                    //Plugin.Log.Info("New noteJumpMovementSpeed: "   + startNoteJumpMovementSpeed);
+                    //Plugin.Log.Info("New noteJumpStartBeatOffset: " + noteJumpValue);
                 }
                 else
                 {
-                    ModifiedNJS = MaxNJS;
+                    startNoteJumpMovementSpeed = OriginalNJS;
+                    noteJumpValue = OriginalNJO;
+
+                    //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
+                    //Plugin.Log.Info("Using Original noteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
+                    //Plugin.Log.Info("Using Original noteJumpStartBeatOffset: " + noteJumpValue);
                 }
-                ModifiedNJO = 0f;
 
-                startNoteJumpMovementSpeed = ModifiedNJS;
-                noteJumpValue = ModifiedNJO;
+                /*
+                //BW Version 1, there is no enable/disable. But it will only change the NJS if the user sets it lower than the original NJS.
+                if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
+                {
+                    OriginalNJS = startNoteJumpMovementSpeed;
+                    OriginalNJO = noteJumpValue;
+                    OriginalValuesSet = true;
+                    //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original noteJumpMovementSpeed: " + OriginalNJS);
+                    //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original noteJumpStartBeatOffset: " + OriginalNJO);
+                }
 
-                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch New noteJumpMovementSpeed: " + ModifiedNJS);
-                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch New noteJumpStartBeatOffset: " + ModifiedNJO);
+                float MaxNJS = Config.Instance.MaxNJS;
+                float ModifiedNJS = startNoteJumpMovementSpeed;
+                float ModifiedNJO = noteJumpValue;
+
+                if (MaxNJS < OriginalNJS)// Check if MaxNJS is lower than the original startNoteJumpMovementSpeed
+                {
+                    if (LevelUpdatePatcher.CuttableNotesCount / LevelUpdatePatcher.SongDuration > 3.5f)
+                    {
+                        ModifiedNJS = MaxNJS - 1;
+                    }
+                    else
+                    {
+                        ModifiedNJS = MaxNJS;
+                    }
+                    ModifiedNJO = 0f;
+
+                    startNoteJumpMovementSpeed = ModifiedNJS;
+                    noteJumpValue = ModifiedNJO;
+
+                    Plugin.Log.Info("BW SpawnMovementDataUpdatePatch New noteJumpMovementSpeed: " + ModifiedNJS);
+                    Plugin.Log.Info("BW SpawnMovementDataUpdatePatch New noteJumpStartBeatOffset: " + ModifiedNJO);
+                }
+                else if (MaxNJS > OriginalNJS)// Check if MaxNJS is greater than the original startNoteJumpMovementSpeed
+                {
+                    // Revert to original values
+                    startNoteJumpMovementSpeed = OriginalNJS;
+                    noteJumpValue = OriginalNJO;
+                    //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Reverted to original values.");
+                }
+                */
             }
-            else if (MaxNJS > OriginalNJS)// Check if MaxNJS is greater than the original startNoteJumpMovementSpeed
-            {
-                // Revert to original values
-                startNoteJumpMovementSpeed = OriginalNJS;
-                noteJumpValue = OriginalNJO;
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Reverted to original values.");
-            }
-            */
         }
     }
-
-    //BW 3rd item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher https://harmony.pardeike.net/articles/patching-prefix.html
+    #endregion
+    #region 4 Postfix - CreateTransformedBeatmapData
+    //BW 4th item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher https://harmony.pardeike.net/articles/patching-prefix.html
     //This runs after 3rd item automatically
     //This alters the beat map data such as rotation events...
     [HarmonyPatch(typeof(BeatmapDataTransformHelper), "CreateTransformedBeatmapData")]
     public class BeatmapDataTransformHelperPatcher
     {
         static void Postfix(ref IReadonlyBeatmapData __result, IReadonlyBeatmapData beatmapData, IPreviewBeatmapLevel beatmapLevel, GameplayModifiers gameplayModifiers, bool leftHanded, EnvironmentEffectsFilterPreset environmentEffectsFilterPreset, EnvironmentIntensityReductionOptions environmentIntensityReductionOptions, MainSettingsModelSO mainSettingsModel)
-        {
-            
+        {            
             /*
             Plugin.Log.Info("BW 00 postfix:");
             int i = 0;
@@ -190,15 +287,20 @@ namespace Beat360fyerPlugin.Patches
                     Generator360 gen = new Generator360();
                     gen.WallGenerator = Config.Instance.EnableWallGenerator;
                     gen.OnlyOneSaber = Config.Instance.OnlyOneSaber;
-                    //gen.RotationAngleMultiplier = Config.Instance.RotationAngleMultiplier;//decided to remove this.
-                    gen.RotationSpeedMultiplier = Config.Instance.RotationSpeedMultiplier;
+                    gen.RotationAngleMultiplier = Config.Instance.RotationAngleMultiplier;//decided to remove this.
+                    gen.RotationSpeedMultiplier = (float)Math.Round(Config.Instance.RotationSpeedMultiplier,1);
                     gen.AllowCrouchWalls = Config.Instance.AllowCrouchWalls;
                     gen.AllowLeanWalls = Config.Instance.AllowLeanWalls;
                     gen.LeftHandedOneSaber = Config.Instance.LeftHandedOneSaber;
 
-                    if (Config.Instance.BasedOn != Config.Base.Standard || gen.OnlyOneSaber || gen.PreferredBarDuration != 1.84f || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
+                    if (Config.Instance.BasedOn != Config.Base.Standard || gen.RotationSpeedMultiplier < 0.8f)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
                     {
                         ScoreSubmission.DisableSubmission("360Fyer");
+                        Plugin.Log.Info("Score disabled by Standard or Multiplier" + gen.RotationSpeedMultiplier);
+                    }
+                    else
+                    {
+                        Plugin.Log.Info("Score Not disabled by Standard or Multiplier" + gen.RotationSpeedMultiplier);
                     }
 
                     if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_90DEGREE_MODE)
@@ -221,13 +323,172 @@ namespace Beat360fyerPlugin.Patches
                     }
 
                     __result = gen.Generate(__result, beatmapLevel.beatsPerMinute);
-
                 }
                 
             }
         }
     }
+    #endregion
+    #region 3 Prefix - custom Colors
+    //This will set an author's custom color scheme to work. But built-in and non-customized colors on custom maps will get the standard default color scheme. Colors will revert to the player's color override if that is set.
+    [HarmonyPatch(typeof(StandardLevelScenesTransitionSetupDataSO), "Init")]
+    internal class ColorSchemeUpdatePatch
+    {
+        internal static void Prefix(IDifficultyBeatmap difficultyBeatmap, ref ColorScheme overrideColorScheme, ColorScheme beatmapOverrideColorScheme)
+        {
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree")//only do this for gen 360 or else it will do this for all maps
+            {
+                // Find the Environment GameObject
+                GameObject environment = GameObject.Find("Environment");
 
+                if (environment != null)
+                {
+                    Plugin.Log.Info($"Environment found!");
+                    // Iterate through all child objects of the Environment GameObject
+                    foreach (Transform lightPillar in environment.transform)
+                    {
+                        // Check if the child object is a LightPillar
+                        if (lightPillar.gameObject.name == "LightPillar")
+                        {
+                            Plugin.Log.Info($"LightPillar found!");
+                            // Iterate through all child objects of the LightPillar
+                            foreach (Transform rlp in lightPillar)
+                            {
+                                // Check if the child object is a RotatingLasersPair by its name or tag
+                                if (rlp.gameObject.name == "RotatingLasersPair")
+                                {
+                                    // Set the localScale of the RotatingLasersPair
+                                    rlp.localScale = new Vector3(5, 5, 5);
+                                    Plugin.Log.Info($"Scaled all RotatingLasersPair!");
+                                }
+                                else
+                                    Plugin.Log.Info($"RotatingLasersPair NOT found!!!!");
+                            }
+                        }
+                        else
+                            Plugin.Log.Info($"LightPillar NOT found!!!!");
+                    }
+                }
+                else
+                    Plugin.Log.Info($"Environment NOT found!!!!");
+
+                //create a default color scheme for custom maps since the default doesn't work in 360 (a bug)
+                /*
+                Color leftColor = new Color(1, 0, 0); // RGB values for red
+                Color rightColor = new Color(0, 0, 1); // RGB values for blue
+
+                ColorScheme defaultColorScheme = new ColorScheme(
+                    "defaultColorSchemeId",
+                    "defaultLocalizationKey",
+                    false,
+                    "Default Color Scheme",
+                    true,
+                    leftColor,  // Left saber color
+                    rightColor, // Right saber color
+                    leftColor, // Environment color 0
+                    rightColor, // Environment color 1
+                    true,      // Supports boost colors
+                    leftColor, // Environment color 0 boost
+                    rightColor, // Environment color 1 boost
+                    new Color(1, 1, 1) // Obstacles color white
+                );
+                */
+
+                if (TransitionPatcher.beatMapDataCB != null)//a Custom Beatmap Data file exits and it may have custom color scheme data added by the author
+                {
+                    //Plugin.Log.Info("1");
+
+                    string json = JsonConvert.SerializeObject(TransitionPatcher.beatMapDataCB.beatmapCustomData);//this has the choseninfo.dat individual difficulty custom data such as _suggestion chroma and _colorRight etc for custom colors
+
+                    //Plugin.Log.Info($"TransitionPatcher: beatmapCustomData:");
+                    JObject beatmapCustomData = JObject.Parse(json);
+
+                    if (beatmapCustomData["_colorLeft"] != null || beatmapCustomData["_envColorLeft"] != null || beatmapCustomData["_obstacleColor"] != null)//the author has provided at least some custom color data
+                    {
+                        // Extract the color values
+                        // Check for null values and set to default color scheme items if any are null
+                        Color saberAColor = beatmapCustomData["_colorLeft"] != null ? new Color((float)beatmapCustomData["_colorLeft"]["r"], (float)beatmapCustomData["_colorLeft"]["g"], (float)beatmapCustomData["_colorLeft"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.saberAColor;
+                        Color saberBColor = beatmapCustomData["_colorRight"] != null ? new Color((float)beatmapCustomData["_colorRight"]["r"], (float)beatmapCustomData["_colorRight"]["g"], (float)beatmapCustomData["_colorRight"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.saberBColor;
+                        Color environmentColor0 = beatmapCustomData["_envColorLeft"] != null ? new Color((float)beatmapCustomData["_envColorLeft"]["r"], (float)beatmapCustomData["_envColorLeft"]["g"], (float)beatmapCustomData["_envColorLeft"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor0;
+                        Color environmentColor1 = beatmapCustomData["_envColorRight"] != null ? new Color((float)beatmapCustomData["_envColorRight"]["r"], (float)beatmapCustomData["_envColorRight"]["g"], (float)beatmapCustomData["_envColorRight"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor1;
+                        bool supportsEnvironmentColorBoost = beatmapCustomData.Property("_envColorLeftBoost") != null && beatmapCustomData.Property("_envColorRightBoost") != null;
+                        Color environmentColor0Boost = beatmapCustomData.Property("_envColorLeftBoost") != null ? new Color((float)beatmapCustomData["_envColorLeftBoost"]["r"], (float)beatmapCustomData["_envColorLeftBoost"]["g"], (float)beatmapCustomData["_envColorLeftBoost"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor0Boost;
+                        Color environmentColor1Boost = beatmapCustomData.Property("_envColorRightBoost") != null ? new Color((float)beatmapCustomData["_envColorRightBoost"]["r"], (float)beatmapCustomData["_envColorRightBoost"]["g"], (float)beatmapCustomData["_envColorRightBoost"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor1Boost;
+                        Color obstaclesColor = beatmapCustomData.Property("_obstacleColor") != null ? new Color((float)beatmapCustomData["_obstacleColor"]["r"], (float)beatmapCustomData["_obstacleColor"]["g"], (float)beatmapCustomData["_obstacleColor"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.obstaclesColor;
+
+                        // Create the ColorScheme object and assign it
+                        overrideColorScheme = new ColorScheme(
+                            "theAuthorsColorScheme",
+                            "theAuthorsLocalizationKey",
+                            false,
+                            "Author's Color Scheme",
+                            true,
+                            saberAColor,
+                            saberBColor,
+                            environmentColor0,
+                            environmentColor1,
+                            supportsEnvironmentColorBoost,
+                            environmentColor0Boost,
+                            environmentColor1Boost,
+                            obstaclesColor
+                        );
+
+                        Plugin.Log.Info($"Authors's Custom Color Scheme found and applied!");
+                    }
+                    else//there is no custom color set added by the author
+                    {
+                        Plugin.Log.Info("Author has not set custom color Scheme.");
+
+                        //Find if the user has chosen colors>Override Default Colors
+                        PlayerDataModel _playerDataModel = UnityEngine.Object.FindObjectOfType<PlayerDataModel>();
+                        PlayerData _playerData = _playerDataModel.playerData;
+                        bool overrideDefaultColours = _playerData.colorSchemesSettings.overrideDefaultColors;
+
+                        if (overrideDefaultColours)//if the user has an override color scheme, do nothing since it will automatically override default colors
+                        {
+                            Plugin.Log.Info("User HAS set an Override Color Scheme so it will be used.");
+                            return;
+                            //ColorScheme _userColourScheme = _playerData.colorSchemesSettings.GetColorSchemeForId(_playerData.colorSchemesSettings.selectedColorSchemeId);
+                            //Color leftSaberColour = _userColourScheme.saberAColor;
+                            //Color rightSaberColour = _userColourScheme.saberBColor;
+                        }
+                        else//if the user doesn't have an override chose my default color scheme.
+                        {
+                            Plugin.Log.Info("User HAS NOT set an Override Color Scheme. Using the original level color scheme.");
+                            overrideColorScheme = LevelUpdatePatcher.OriginalColorScheme;
+                        }
+                        //Plugin.Log.Info("No Custom Beat Map Data with Color Scheme");
+                    }
+                }
+            }
+            /*
+            Plugin.Log.Info($"ColorSchemeUpdatePatch - overrideColorScheme:");
+            Plugin.Log.Info($"Color Scheme ID: {overrideColorScheme.colorSchemeId}");
+            Plugin.Log.Info($"Saber A Color: {overrideColorScheme.saberAColor}");
+            Plugin.Log.Info($"Saber B Color: {overrideColorScheme.saberBColor}");
+            Plugin.Log.Info($"Environment Color 0: {overrideColorScheme.environmentColor0}");
+            Plugin.Log.Info($"Environment Color 1: {overrideColorScheme.environmentColor1}");
+            Plugin.Log.Info($"Supports Environment Color Boost: {overrideColorScheme.supportsEnvironmentColorBoost}");
+            Plugin.Log.Info($"Environment Color 0 Boost: {overrideColorScheme.environmentColor0Boost}");
+            Plugin.Log.Info($"Environment Color 1 Boost: {overrideColorScheme.environmentColor1Boost}");
+            Plugin.Log.Info($"Obstacles Color: {overrideColorScheme.obstaclesColor}");
+               
+            Plugin.Log.Info($"ColorSchemeUpdatePatch - beatmapOverrideColorScheme:");
+            Plugin.Log.Info($"Color Scheme ID: {beatmapOverrideColorScheme.colorSchemeId}");
+            Plugin.Log.Info($"Saber A Color: {beatmapOverrideColorScheme.saberAColor}");
+            Plugin.Log.Info($"Saber B Color: {beatmapOverrideColorScheme.saberBColor}");
+            Plugin.Log.Info($"Environment Color 0: {beatmapOverrideColorScheme.environmentColor0}");
+            Plugin.Log.Info($"Environment Color 1: {beatmapOverrideColorScheme.environmentColor1}");
+            Plugin.Log.Info($"Supports Environment Color Boost: {beatmapOverrideColorScheme.supportsEnvironmentColorBoost}");
+            Plugin.Log.Info($"Environment Color 0 Boost: {beatmapOverrideColorScheme.environmentColor0Boost}");
+            Plugin.Log.Info($"Environment Color 1 Boost: {beatmapOverrideColorScheme.environmentColor1Boost}");
+            Plugin.Log.Info($"Obstacles Color: {beatmapOverrideColorScheme.obstaclesColor}");
+            */
+
+        }
+    }
+    #endregion
+    #region 2 Prefix - StartStandardLevel
     //BW 2nd item that runs after LevelUpdatePatcher & GameModeHelper
     //Runs when you click play button
     //BW v1.31.0 Class MenuTransitionsHelper method StartStandardLevel has 1 new item added. After 'ColorScheme overrideColorScheme', 'ColorScheme beatmapOverrideColorScheme' has been added. so i added: typeof(ColorScheme) after typeof(ColorScheme)
@@ -236,8 +497,46 @@ namespace Beat360fyerPlugin.Patches
     public class TransitionPatcher
     {
         public static string startingGameMode;
+        public static string characteristicSerializedName;//will be "Generated360Degree" for gen 360
+        public static ColorScheme theOverrideColorScheme;
+        public static CustomBeatmapData beatMapDataCB;
+
+        public static float noteJumpMovementSpeed;
+        public static float noteJumpStartBeatOffset;
+
         static void Prefix(string gameMode, IDifficultyBeatmap difficultyBeatmap, IPreviewBeatmapLevel previewBeatmapLevel, OverrideEnvironmentSettings overrideEnvironmentSettings, ColorScheme overrideColorScheme, GameplayModifiers gameplayModifiers, PlayerSpecificSettings playerSpecificSettings, PracticeSettings practiceSettings, string backButtonText, bool useTestNoteCutSoundEffects, bool startPaused, Action beforeSceneSwitchCallback, Action<DiContainer> afterSceneSwitchCallback, Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback, Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults> levelRestartedCallback)
         {
+            //overrideColorScheme is NULL and so is the other one.
+
+            /*
+            ColorScheme evnColorScheme = difficultyBeatmap.GetEnvironmentInfo().colorScheme.colorScheme;
+
+            //if choose Standard map, will output correct color. but if choose 360 will get the dull colors
+            Plugin.Log.Info($"TransitionPatcher - env color scheme:----------------------------------------------");
+            Plugin.Log.Info($"Color Scheme ID: {evnColorScheme.colorSchemeId}");
+            Plugin.Log.Info($"Saber A Color: {evnColorScheme.saberAColor}");
+            Plugin.Log.Info($"Saber B Color: {evnColorScheme.saberBColor}");
+            Plugin.Log.Info($"Environment Color 0: {evnColorScheme.environmentColor0}");
+            Plugin.Log.Info($"Environment Color 1: {evnColorScheme.environmentColor1}");
+            Plugin.Log.Info($"Supports Environment Color Boost: {evnColorScheme.supportsEnvironmentColorBoost}");
+            Plugin.Log.Info($"Environment Color 0 Boost: {evnColorScheme.environmentColor0Boost}");
+            Plugin.Log.Info($"Environment Color 1 Boost: {evnColorScheme.environmentColor1Boost}");
+            Plugin.Log.Info($"Obstacles Color: {evnColorScheme.obstaclesColor}");
+            */
+
+            //sends this to ColorSchemeUpdatePatch prefix in order to change color scheme there
+            IReadonlyBeatmapData RetrieveBeatmapData(IDifficultyBeatmap theDifficultyBeatmap, EnvironmentInfoSO environmentInfo, PlayerSpecificSettings thePlayerSpecificSettings)
+            {
+                IReadonlyBeatmapData theBeatmapData = Task.Run(() => difficultyBeatmap.GetBeatmapDataAsync(environmentInfo, playerSpecificSettings)).Result;
+                return theBeatmapData;
+            }
+            if (RetrieveBeatmapData(difficultyBeatmap, previewBeatmapLevel.environmentInfo, playerSpecificSettings) is CustomBeatmapData dataCB)
+            {
+                beatMapDataCB = dataCB;//this is the custom Beatmap Data which has customData JSON if it exists
+            }
+            
+
+
             /*
             Plugin.Log.Info($"\nBW 0 TransitionPatcher - IDifficultyBeatmap contains these sets:\n");
             int i = 0;
@@ -255,6 +554,13 @@ namespace Beat360fyerPlugin.Patches
             Plugin.Log.Info("\nCurrent Difficulty: " + difficultyBeatmap.difficulty +"\n");
             Plugin.Log.Info($"BW 4 TransitionPatcher Starting Fullname: ({difficultyBeatmap.GetType().FullName}) SerializedName: {difficultyBeatmap.SerializedName()} Gamemode: {gameMode} Difficulty: {difficultyBeatmap.difficulty} SongName: {difficultyBeatmap.level.songName} SerializedName: {difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
             */
+            //Good for checking the serialized name ect for leaderboards
+            //Plugin.Log.Info($"Starting ({difficultyBeatmap.GetType().FullName}) {difficultyBeatmap.SerializedName()} {gameMode} {difficultyBeatmap.difficulty} {difficultyBeatmap.level.songName} {difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
+
+            characteristicSerializedName = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
+
+            noteJumpMovementSpeed = difficultyBeatmap.noteJumpMovementSpeed;
+            noteJumpStartBeatOffset = difficultyBeatmap.noteJumpStartBeatOffset;
 
             //Sets the variable to the name of the map being started (Standard, Generated360Degree, etc)          
             startingGameMode = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
@@ -262,7 +568,8 @@ namespace Beat360fyerPlugin.Patches
             //Plugin.Log.Info($"\nBW 5 TransitionPatcher startingGameMode: {startingGameMode} (should be Generated360Degree)\n");
         }
     }
-
+    #endregion
+    #region 1 Prefix - StandardLevelDetailView
     //BW 1st item that runs. This calls GameModeHelper.cs next.
     //Called when a song's been selected and its levels are displayed in the right menu
     [HarmonyPatch(typeof(StandardLevelDetailView))]
@@ -270,16 +577,36 @@ namespace Beat360fyerPlugin.Patches
     public class LevelUpdatePatcher
     {
         public static string SongName;
+        public static bool BeatSage;
         public static float  SongDuration;
+        public static ColorScheme OriginalColorScheme;
+        public static bool AlreadyUsingEnvColorBoost;
         //public static float CuttableNotesCount;
 
         static void Prefix(StandardLevelDetailView __instance, IBeatmapLevel level, BeatmapDifficulty defaultDifficulty, BeatmapCharacteristicSO defaultBeatmapCharacteristic, PlayerData playerData)//level actually is of the class CustomBeatmapLevel which impliments interface IBeatmapLevel
         {
             SongDuration = level.songDuration;
             SongName = level.songName;
+            BeatSage = level.levelAuthorName.Contains("Beat Sage");
 
+            //This will get the color scheme of the 1st level or main level (usually standard)
+            OriginalColorScheme = level.beatmapLevelData.difficultyBeatmapSets[0].difficultyBeatmaps[0].GetEnvironmentInfo().colorScheme.colorScheme; ;
+            /*
+            Plugin.Log.Info($"LevelUpdatePatcher Default Color Scheme: {level.songName} {level.beatmapLevelData.difficultyBeatmapSets[0].difficultyBeatmaps[0].parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
+
+            Plugin.Log.Info($"TransitionPatcher - env color scheme:----------------------------------------------");
+            Plugin.Log.Info($"Color Scheme ID: {OriginalColorScheme.colorSchemeId}");
+            Plugin.Log.Info($"Saber A Color: {OriginalColorScheme.saberAColor}");
+            Plugin.Log.Info($"Saber B Color: {OriginalColorScheme.saberBColor}");
+            Plugin.Log.Info($"Environment Color 0: {OriginalColorScheme.environmentColor0}");
+            Plugin.Log.Info($"Environment Color 1: {OriginalColorScheme.environmentColor1}");
+            Plugin.Log.Info($"Supports Environment Color Boost: {OriginalColorScheme.supportsEnvironmentColorBoost}");
+            Plugin.Log.Info($"Environment Color 0 Boost: {OriginalColorScheme.environmentColor0Boost}");
+            Plugin.Log.Info($"Environment Color 1 Boost: {OriginalColorScheme.environmentColor1Boost}");
+            Plugin.Log.Info($"Obstacles Color: {OriginalColorScheme.obstaclesColor}");
+            */
             //This is an empty set
-            List<BeatmapCharacteristicSO> toGenerate = new List<BeatmapCharacteristicSO>();
+            List <BeatmapCharacteristicSO> toGenerate = new List<BeatmapCharacteristicSO>();
 
             //Plugin.Log.Info($"\nBW 1 LevelUpdatePatcher toGenerate Count: {toGenerate.Count}");
 
@@ -410,7 +737,26 @@ namespace Beat360fyerPlugin.Patches
                         continue;
                     }
                 }
+                if (level is CustomPreviewBeatmapLevel)
+                {
+                    var extras = Collections.RetrieveExtraSongData(new string(level.levelID.Skip(13).ToArray()));
 
+                    if (extras != null)
+                    {
+                        var difficultyData = extras._difficulties.FirstOrDefault(difficultyDataInner => difficultyDataInner._envColorLeftBoost != null || difficultyDataInner._envColorRightBoost != null);
+
+                        if (difficultyData != null)
+                        {
+                            Plugin.Log.Info($"{SongName} - Author already uses _envColorLeftBoost/_envColorRightBoost.");
+                            AlreadyUsingEnvColorBoost = true;
+                        }
+                        else
+                        {
+                            Plugin.Log.Info($"{SongName} - Author NOT using _envColorLeftBoost/_envColorRightBoost.");
+                            AlreadyUsingEnvColorBoost = false;
+                        }
+                    }
+                }
 
 
                 IDifficultyBeatmapSet newSet;
@@ -421,6 +767,23 @@ namespace Beat360fyerPlugin.Patches
                 //This is true for built-in songs
                 if (basedOnGameMode.difficultyBeatmaps[0] is BeatmapLevelSO.DifficultyBeatmap)
                 {
+                    /*
+                    Plugin.Log.Info($"LevelUpdatePatcher Built-in - serializedName: {basedOnGameMode.difficultyBeatmaps[0].parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName}");
+                    ColorScheme evnColorScheme = basedOnGameMode.difficultyBeatmaps[0].GetEnvironmentInfo().colorScheme.colorScheme;
+
+                    //if choose Standard map, will output correct color. but if choose 360 will get the dull colors
+                    Plugin.Log.Info($"TransitionPatcher - env color scheme:----------------------------------------------");
+                    Plugin.Log.Info($"Color Scheme ID: {evnColorScheme.colorSchemeId}");
+                    Plugin.Log.Info($"Saber A Color: {evnColorScheme.saberAColor}");
+                    Plugin.Log.Info($"Saber B Color: {evnColorScheme.saberBColor}");
+                    Plugin.Log.Info($"Environment Color 0: {evnColorScheme.environmentColor0}");
+                    Plugin.Log.Info($"Environment Color 1: {evnColorScheme.environmentColor1}");
+                    Plugin.Log.Info($"Supports Environment Color Boost: {evnColorScheme.supportsEnvironmentColorBoost}");
+                    Plugin.Log.Info($"Environment Color 0 Boost: {evnColorScheme.environmentColor0Boost}");
+                    Plugin.Log.Info($"Environment Color 1 Boost: {evnColorScheme.environmentColor1Boost}");
+                    Plugin.Log.Info($"Obstacles Color: {evnColorScheme.obstaclesColor}");
+                    */
+
                     BeatmapLevelSO.DifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Select((bm) => new BeatmapLevelSO.DifficultyBeatmap(
                         
                         bm.level,
@@ -519,9 +882,9 @@ namespace Beat360fyerPlugin.Patches
 
 
 
-                //allows you to set the custom difficulty beatmaps for a CustomDifficultyBeatmapSet instance.
-                //effectively populating the instance with the provided difficulty beatmaps.
-                customSet.SetCustomDifficultyBeatmaps(difficultyBeatmaps);
+                    //allows you to set the custom difficulty beatmaps for a CustomDifficultyBeatmapSet instance.
+                    //effectively populating the instance with the provided difficulty beatmaps.
+                    customSet.SetCustomDifficultyBeatmaps(difficultyBeatmaps);
                     newSet = customSet;
 
                     /*
@@ -882,5 +1245,6 @@ namespace Beat360fyerPlugin.Patches
                 }
             }*/
         }
+        #endregion
     }
 }

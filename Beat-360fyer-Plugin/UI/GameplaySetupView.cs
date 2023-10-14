@@ -68,6 +68,18 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.EnableWallGenerator;
             set => Config.Instance.EnableWallGenerator = value;
         }
+        [UIValue("BoostLighting")]
+        public bool BoostLighting
+        {
+            get => Config.Instance.BoostLighting;
+            set => Config.Instance.BoostLighting = value;
+        }
+        [UIValue("FattenLasers")]
+        public bool FattenLasers
+        {
+            get => Config.Instance.FattenLasers;
+            set => Config.Instance.FattenLasers = value;
+        }
         [UIValue("EnableSlidersNJS")]
         public bool EnableSlidersNJS
         {
@@ -151,7 +163,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.AllowLeanWalls;
             set => Config.Instance.AllowLeanWalls = value;
         }
-        /*
+        
         //Don't need this. Feels same as the speed multiplier
         [UIValue("RotationAngleMultiplier")]
         public float RotationAngleMultiplier
@@ -159,7 +171,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.RotationAngleMultiplier;
             set => Config.Instance.RotationAngleMultiplier = value;
         }
-        */
+        
         [UIValue("RotationSpeedMultiplier")]
         public float RotationSpeedMultiplier
         {
