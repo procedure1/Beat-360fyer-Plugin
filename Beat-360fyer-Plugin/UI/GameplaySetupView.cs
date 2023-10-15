@@ -74,11 +74,11 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.BoostLighting;
             set => Config.Instance.BoostLighting = value;
         }
-        [UIValue("FattenLasers")]
-        public bool FattenLasers
+        [UIValue("BigLasers")]
+        public bool BigLasers
         {
-            get => Config.Instance.FattenLasers;
-            set => Config.Instance.FattenLasers = value;
+            get => Config.Instance.BigLasers;
+            set => Config.Instance.BigLasers = value;
         }
         [UIValue("EnableSlidersNJS")]
         public bool EnableSlidersNJS

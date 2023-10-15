@@ -36,22 +36,84 @@ namespace Beat360fyerPlugin.Patches
 {
     #region Laser Fattener
     //Used plugin.cs zenject installer in order to access ParametricBoxController() method. it seems to control lasers. but some unknown method calls it. so instead i scaled the gameObject that uses ParametricBoxController()
-    public class LaserFattener
+    public class BigLasers
     {
-        public void Fatten()
+        public void Big()
         {
             // Get all ParametricBoxController objects in the scene
+            //Environment>TopLaser>BoxLight, Environment>DownLaser>BoxLight, Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight
             ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
             // Modify the ParametricBoxController properties of all BoxLights
+            int i = 1;
             foreach (ParametricBoxController boxController in boxControllers)
             {
-                if (Config.Instance.FattenLasers)
+                if (Config.Instance.BigLasers)
                 {
                     //scale gameOject parent
                     Transform transform  = boxController.gameObject.transform.parent;
                     Vector3 currentScale = transform.localScale;
-                    transform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 8, currentScale.z * 8);
-                    Plugin.Log.Info($"BoxLights Scaled");
+
+                    if (i == 1)//so doesn't repear several times
+                        Plugin.Log.Info($"BoxLights Scaled");
+                    //Plugin.Log.Info($"Parent2x:{boxController.gameObject.transform.parent.parent.name}");
+
+                    if (transform.name == "Laser")//Rotating lasers
+                        transform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 8, currentScale.z * 8);
+                    else if (transform.name == "TopLaser")
+                        transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);//y seems to be the length of the long top laser bars
+                    else if (i == 4 || i == 5 || i == 10 || i == 11 || i == 12)//These are all DownLasers but I think some misnamed since these work with the rest of the 6 TopLasers
+                            transform.localScale = new Vector3(currentScale.x * 7, currentScale.y * 7, currentScale.z * 7);
+                    else
+                            transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 1, currentScale.z * 5);//Don' scale these actual DownLasers to be longer
+                        //transform.localScale = new Vector3(currentScale.x * 6, currentScale.y * 1, currentScale.z * 6);
+                        //Plugin.Log.Info($"i = {i}");
+                    i++;
+                    /*
+                    //Limit scaling to only rotating lasers
+                    if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
+                    {
+                        Transform transform1 = boxController.gameObject.transform.parent;
+                        Vector3 currentScale1 = transform.localScale;
+                        transform.localScale = new Vector3(currentScale1.x * 8, currentScale1.y * 8, currentScale1.z * 8);
+                    }
+                    */
+                    /*
+                    if (boxController.gameObject.transform.parent.parent.name == "Environment")
+                    {
+                        FindScriptsInGameObjectAndChildren(transform.gameObject);
+                        //Plugin.Log.Info($"Parent2x:{boxController.gameObject.transform.parent.parent.name}");
+                        //Plugin.Log.Info($"Parent3x:{boxController.gameObject.transform.parent.parent.parent.name}");
+                        //Plugin.Log.Info($"Parent4x:{boxController.gameObject.transform.parent.parent.parent.parent.name}");
+                        //Plugin.Log.Info($"Parent5x:{boxController.gameObject.transform.parent.parent.parent.parent.parent.name}");
+                        //Plugin.Log.Info($"Parent6x:{boxController.gameObject.transform.parent.parent.parent.parent.parent.parent.name}");
+                    }
+                    */
+                    /*
+                    void FindScriptsInGameObjectAndChildren(GameObject go)
+                    {
+                        // Get all the scripts attached to the current GameObject
+                        MonoBehaviour[] scripts = go.GetComponents<MonoBehaviour>();
+
+                        foreach (MonoBehaviour script in scripts)
+                        {
+                            // Print the name of the script
+                            Debug.Log("Script found on " + go.name + ": " + script.GetType().Name);
+                        }
+
+                        // Recursively search through the children of the current GameObject
+                        for (int i = 0; i < go.transform.childCount; i++)
+                        {
+                            Transform child = go.transform.GetChild(i);
+                            FindScriptsInGameObjectAndChildren(child.gameObject);
+                        }
+
+                        //outputs this:
+                        //Script found on TopLaser: TubeBloomPrePassLight
+                        //Script found on TopLaser: TubeBloomPrePassLightWithId
+                        //Script found on BakedBloom: Parametric3SliceSpriteController
+                        //Script found on BoxLight: ParametricBoxController
+                    }
+                    */
                     /*
                     Renderer renderer = boxController.gameObject.GetComponent<Renderer>(); // Get the renderer component
 
@@ -78,7 +140,10 @@ namespace Beat360fyerPlugin.Patches
                 }
             }
         }
-        public void Log()
+
+
+        /*
+        public void LaserLog()
         {
             // Get all ParametricBoxController objects in the scene
             ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
@@ -93,6 +158,7 @@ namespace Beat360fyerPlugin.Patches
                 }
             }
         }
+        */
         //checks if is a Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight. if don't use this will select the high top lights that look like florescent bars.
         public bool IsRotatingLaser(ParametricBoxController boxController) // Check if the parent hierarchy matches the desired structure - since ParametricBoxController appears on other unwanted lasers
         {
@@ -151,8 +217,8 @@ namespace Beat360fyerPlugin.Patches
         {
             if (TransitionPatcher.characteristicSerializedName == "Generated360Degree")//only do this for gen 360 or else it will do this for all maps
             {
-                LaserFattener myOtherInstance = new LaserFattener();
-                myOtherInstance.Fatten();
+                BigLasers myOtherInstance = new BigLasers();
+                myOtherInstance.Big();
 
 
                 //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
@@ -178,8 +244,7 @@ namespace Beat360fyerPlugin.Patches
                     }
                     else
                     {
-                        Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score NOT disabled by NJS NJO");
-
+                        //Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score NOT disabled by NJS NJO");
                     }
 
                     //Plugin.Log.Info("--------------------");
@@ -296,11 +361,11 @@ namespace Beat360fyerPlugin.Patches
                     if (Config.Instance.BasedOn != Config.Base.Standard || gen.RotationSpeedMultiplier < 0.8f)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
                     {
                         ScoreSubmission.DisableSubmission("360Fyer");
-                        Plugin.Log.Info("Score disabled by Standard or Multiplier" + gen.RotationSpeedMultiplier);
+                        Plugin.Log.Info("Score disabled by Standard or Multiplier " + gen.RotationSpeedMultiplier);
                     }
                     else
                     {
-                        Plugin.Log.Info("Score Not disabled by Standard or Multiplier" + gen.RotationSpeedMultiplier);
+                        //Plugin.Log.Info("Score Not disabled by Standard or Multiplier" + gen.RotationSpeedMultiplier);
                     }
 
                     if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_90DEGREE_MODE)

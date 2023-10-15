@@ -11,8 +11,8 @@
         <!--<text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>-->
         <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="30" min="30" max="360" formatter="AngleFormatter" hover-hint="Limit or expand the rotation amount for 90° maps. Works the same as the setting above for 360° maps."></slider-setting>
         <toggle-setting text='Wall Generator' apply-on-change='true' value='EnableWallGenerator' bind-value='true' hover-hint="Walls are cool in 360! Adds more walls for visual interest."></toggle-setting>
-        <toggle-setting text='Boost Lighting' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds boost lighting events to maps that don't have it. Occurs based on rotations."></toggle-setting>
-        <toggle-setting text='Fatten Lasers' apply-on-change='true' value='FattenLasers' bind-value='true' hover-hint="Scales up laser size."></toggle-setting>
+        <toggle-setting text='Boost Lighting' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds boost lighting events to maps that don't have them. Occurs based on rotations."></toggle-setting>
+        <toggle-setting text='Big Lasers' apply-on-change='true' value='BigLasers' bind-value='true' hover-hint="Scales up laser size."></toggle-setting>
         <!--<text text="Walls are cool in 360! Adds more walls for visual interest." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
       <!--<text text="The items below disable score submission:" align="Center" fontSize="2.5" />-->

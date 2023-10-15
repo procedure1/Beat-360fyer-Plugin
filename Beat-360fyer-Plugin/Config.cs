@@ -17,7 +17,7 @@ namespace Beat360fyerPlugin
         public virtual float LimitRotations90 { get; set; } = 90;//BW changed this to Degrees
         public virtual bool EnableWallGenerator { get; set; } = true;
         public virtual bool BoostLighting { get; set; } = true;
-        public virtual bool FattenLasers { get; set; } = true;
+        public virtual bool BigLasers { get; set; } = true;
 
         //BW Disable scoring on all below------------------------
         public virtual bool EnableNJS { get; set; } = false;
