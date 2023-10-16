@@ -213,10 +213,11 @@ namespace Beat360fyerPlugin
                 //Log.Info($"\t_value: {amount * 15.0f}");
                 //Plugin.Log.Info("},");
 
+                //Creates a boost lighting event. if ON, will set color left to boost color left new color etc.
                 if (Config.Instance.BoostLighting && !LevelUpdatePatcher.AlreadyUsingEnvColorBoost)
                 {
                     boostInteration++;
-                    if (boostInteration == 24 || boostInteration == 33)//5 & 13 is good but frequent
+                    if (boostInteration == 24 || boostInteration == 29)//33)//5 & 13 is good but frequent
                     {
                         data.InsertBeatmapEventDataInOrder(new ColorBoostBeatmapEventData(time, boostOn));
                         Plugin.Log.Info($"Boost Light! --- Time: {time} On: {boostOn}");
@@ -571,10 +572,11 @@ namespace Beat360fyerPlugin
                         if (generateWall && afterLastNote != null)
                         {
                             //Plugin.Log.Info($"Wall Gen Test");
-                            int width1Change = 0; // Counter for both 5th and 8th iterations
-                            int width1;
-                            int width2Change = 0; // Counter for both 5th and 8th iterations
-                            int width2;
+                            //int width1Change = 0; // Counter for both 5th and 8th iterations
+                            //int width1;
+                            //int width2Change = 0; // Counter for both 5th and 8th iterations
+                            //int width2;
+                            int width = 1;
 
                             if (!notesInBarBeat.Any((e) => e.lineIndex == 3))//line index 3 is far right
                             {
@@ -593,19 +595,22 @@ namespace Beat360fyerPlugin
 
                                     //int randomNumber = random.Next(1, 13);// Generate a random number between 1 and 12
 
-                                    if (i % 3 == 0 || i % 7 == 0)// Check for every 5th and 8th iteration
+                                    if (Config.Instance.BigWalls)
                                     {
-                                        //width1Change++;//counts the 5th and 8th iterations.
-                                        width1 = 12;// (width1Change % 3 == 0) ? 12 : 6;//every 3rd time we enter this block it sets width1 to -19; otherwise, it sets it to -11
-                                    }
-                                    else
-                                    {
-                                        width1 = 1; // Default value for all other iterations
+                                        if (i % 3 == 0 || i % 7 == 0)// Check for every 5th and 8th iteration
+                                        {
+                                            //width1Change++;//counts the 5th and 8th iterations.
+                                            width = 12;// (width1Change % 3 == 0) ? 12 : 6;//every 3rd time we enter this block it sets width1 to -19; otherwise, it sets it to -11
+                                        }
+                                        else
+                                        {
+                                            width = 1; // Default value for all other iterations
+                                        } 
                                     }
 
                                     int lineIndex = 3;// (width1 != 1) ? 4 : 3; //if width is one of the wide walls move the wall further away from user so not as obtrusive.
 
-                                    data.AddBeatmapObjectDataInOrder(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width1, 5));//note width is always 1 here. BW changed to make all walls 5 high since this version of plugin shortens height of walls which i don't like - default:  wallHeight)); wallHeight));
+                                    data.AddBeatmapObjectDataInOrder(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//note width is always 1 here. BW changed to make all walls 5 high since this version of plugin shortens height of walls which i don't like - default:  wallHeight)); wallHeight));
 
                                     //string temp; if (wallHeight == 1) { temp = "Top"; } else { temp = "Base"; };
                                     //Plugin.Log.Info($"Wall Generate1: Time: {wallTime}, Index: 3, Layer: {temp}, Dur: {wallDuration}, Width: {randomNumber}, Height: 5");
@@ -628,21 +633,24 @@ namespace Beat360fyerPlugin
 
                                     //int randomNumber; // Generate a random number between -10 and 1 (inclusive) excluding 0 since 0 is 0 thickness wall
                                     //do {randomNumber = random.Next(-10, 2);} while (randomNumber == 0);
- 
-                                    if (i % 4 == 0 || i % 6 == 0)// Check for every 5th and 8th iteration
+
+                                    if (Config.Instance.BigWalls)
                                     {
-                                        //width2Change++;//counts the 5th and 8th iterations.
-                                        width2 = -11;// (width2Change % 3 == 0) ? -11 : -5;//every 3rd time we enter this block it sets width1 to -19; otherwise, it sets it to -11
-                                    }
-                                    else
-                                    {
-                                        width2 = 1; // Default value for all other iterations
+                                        if (i % 4 == 0 || i % 6 == 0)// Check for every 5th and 8th iteration
+                                        {
+                                            //width2Change++;//counts the 5th and 8th iterations.
+                                            width = -11;// (width2Change % 3 == 0) ? -11 : -5;//every 3rd time we enter this block it sets width1 to -19; otherwise, it sets it to -11
+                                        }
+                                        else
+                                        {
+                                            width = 1; // Default value for all other iterations
+                                        } 
                                     }
 
                                     int lineIndex = 0;//= (width2 != 1) ? -1 : 0; //if width is one of the wide walls move the wall further away from user so not as obtrusive.
 
 
-                                    data.AddBeatmapObjectDataInOrder(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width2, 5));//BW wallHeight));
+                                    data.AddBeatmapObjectDataInOrder(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//BW wallHeight));
 
                                     //string temp; if (wallHeight == 1) { temp = "Top"; } else { temp = "Base"; };
                                     //Plugin.Log.Info($"Wall Generate2: Time: {wallTime}, Index: 0, Layer: {temp}, Dur: {wallDuration}, Width: {randomNumber}, Height: 5");

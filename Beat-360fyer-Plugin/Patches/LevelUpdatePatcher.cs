@@ -31,43 +31,101 @@ using System.Diagnostics.Eventing.Reader;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 using System.Security.Cryptography;
 using UnityEngine.PlayerLoop;
+using UnityEngine;
+using IPA.Utilities;
 
 namespace Beat360fyerPlugin.Patches
 {
-    #region Laser Fattener
+    #region Bright Lasers
+    //Taken directly from Technicolor mod - needs no other code except the BSML & Config. without this, rotating lasers are very dull
+    [HarmonyPatch("ColorWasSet")]
+    internal static class BrightLights
+    {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundLightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(LightWithIds.LightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(InstancedMaterialLightWithId), "ColorWasSet")]
+        private static void BoostNewColor(ref Color newColor)
+        {
+            BoostColor(ref newColor);
+        }
+        [HarmonyPrefix]
+        //[HarmonyPatch(typeof(DirectionalLightWithIds), "ColorWasSet")]
+        //[HarmonyPatch(typeof(EnableRendererWithLightId), "ColorWasSet")]
+        [HarmonyPatch(typeof(MaterialLightWithIds), "ColorWasSet")]
+        [HarmonyPatch(typeof(ParticleSystemLightWithIds), "ColorWasSet")]
+        [HarmonyPatch(typeof(SpriteLightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(UnityLightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(RectangleFakeGlowLightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(SongTimeSyncedVideoPlayer), "ColorWasSet")]
+        //[HarmonyPatch(typeof(SpawnRotationChevron), "ColorWasSet")]
+        //[HarmonyPatch(typeof(BeatLine), "ColorWasSet")]
+        [HarmonyPatch(typeof(TubeBloomPrePassLightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(PointLightWithIds), "ColorWasSet")]
+        [HarmonyPatch(typeof(ParticleSystemLightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(MaterialLightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(DirectionalLightWithLightGroupIds), "ColorWasSet")]
+        [HarmonyPatch(typeof(DirectionalLightWithId), "ColorWasSet")]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightIds), "ColorWasSet")]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightId), "ColorWasSet")]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientElementWithLightId), "ColorWasSet")]
+        private static void BoostColor(ref Color color)
+        {
+            if (Config.Instance.BrightLights)
+            {
+                float mult;
+                if (Config.Instance.BigLasers)
+                    mult = 1.5f;// TechnicolorConfig.Instance.ColorBoost;
+                else
+                    mult = 2f;//even brighter for small lasers
+                color.a *= mult;
+            }
+        }
+    }
+    #endregion
+    #region Big Lasers
     //Used plugin.cs zenject installer in order to access ParametricBoxController() method. it seems to control lasers. but some unknown method calls it. so instead i scaled the gameObject that uses ParametricBoxController()
     public class BigLasers
     {
         public void Big()
         {
-            // Get all ParametricBoxController objects in the scene
-            //Environment>TopLaser>BoxLight, Environment>DownLaser>BoxLight, Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight
-            ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
-            // Modify the ParametricBoxController properties of all BoxLights
-            int i = 1;
-            foreach (ParametricBoxController boxController in boxControllers)
-            {
-                if (Config.Instance.BigLasers)
+            if (Config.Instance.BigLasers)
+            { 
+                // Get all ParametricBoxController objects in the scene
+                //Environment>TopLaser>BoxLight, Environment>DownLaser>BoxLight, Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight
+                ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
+                // Modify the ParametricBoxController properties of all BoxLights
+                int i = 1;
+                foreach (ParametricBoxController boxController in boxControllers)
                 {
                     //scale gameOject parent
-                    Transform transform  = boxController.gameObject.transform.parent;
+                    Transform transform = boxController.gameObject.transform.parent;
                     Vector3 currentScale = transform.localScale;
 
                     if (i == 1)//so doesn't repear several times
                         Plugin.Log.Info($"BoxLights Scaled");
                     //Plugin.Log.Info($"Parent2x:{boxController.gameObject.transform.parent.parent.name}");
 
-                    if (transform.name == "Laser")//Rotating lasers
-                        transform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 8, currentScale.z * 8);
+                    if (transform.name == "Laser")
+                    {
+                        //Rotating lasers
+                        transform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 1, currentScale.z * 8);
+                        //transform.GetComponent<TubeBloomPrePassLight>().color = Color.green;//no effect
+                    }
                     else if (transform.name == "TopLaser")
                         transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);//y seems to be the length of the long top laser bars
-                    else if (i == 4 || i == 5 || i == 10 || i == 11 || i == 12)//These are all DownLasers but I think some misnamed since these work with the rest of the 6 TopLasers
-                            transform.localScale = new Vector3(currentScale.x * 7, currentScale.y * 7, currentScale.z * 7);
+                    else if (i == 4 || i == 5 || i == 10 || i == 11 || i == 12)//These are all DownLasers but I think some misnamed since these particular ones work with the rest of the 6 TopLasers
+                        transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);
                     else
-                            transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 1, currentScale.z * 5);//Don' scale these actual DownLasers to be longer
-                        //transform.localScale = new Vector3(currentScale.x * 6, currentScale.y * 1, currentScale.z * 6);
-                        //Plugin.Log.Info($"i = {i}");
+                        transform.localScale = new Vector3(currentScale.x * 2, currentScale.y * 1, currentScale.z * 2);//Don' scale these actual DownLasers to be longer since looks messy
+                                                                                                                        //transform.localScale = new Vector3(currentScale.x * 6, currentScale.y * 1, currentScale.z * 6);
+                                                                                                                        //Plugin.Log.Info($"i = {i}");
                     i++;
+
+                    //from Technicolor
+                    //float mult = 1 + TechnicolorConfig.Instance.ColorBoost;
+                    //color.a *= mult;
+
                     /*
                     //Limit scaling to only rotating lasers
                     if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
@@ -77,6 +135,7 @@ namespace Beat360fyerPlugin.Patches
                         transform.localScale = new Vector3(currentScale1.x * 8, currentScale1.y * 8, currentScale1.z * 8);
                     }
                     */
+
                     /*
                     if (boxController.gameObject.transform.parent.parent.name == "Environment")
                     {
@@ -89,6 +148,10 @@ namespace Beat360fyerPlugin.Patches
                     }
                     */
                     /*
+                    if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
+                    {
+                        FindScriptsInGameObjectAndChildren(transform.gameObject);
+                    }
                     void FindScriptsInGameObjectAndChildren(GameObject go)
                     {
                         // Get all the scripts attached to the current GameObject
@@ -101,32 +164,41 @@ namespace Beat360fyerPlugin.Patches
                         }
 
                         // Recursively search through the children of the current GameObject
-                        for (int i = 0; i < go.transform.childCount; i++)
+                        for (int g = 0; g < go.transform.childCount; g++)
                         {
-                            Transform child = go.transform.GetChild(i);
+                            Transform child = go.transform.GetChild(g);
                             FindScriptsInGameObjectAndChildren(child.gameObject);
                         }
 
                         //outputs this:
+                        //Script found on Laser: TubeBloomPrePassLight
+                        //Script found on Laser: TubeBloomPrePassLightWithId
                         //Script found on TopLaser: TubeBloomPrePassLight
                         //Script found on TopLaser: TubeBloomPrePassLightWithId
                         //Script found on BakedBloom: Parametric3SliceSpriteController
                         //Script found on BoxLight: ParametricBoxController
-                    }
-                    */
+
+
+
+                    //private static readonly FieldAccessor<LightSwitchEventEffect, ColorSO>.Accessor _lightColor0Accessor = FieldAccessor<LightSwitchEventEffect, ColorSO>.GetAccessor("_lightColor0");
                     /*
+                    //has no color so error on output
+                    //Lights: Material 'EnvLight (Instance)' with Shader 'Custom/TransparentNeonLight'
                     Renderer renderer = boxController.gameObject.GetComponent<Renderer>(); // Get the renderer component
 
                     if (renderer != null)
                     {
                         Material material = renderer.material; // Get the material
                         Color currentColor = material.color;
-                        Plugin.Log.Info($"{i} ParametricBoxController\t --- material color: {currentColor} ");
+                        Texture tex = material.mainTexture;
+                        Plugin.Log.Info($"{i} ParametricBoxController\t --- {transform.name}    material color: {currentColor} ");
 
                         //float newAlpha = 1f; // You can set this to the desired alpha value (0.5 for 50% transparency)
                         //material.color = new Color(currentColor.r, currentColor.g, currentColor.b, newAlpha);
                     }
                     */
+
+
                     //have no effect!!!!
                     //boxController.alphaMultiplier = 0.5f;
                     //boxController.width    = 0.5f;//default is .05
@@ -159,6 +231,7 @@ namespace Beat360fyerPlugin.Patches
             }
         }
         */
+        /*
         //checks if is a Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight. if don't use this will select the high top lights that look like florescent bars.
         public bool IsRotatingLaser(ParametricBoxController boxController) // Check if the parent hierarchy matches the desired structure - since ParametricBoxController appears on other unwanted lasers
         {
@@ -166,6 +239,7 @@ namespace Beat360fyerPlugin.Patches
                     boxController.gameObject.transform.parent.name == "Laser" &&
                    (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL"));
         }
+        */
     }
     #endregion
     #region 6 Postfix - SliderController (USUSED AT THE MOMENT)  
@@ -203,7 +277,7 @@ namespace Beat360fyerPlugin.Patches
     }
     */
     #endregion
-    #region 5 Prefix - BeatmapObjectSpawnMovementData
+    #region 5 Prefix - BeatmapObjectSpawnMovementData NJS NJO
     //BW 5th item that runs. JDFixer uses this method so that the user can update the MaxJNS over and over. i tried it in LevelUpdatePatcher. it works but can only be updated before play song one time https://github.com/zeph-yr/JDFixer/blob/b51c659def0e9cefb9e0893b19647bb9d97ee9ae/HarmonyPatches.cs
     //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
 
@@ -352,7 +426,7 @@ namespace Beat360fyerPlugin.Patches
                     Generator360 gen = new Generator360();
                     gen.WallGenerator = Config.Instance.EnableWallGenerator;
                     gen.OnlyOneSaber = Config.Instance.OnlyOneSaber;
-                    gen.RotationAngleMultiplier = Config.Instance.RotationAngleMultiplier;//decided to remove this.
+                    //gen.RotationAngleMultiplier = Config.Instance.RotationAngleMultiplier;//decided to remove this.
                     gen.RotationSpeedMultiplier = (float)Math.Round(Config.Instance.RotationSpeedMultiplier,1);
                     gen.AllowCrouchWalls = Config.Instance.AllowCrouchWalls;
                     gen.AllowLeanWalls = Config.Instance.AllowLeanWalls;
@@ -1310,6 +1384,6 @@ namespace Beat360fyerPlugin.Patches
                 }
             }*/
         }
-        #endregion
     }
+    #endregion
 }

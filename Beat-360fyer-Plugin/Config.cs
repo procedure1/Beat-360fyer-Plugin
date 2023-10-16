@@ -16,8 +16,10 @@ namespace Beat360fyerPlugin
         public virtual float LimitRotations360 { get; set; } = 360;//BW changed this to Degrees. Previously Default 28 where 24 is 360 degree circle. designed to avoid riping a cable
         public virtual float LimitRotations90 { get; set; } = 90;//BW changed this to Degrees
         public virtual bool EnableWallGenerator { get; set; } = true;
-        public virtual bool BoostLighting { get; set; } = true;
+        public virtual bool BigWalls { get; set; } = true;
         public virtual bool BigLasers { get; set; } = true;
+        public virtual bool BrightLights { get; set; } = true;
+        public virtual bool BoostLighting { get; set; } = true;
 
         //BW Disable scoring on all below------------------------
         public virtual bool EnableNJS { get; set; } = false;
@@ -31,7 +33,7 @@ namespace Beat360fyerPlugin
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
         
         //BW Not needed since feels the same as the speed multiplier
-        public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
+        //public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
 
         public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
         //-------------------------------------------------------
