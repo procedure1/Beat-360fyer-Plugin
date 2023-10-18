@@ -39,46 +39,56 @@ namespace Beat360fyerPlugin.Patches
     #region Bright Lasers
     //Taken directly from Technicolor mod - needs no other code except the BSML & Config. without this, rotating lasers are very dull
     [HarmonyPatch("ColorWasSet")]
+    [HarmonyPriority(Priority.Low)]//was asked to do this for other mods
     internal static class BrightLights
     {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(BloomPrePassBackgroundLightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(LightWithIds.LightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(InstancedMaterialLightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(LightWithIds.LightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(InstancedMaterialLightWithId), "ColorWasSet")]
         private static void BoostNewColor(ref Color newColor)
         {
             BoostColor(ref newColor);
         }
         [HarmonyPrefix]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightIds), "ColorWasSet")]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightId), "ColorWasSet")]
+        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientElementWithLightId), "ColorWasSet")]
+        [HarmonyPatch(typeof(TubeBloomPrePassLightWithId), "ColorWasSet")]
+        /*test with these off already - only these
         //[HarmonyPatch(typeof(DirectionalLightWithIds), "ColorWasSet")]
         //[HarmonyPatch(typeof(EnableRendererWithLightId), "ColorWasSet")]
-        [HarmonyPatch(typeof(MaterialLightWithIds), "ColorWasSet")]
-        [HarmonyPatch(typeof(ParticleSystemLightWithIds), "ColorWasSet")]
-        [HarmonyPatch(typeof(SpriteLightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(UnityLightWithId), "ColorWasSet")]
         //[HarmonyPatch(typeof(RectangleFakeGlowLightWithId), "ColorWasSet")]
         //[HarmonyPatch(typeof(SongTimeSyncedVideoPlayer), "ColorWasSet")]
         //[HarmonyPatch(typeof(SpawnRotationChevron), "ColorWasSet")]
         //[HarmonyPatch(typeof(BeatLine), "ColorWasSet")]
-        [HarmonyPatch(typeof(TubeBloomPrePassLightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(PointLightWithIds), "ColorWasSet")]
-        [HarmonyPatch(typeof(ParticleSystemLightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(MaterialLightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(DirectionalLightWithLightGroupIds), "ColorWasSet")]
-        [HarmonyPatch(typeof(DirectionalLightWithId), "ColorWasSet")]
-        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightIds), "ColorWasSet")]
-        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightId), "ColorWasSet")]
-        [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientElementWithLightId), "ColorWasSet")]
+        */
+
+        //[HarmonyPatch(typeof(MaterialLightWithIds), "ColorWasSet")]
+        //[HarmonyPatch(typeof(ParticleSystemLightWithIds), "ColorWasSet")]
+        //[HarmonyPatch(typeof(SpriteLightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(UnityLightWithId), "ColorWasSet")]
+
+        //[HarmonyPatch(typeof(PointLightWithIds), "ColorWasSet")]
+        //[HarmonyPatch(typeof(ParticleSystemLightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(MaterialLightWithId), "ColorWasSet")]
+        //[HarmonyPatch(typeof(DirectionalLightWithLightGroupIds), "ColorWasSet")]
+        //[HarmonyPatch(typeof(DirectionalLightWithId), "ColorWasSet")]
+
         private static void BoostColor(ref Color color)
         {
-            if (Config.Instance.BrightLights)
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree" || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
             {
-                float mult;
-                if (Config.Instance.BigLasers)
-                    mult = 1.5f;// TechnicolorConfig.Instance.ColorBoost;
-                else
-                    mult = 2f;//even brighter for small lasers
-                color.a *= mult;
+                if (Config.Instance.BrightLights)
+                {
+                    float mult;
+                    if (Config.Instance.BigLasers)
+                        mult = 2f;// 1 + TechnicolorConfig.Instance.ColorBoost;//slider goes up from 0-1000 i think; private readonly List<object> _colorboostChoices = new() { -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.4f, -0.3f, -0.2f, -0.1f, 0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f, 1.2f, 1.4f, 1.6f, 1.8f, 2f, 2.5f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 20f, 100f };
+
+                    else
+                        mult = 2f;//even brighter for small lasers
+                    color.a *= mult;
+                }
             }
         }
     }
@@ -89,127 +99,130 @@ namespace Beat360fyerPlugin.Patches
     {
         public void Big()
         {
-            if (Config.Instance.BigLasers)
-            { 
-                // Get all ParametricBoxController objects in the scene
-                //Environment>TopLaser>BoxLight, Environment>DownLaser>BoxLight, Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight
-                ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
-                // Modify the ParametricBoxController properties of all BoxLights
-                int i = 1;
-                foreach (ParametricBoxController boxController in boxControllers)
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree")//not working for non-generated maps anyway || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
+            {
+                if (Config.Instance.BigLasers)
                 {
-                    //scale gameOject parent
-                    Transform transform = boxController.gameObject.transform.parent;
-                    Vector3 currentScale = transform.localScale;
-
-                    if (i == 1)//so doesn't repear several times
-                        Plugin.Log.Info($"BoxLights Scaled");
-                    //Plugin.Log.Info($"Parent2x:{boxController.gameObject.transform.parent.parent.name}");
-
-                    if (transform.name == "Laser")
+                    // Get all ParametricBoxController objects in the scene
+                    //Environment>TopLaser>BoxLight, Environment>DownLaser>BoxLight, Environment/RotatingLaser/Pair/BaseR or BaseL/Laser/BoxLight
+                    ParametricBoxController[] boxControllers = GameObject.FindObjectsOfType<ParametricBoxController>();
+                    // Modify the ParametricBoxController properties of all BoxLights
+                    int i = 1;
+                    foreach (ParametricBoxController boxController in boxControllers)
                     {
-                        //Rotating lasers
-                        transform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 1, currentScale.z * 8);
-                        //transform.GetComponent<TubeBloomPrePassLight>().color = Color.green;//no effect
-                    }
-                    else if (transform.name == "TopLaser")
-                        transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);//y seems to be the length of the long top laser bars
-                    else if (i == 4 || i == 5 || i == 10 || i == 11 || i == 12)//These are all DownLasers but I think some misnamed since these particular ones work with the rest of the 6 TopLasers
-                        transform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);
-                    else
-                        transform.localScale = new Vector3(currentScale.x * 2, currentScale.y * 1, currentScale.z * 2);//Don' scale these actual DownLasers to be longer since looks messy
-                                                                                                                        //transform.localScale = new Vector3(currentScale.x * 6, currentScale.y * 1, currentScale.z * 6);
-                                                                                                                        //Plugin.Log.Info($"i = {i}");
-                    i++;
+                        //scale gameOject parent
+                        Transform parentTransform = boxController.gameObject.transform.parent;
+                        Vector3 currentScale = parentTransform.localScale;
 
-                    //from Technicolor
-                    //float mult = 1 + TechnicolorConfig.Instance.ColorBoost;
-                    //color.a *= mult;
+                        if (i == 1)//so doesn't repear several times
+                            Plugin.Log.Info($"BoxLights Scaled");
+                        
 
-                    /*
-                    //Limit scaling to only rotating lasers
-                    if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
-                    {
-                        Transform transform1 = boxController.gameObject.transform.parent;
-                        Vector3 currentScale1 = transform.localScale;
-                        transform.localScale = new Vector3(currentScale1.x * 8, currentScale1.y * 8, currentScale1.z * 8);
-                    }
-                    */
-
-                    /*
-                    if (boxController.gameObject.transform.parent.parent.name == "Environment")
-                    {
-                        FindScriptsInGameObjectAndChildren(transform.gameObject);
-                        //Plugin.Log.Info($"Parent2x:{boxController.gameObject.transform.parent.parent.name}");
-                        //Plugin.Log.Info($"Parent3x:{boxController.gameObject.transform.parent.parent.parent.name}");
-                        //Plugin.Log.Info($"Parent4x:{boxController.gameObject.transform.parent.parent.parent.parent.name}");
-                        //Plugin.Log.Info($"Parent5x:{boxController.gameObject.transform.parent.parent.parent.parent.parent.name}");
-                        //Plugin.Log.Info($"Parent6x:{boxController.gameObject.transform.parent.parent.parent.parent.parent.parent.name}");
-                    }
-                    */
-                    /*
-                    if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
-                    {
-                        FindScriptsInGameObjectAndChildren(transform.gameObject);
-                    }
-                    void FindScriptsInGameObjectAndChildren(GameObject go)
-                    {
-                        // Get all the scripts attached to the current GameObject
-                        MonoBehaviour[] scripts = go.GetComponents<MonoBehaviour>();
-
-                        foreach (MonoBehaviour script in scripts)
+                        if (parentTransform.name == "Laser")//Rotating lasers
                         {
-                            // Print the name of the script
-                            Debug.Log("Script found on " + go.name + ": " + script.GetType().Name);
+                            parentTransform.localScale = new Vector3(currentScale.x * 8, currentScale.y * 1, currentScale.z * 8);
+                            //parentTransform.position = new Vector3(originalPosition.x, originalPosition.y -1f, currentScale.z);//any value change here will cause the lights to move completely but in a cool way
+                            //transform.GetComponent<TubeBloomPrePassLight>().color = Color.green;//no effect
                         }
+                        else if (parentTransform.name == "TopLaser")
+                            parentTransform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);//y seems to be the length of the long top laser bars
+                        else if (i == 4 || i == 5 || i == 10 || i == 11 || i == 12)//These are all DownLasers but I think some misnamed since these particular ones work with the rest of the 6 TopLasers
+                            parentTransform.localScale = new Vector3(currentScale.x * 5, currentScale.y * 5, currentScale.z * 5);
+                        else
+                            parentTransform.localScale = new Vector3(currentScale.x * 2, currentScale.y * 1, currentScale.z * 2);//Don' scale these actual DownLasers to be longer since looks messy
+                                                                                                                           //transform.localScale = new Vector3(currentScale.x * 6, currentScale.y * 1, currentScale.z * 6);
+                                                                                                                           //Plugin.Log.Info($"i = {i}");
+                        i++;
 
-                        // Recursively search through the children of the current GameObject
-                        for (int g = 0; g < go.transform.childCount; g++)
-                        {
-                            Transform child = go.transform.GetChild(g);
-                            FindScriptsInGameObjectAndChildren(child.gameObject);
-                        }
+                        //from Technicolor
+                        //float mult = 1 + TechnicolorConfig.Instance.ColorBoost;
+                        //color.a *= mult;
 
-                        //outputs this:
-                        //Script found on Laser: TubeBloomPrePassLight
-                        //Script found on Laser: TubeBloomPrePassLightWithId
-                        //Script found on TopLaser: TubeBloomPrePassLight
-                        //Script found on TopLaser: TubeBloomPrePassLightWithId
-                        //Script found on BakedBloom: Parametric3SliceSpriteController
-                        //Script found on BoxLight: ParametricBoxController
+                            /*
+                            //Limit scaling to only rotating lasers
+                            if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
+                            {
+                                Transform transform1 = boxController.gameObject.transform.parent;
+                                Vector3 currentScale1 = transform.localScale;
+                                transform.localScale = new Vector3(currentScale1.x * 8, currentScale1.y * 8, currentScale1.z * 8);
+                            }
+                            */
+
+                            /*
+                            if (boxController.gameObject.transform.parent.parent.name == "Environment")
+                            {
+                                FindScriptsInGameObjectAndChildren(transform.gameObject);
+                                //Plugin.Log.Info($"Parent2x:{boxController.gameObject.transform.parent.parent.name}");
+                                //Plugin.Log.Info($"Parent3x:{boxController.gameObject.transform.parent.parent.parent.name}");
+                                //Plugin.Log.Info($"Parent4x:{boxController.gameObject.transform.parent.parent.parent.parent.name}");
+                                //Plugin.Log.Info($"Parent5x:{boxController.gameObject.transform.parent.parent.parent.parent.parent.name}");
+                                //Plugin.Log.Info($"Parent6x:{boxController.gameObject.transform.parent.parent.parent.parent.parent.parent.name}");
+                            }
+                            */
+                            /*
+                            if (boxController.gameObject.transform.parent.parent.name == "BaseR" || boxController.gameObject.transform.parent.parent.name == "BaseL")
+                            {
+                                FindScriptsInGameObjectAndChildren(transform.gameObject);
+                            }
+                            void FindScriptsInGameObjectAndChildren(GameObject go)
+                            {
+                                // Get all the scripts attached to the current GameObject
+                                MonoBehaviour[] scripts = go.GetComponents<MonoBehaviour>();
+
+                                foreach (MonoBehaviour script in scripts)
+                                {
+                                    // Print the name of the script
+                                    Debug.Log("Script found on " + go.name + ": " + script.GetType().Name);
+                                }
+
+                                // Recursively search through the children of the current GameObject
+                                for (int g = 0; g < go.transform.childCount; g++)
+                                {
+                                    Transform child = go.transform.GetChild(g);
+                                    FindScriptsInGameObjectAndChildren(child.gameObject);
+                                }
+
+                                //outputs this:
+                                //Script found on Laser: TubeBloomPrePassLight
+                                //Script found on Laser: TubeBloomPrePassLightWithId
+                                //Script found on TopLaser: TubeBloomPrePassLight
+                                //Script found on TopLaser: TubeBloomPrePassLightWithId
+                                //Script found on BakedBloom: Parametric3SliceSpriteController
+                                //Script found on BoxLight: ParametricBoxController
 
 
 
-                    //private static readonly FieldAccessor<LightSwitchEventEffect, ColorSO>.Accessor _lightColor0Accessor = FieldAccessor<LightSwitchEventEffect, ColorSO>.GetAccessor("_lightColor0");
-                    /*
-                    //has no color so error on output
-                    //Lights: Material 'EnvLight (Instance)' with Shader 'Custom/TransparentNeonLight'
-                    Renderer renderer = boxController.gameObject.GetComponent<Renderer>(); // Get the renderer component
+                            //private static readonly FieldAccessor<LightSwitchEventEffect, ColorSO>.Accessor _lightColor0Accessor = FieldAccessor<LightSwitchEventEffect, ColorSO>.GetAccessor("_lightColor0");
+                            /*
+                            //has no color so error on output
+                            //Lights: Material 'EnvLight (Instance)' with Shader 'Custom/TransparentNeonLight'
+                            Renderer renderer = boxController.gameObject.GetComponent<Renderer>(); // Get the renderer component
 
-                    if (renderer != null)
-                    {
-                        Material material = renderer.material; // Get the material
-                        Color currentColor = material.color;
-                        Texture tex = material.mainTexture;
-                        Plugin.Log.Info($"{i} ParametricBoxController\t --- {transform.name}    material color: {currentColor} ");
+                            if (renderer != null)
+                            {
+                                Material material = renderer.material; // Get the material
+                                Color currentColor = material.color;
+                                Texture tex = material.mainTexture;
+                                Plugin.Log.Info($"{i} ParametricBoxController\t --- {transform.name}    material color: {currentColor} ");
 
-                        //float newAlpha = 1f; // You can set this to the desired alpha value (0.5 for 50% transparency)
-                        //material.color = new Color(currentColor.r, currentColor.g, currentColor.b, newAlpha);
+                                //float newAlpha = 1f; // You can set this to the desired alpha value (0.5 for 50% transparency)
+                                //material.color = new Color(currentColor.r, currentColor.g, currentColor.b, newAlpha);
+                            }
+                            */
+
+
+                            //have no effect!!!!
+                            //boxController.alphaMultiplier = 0.5f;
+                            //boxController.width    = 0.5f;//default is .05
+                            //boxController.length   = 0.5f;//default is .05
+                            //boxController.height = 500f//default is 500
+                            //boxController.minAlpha = 0;
+                            //boxController.color = new Color(0, 1, 0, 0);
+
+                            //Plugin.Log.Info($"{i} ParametricBoxController\t --- alphaMultiplier: {boxController.alphaMultiplier} width: {boxController.width} length: {boxController.length} height: {boxController.height} minAlpha: {boxController.minAlpha}");
+                            //i++;
                     }
-                    */
-
-
-                    //have no effect!!!!
-                    //boxController.alphaMultiplier = 0.5f;
-                    //boxController.width    = 0.5f;//default is .05
-                    //boxController.length   = 0.5f;//default is .05
-                    //boxController.height = 500f//default is 500
-                    //boxController.minAlpha = 0;
-                    //boxController.color = new Color(0, 1, 0, 0);
-
-                    //Plugin.Log.Info($"{i} ParametricBoxController\t --- alphaMultiplier: {boxController.alphaMultiplier} width: {boxController.width} length: {boxController.length} height: {boxController.height} minAlpha: {boxController.minAlpha}");
-                    //i++;
-                }
+                } 
             }
         }
 
@@ -246,7 +259,7 @@ namespace Beat360fyerPlugin.Patches
     /*
     //BW this runs everytime a slider is encountered (Standard, 360, Gen360, etc)
     [HarmonyPatch(typeof(SliderController))]
-    [HarmonyPatch("Start")] // Specify the method you want to patch
+    [HarmonyPatch("Start")]
     public class ArcFix
     {
         static void Postfix(SliderController __instance) // Pass the instance of SliderController
@@ -254,22 +267,6 @@ namespace Beat360fyerPlugin.Patches
             if (__instance != null)
             {
                 Plugin.Log.Info($"BW SliderController - sliderData.tailLineIndex: {__instance.sliderData.tailLineIndex}");
-                // Store the original position of the GameObject
-                //Vector3 originalPosition = __instance.transform.position;
-                //Plugin.Log.Info($"BW SliderController - original position: {originalPosition}");
-
-                // Define the anchor point around which you want to rotate
-                //Vector3 anchorPoint = new Vector3(0, 0, 0);
-
-                // Translate the GameObject to the anchor point
-                //__instance.transform.position = anchorPoint;
-
-                // Rotate the GameObject by 15 degrees around its up axis
-                //__instance.transform.Rotate(Vector3.up, -15.0f, Space.Self);
-
-                // Translate the GameObject back to its original position
-                //__instance.transform.position = originalPosition;
-
                 //rotates from the head and can see it rotated but the middle of the arc disappears and then the tail reappears just before tail note (on longer arcs)
                 __instance.transform.Rotate(Vector3.up, -5.0f);
             }
@@ -289,7 +286,7 @@ namespace Beat360fyerPlugin.Patches
         public static float OriginalNJO;
         internal static void Prefix(ref float startNoteJumpMovementSpeed, float startBpm, NoteJumpValueType noteJumpValueType, ref float noteJumpValue)//, IJumpOffsetYProvider jumpOffsetYProvider, Vector3 rightVec, Vector3 forwardVec)
         {
-            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree")//only do this for gen 360 or else it will do this for all maps
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree")//only do this for gen 360 or else it will do this for all maps
             {
                 BigLasers myOtherInstance = new BigLasers();
                 myOtherInstance.Big();

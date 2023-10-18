@@ -25,7 +25,7 @@ using System.Threading;
 
 namespace Beat360fyerPlugin
 {
-    public class Generator360
+    public class Generator360//actually generates 90 maps too
     {
         /// <summary>
         /// The preferred bar duration in seconds. The generator will loop the song in bars. 
@@ -76,7 +76,7 @@ namespace Beat360fyerPlugin
         /// Use to increase or decrease general rotation amount. This doesn't alter the number of rotations - .5 will reduce rotations size by 50% and 2 will double the rotation size.
         /// Set to default for rotations in increments of 15 degrees. 2 would make increments of 30 degrees etc.
         /// </summary>
-        public float RotationAngleMultiplier { get; set; } = 1f;//BW added this to lessen/increase rotation angle amount. 1 means 15 decre
+        //public float RotationAngleMultiplier { get; set; } = 1f;//BW added this to lessen/increase rotation angle amount. 1 means 15 decre
         /// <summary>
         /// Allow crouch obstacles
         /// </summary>
@@ -220,7 +220,7 @@ namespace Beat360fyerPlugin
                     if (boostInteration == 24 || boostInteration == 29)//33)//5 & 13 is good but frequent
                     {
                         data.InsertBeatmapEventDataInOrder(new ColorBoostBeatmapEventData(time, boostOn));
-                        Plugin.Log.Info($"Boost Light! --- Time: {time} On: {boostOn}");
+                        //Plugin.Log.Info($"Boost Light! --- Time: {time} On: {boostOn}");
                         boostOn = !boostOn; // Toggle the boolean
                     }
 
@@ -254,7 +254,7 @@ namespace Beat360fyerPlugin
 
             //Plugin.Log.Info($"beatDuration: {beatDuration} barLength: {barLength}");
             Plugin.Log.Info($"PreferredBarDuration: {PreferredBarDuration} * RotationSpeedMultiplier: {RotationSpeedMultiplier} = {PreferredBarDuration/RotationSpeedMultiplier}");
-            Plugin.Log.Info($"RotationAngleMultiplier: {RotationAngleMultiplier}");
+            //Plugin.Log.Info($"RotationAngleMultiplier: {RotationAngleMultiplier}");
 
             //All in seconds
             List<NoteData> notes = dataItems.OfType<NoteData>().ToList();//List<NoteData> notes = data.GetBeatmapDataItems<NoteData>(0).ToList();
@@ -670,7 +670,7 @@ namespace Beat360fyerPlugin
 #if DEBUG
                 Plugin.Log.Info($"[{currentBarStart + firstBeatmapNoteTime}({(currentBarStart + firstBeatmapNoteTime) / beatDuration}) -> {currentBarEnd + firstBeatmapNoteTime}({(currentBarEnd + firstBeatmapNoteTime) / beatDuration})] count={notesInBar.Count} segments={builder} barDiviver={barDivider}");
 #endif
-            }//End for loop over all notes
+            }//End for loop over all notes---------------------------------------------------------------
 
             #region Wall Removal
             //BW noodle extensions causes BS crash in the section somewhere below. Could drill down and figure out why. Haven't figured out how to test for noodle extensions but noodle extension have custom walls that crash Beat Saber so BW added test for custom walls.
@@ -678,17 +678,30 @@ namespace Beat360fyerPlugin
             {
                 //Cut walls, walls will be cut when a rotation event is emitted
                 Queue<ObstacleData> obstacles = new Queue<ObstacleData>(dataItems.OfType<ObstacleData>());
-
+            
                 while (obstacles.Count > 0)
                 {
                     //Plugin.Log.Info($"Remove Wall -- obstacles count: {obstacles.Count}");
 
                     ObstacleData ob = obstacles.Dequeue();
-                    foreach ((float cutTime, int cutAmount) in wallCutMoments)
+
+                    int totalRotations = 0;//Total number of rotations during the current obstacle - resets to 0 with each ob
+
+                    //Plugin.Log.Info($"BW Wall at time: {ob.time} TotalRotations: {totalRotations}");
+
+                    foreach ((float cutTime, int cutAmount) in wallCutMoments)// Iterate over the list of rotation moments for the current obstacle
                     {
                         if (ob.duration <= 0f)
                             break;
+                        if (cutTime > ob.time + ob.duration)//skip to next ob cutTimes are after the wall has passed.
+                            break;
+                        if (cutTime <= ob.time)//skip to next cutTime if happens before wall
+                            continue;
 
+                        totalRotations += cutAmount;// Add the rotation amount to the total rotations for each ob. resets to 0 for each new obs          
+                        //Plugin.Log.Info($"totalRotations during wall {ob.time} are: {totalRotations}");
+
+                        //Fix!!!!
                         // Do not cut a margin around the wall if the wall is at a custom position
                         bool isCustomWall = false;
                         //if (ob.customData != null)
@@ -701,20 +714,21 @@ namespace Beat360fyerPlugin
 
                         if (!isCustomWall && ((ob.lineIndex == 1 || ob.lineIndex == 2) && ob.width == 1))//BW lean walls that are only width 1 and hard to see coming in 360)
                         {
-
-                            //Plugin.Log.Info($"Remove Wall 1: Time: {ob.time} cutTime: {cutTime}");                                
-
+                            //Plugin.Log.Info($"Remove Left Lean Wall: Time: {ob.time} cutTime: {cutTime}");                                
                             dataItems.Remove(ob);
+                            break;
                         }
-                        else if (!isCustomWall && !AllowLeanWalls && ((ob.lineIndex == 0 && ob.width == 2) || (ob.lineIndex == 2 && ob.width > 1)))//BW lean walls
+                        else if (!isCustomWall && !AllowLeanWalls && ((ob.lineIndex == 0 && ob.width == 2) || (ob.lineIndex == 2 && ob.width > 1)))//BW lean walls width 2
                         {
-                            //Plugin.Log.Info($"Remove Wall 2: Time: {ob.time } cutTime: {cutTime}");
+                            //Plugin.Log.Info($"Remove Right Lean Wall: Time: {ob.time } cutTime: {cutTime}");
                             dataItems.Remove(ob);
+                            break;
                         }
                         else if (!isCustomWall && !AllowCrouchWalls && (ob.lineIndex == 0 && ob.width > 2))//BW crouch walls
                         {
-                            //Plugin.Log.Info($"Remove Wall 3: Time: {ob.time} cutTime: {cutTime}");
+                            //Plugin.Log.Info($"Remove Crouch Wall: Time: {ob.time} cutTime: {cutTime}");
                             dataItems.Remove(ob);
+                            break;
                         }
                         // If moved in direction of wall
                         else if (isCustomWall || (ob.lineIndex <= 1 && cutAmount < 0) || (ob.lineIndex >= 2 && cutAmount > 0))
@@ -739,13 +753,17 @@ namespace Beat360fyerPlugin
                                     ObstacleData secondPart = new ObstacleData(secondPartTime, ob.lineIndex, ob.lineLayer, secondPartDuration, ob.width, ob.height);
                                     data.AddBeatmapObjectDataInOrder(secondPart);//BW Discord help said to change AddBeatmapObjectData to AddBeatmapObjectDataInOrder which allowed content to be stored to data.
                                     obstacles.Enqueue(secondPart);
+                                    //Plugin.Log.Info($"Wall SPLIT: 1st Half starts: {ob.time} duration: {firstPartDuration} 2nd Half starts: Time: {secondPartTime}, Index: {ob.lineIndex}, Layer: {ob.lineLayer}, Dur: {secondPartDuration}, Width: {ob.width}, Height: {ob.height}");
 
-                                    //Plugin.Log.Info($"Wall Remove Gen2ndPart: Time: {secondPartTime}, Index: {ob.lineIndex}, Layer: {ob.lineLayer}, Dur: {secondPartDuration}, Width: {ob.width}, Height: {ob.height}");
+                                    break;
                                 }
                                 else if (firstPartDuration >= MinWallDuration)
                                 {
                                     // Just update the existing obstacle, the second piece of the cut wall is too small
                                     ob.UpdateDuration(firstPartDuration);
+                                    //Plugin.Log.Info($"Wall shortened starts: {ob.time} duration: {firstPartDuration}");
+
+                                    break;
                                 }
                                 else if (secondPartDuration >= MinWallDuration)
                                 {
@@ -756,21 +774,39 @@ namespace Beat360fyerPlugin
                                         ob.UpdateTime(secondPartTime);
                                         ob.UpdateDuration(secondPartDuration);
                                         obstacles.Enqueue(ob);
+
+                                        //Plugin.Log.Info($"Wall shortened 2nd half starts: {secondPartTime} duration: {secondPartDuration}");
+                                        break;
                                     }
                                 }
                                 else
                                 {
                                     // When this wall is cut, both pieces are too small, remove it
                                     dataItems.Remove(ob);
+                                    //Plugin.Log.Info($"Remove Wall since 1st & 2nd half too small: start: {ob.time} cutTime: {cutTime}");
+                                    break;
 
-                                    //Plugin.Log.Info($"Remove Wall 4: Time: {ob.time} cutTime: {cutTime}");
+                                    
                                 }
-
+                                
                                 //Plugin.Log.Info($"Split wall at {cutTime}: {originalTime}({originalDuration}) -> {firstPartTime}({firstPartDuration}) <|> {secondPartTime}({secondPartDuration}) cutMultiplier={cutMultiplier}");
 
                             }
                         }
-
+                        //-------------BW added --- remove any walls whose duration is long enough to get enough rotations that the wall becomes visible again as it exits through the user space (is visible traveling backwards)-------------
+                        // Check if the total rotations is more than 60 degrees (4*15) which means it is no longer visible and therefore probably not needed and possibly will be seen leaving the user space
+                        {
+                            if (totalRotations > 5 || totalRotations < -5)//5*15 is 75 degress which means the wall is way out of viewing range at this cutTime. I testing higher numbers but this seems to work.
+                            {
+                                //Plugin.Log.Info($"---totalRotations during wall starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
+                                ob.UpdateDuration((cutTime-ob.time)/2.3f);//cutTime - ob.Time is the duration of the wall at the moment the wall was has 5+ total rotations. but the wall duration includes 1/2 in front of the user and half behind the user. so divide by 2 to avoid seeing the back half. chose 2.3 as a little bit more to shorten wall more since still seeing walls moving away for a moment traveling away from the user.
+                                //Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
+                                break;
+                            }
+                            //obstacleCutAlready = true;
+                        }
+                        //---------------------------------------------------------------------------------------------
+                        //Plugin.Log.Info($"No Changes so Far!!! loops again - current cutTime: {cutTime} while current wall ends at {ob.time+ob.duration}");
                     }
 
                 }
