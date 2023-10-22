@@ -674,144 +674,149 @@ namespace Beat360fyerPlugin
 
             #region Wall Removal
             //BW noodle extensions causes BS crash in the section somewhere below. Could drill down and figure out why. Haven't figured out how to test for noodle extensions but noodle extension have custom walls that crash Beat Saber so BW added test for custom walls.
-            if (!containsCustomWalls)
             {
-                //Cut walls, walls will be cut when a rotation event is emitted
                 Queue<ObstacleData> obstacles = new Queue<ObstacleData>(dataItems.OfType<ObstacleData>());
-            
+
                 while (obstacles.Count > 0)
                 {
-                    //Plugin.Log.Info($"Remove Wall -- obstacles count: {obstacles.Count}");
-
                     ObstacleData ob = obstacles.Dequeue();
 
-                    int totalRotations = 0;//Total number of rotations during the current obstacle - resets to 0 with each ob
+                    int totalRotations = 0;
 
-                    //Plugin.Log.Info($"BW Wall at time: {ob.time} TotalRotations: {totalRotations}");
-
-                    foreach ((float cutTime, int cutAmount) in wallCutMoments)// Iterate over the list of rotation moments for the current obstacle
+                    foreach ((float cutTime, int cutAmount) in wallCutMoments)// Iterate over the list of rotation moments for the current obstacle. Cut walls, walls will be cut when a rotation event is emitted
                     {
                         if (ob.duration <= 0f)
                             break;
-                        if (cutTime > ob.time + ob.duration)//skip to next ob cutTimes are after the wall has passed.
-                            break;
-                        if (cutTime <= ob.time)//skip to next cutTime if happens before wall
-                            continue;
 
-                        totalRotations += cutAmount;// Add the rotation amount to the total rotations for each ob. resets to 0 for each new obs          
-                        //Plugin.Log.Info($"totalRotations during wall {ob.time} are: {totalRotations}");
-
-                        //Fix!!!!
-                        // Do not cut a margin around the wall if the wall is at a custom position
+                        //FIX!!!!
                         bool isCustomWall = false;
-                        //if (ob.customData != null)
-                        //{
-                        //    isCustomWall = ob.customData.ContainsKey("_position");
-                        //}
+
                         float frontCut = isCustomWall ? 0f : WallFrontCut;
                         float backCut = isCustomWall ? 0f : WallBackCut;
 
-
-                        if (!isCustomWall && ((ob.lineIndex == 1 || ob.lineIndex == 2) && ob.width == 1))//BW lean walls that are only width 1 and hard to see coming in 360)
+                        if (!isCustomWall && ((ob.lineIndex == 1 || ob.lineIndex == 2) && ob.width == 1))//Lean wall of width 1. Hard to see coming.
                         {
-                            //Plugin.Log.Info($"Remove Left Lean Wall: Time: {ob.time} cutTime: {cutTime}");                                
+                            //Plugin.Log.Info($"Remove Lean Wall of width 1: Time: {ob.time} cutTime: {cutTime}");
                             dataItems.Remove(ob);
-                            break;
                         }
-                        else if (!isCustomWall && !AllowLeanWalls && ((ob.lineIndex == 0 && ob.width == 2) || (ob.lineIndex == 2 && ob.width > 1)))//BW lean walls width 2
+                        else if (!isCustomWall && !AllowLeanWalls && ((ob.lineIndex == 0 && ob.width == 2) || (ob.lineIndex == 2 && ob.width > 1)))//Lean walls of width 2.
                         {
-                            //Plugin.Log.Info($"Remove Right Lean Wall: Time: {ob.time } cutTime: {cutTime}");
+                            //Plugin.Log.Info($"Remove Lean Wall: Time: {ob.time } cutTime: {cutTime}");
                             dataItems.Remove(ob);
-                            break;
                         }
-                        else if (!isCustomWall && !AllowCrouchWalls && (ob.lineIndex == 0 && ob.width > 2))//BW crouch walls
+                        else if (!isCustomWall && !AllowCrouchWalls && (ob.lineIndex == 0 && ob.width > 2))//Crouch walls
                         {
                             //Plugin.Log.Info($"Remove Crouch Wall: Time: {ob.time} cutTime: {cutTime}");
                             dataItems.Remove(ob);
-                            break;
                         }
-                        // If moved in direction of wall
-                        else if (isCustomWall || (ob.lineIndex <= 1 && cutAmount < 0) || (ob.lineIndex >= 2 && cutAmount > 0))
+                        else if (isCustomWall || (ob.lineIndex <= 1 && cutAmount < 0) || (ob.lineIndex >= 2 && cutAmount > 0))//Removes, changes duration or splits problem walls
                         {
                             int cutMultiplier = Math.Abs(cutAmount);
                             if (cutTime > ob.time - frontCut && cutTime < ob.time + ob.duration + backCut * cutMultiplier)
                             {
                                 float originalTime = ob.time;
                                 float originalDuration = ob.duration;
-
-                                float firstPartTime = ob.time;// 225.431: 225.631(0.203476) -> 225.631() <|> 225.631(0.203476)
-                                float firstPartDuration = (cutTime - backCut * cutMultiplier) - firstPartTime; // -0.6499969
-                                float secondPartTime = cutTime + frontCut; // 225.631
-                                float secondPartDuration = (ob.time + ob.duration) - secondPartTime; //0.203476
-
+                                float firstPartTime = ob.time;
+                                float firstPartDuration = (cutTime - backCut * cutMultiplier) - firstPartTime;
+                                float secondPartTime = cutTime + frontCut;
+                                float secondPartDuration = (ob.time + ob.duration) - secondPartTime;
                                 if (firstPartDuration >= MinWallDuration && secondPartDuration >= MinWallDuration)
                                 {
-                                    // Update duration of existing obstacle
-                                    ob.UpdateDuration(firstPartDuration);
-
-                                    // And create a new obstacle after it
-                                    ObstacleData secondPart = new ObstacleData(secondPartTime, ob.lineIndex, ob.lineLayer, secondPartDuration, ob.width, ob.height);
-                                    data.AddBeatmapObjectDataInOrder(secondPart);//BW Discord help said to change AddBeatmapObjectData to AddBeatmapObjectDataInOrder which allowed content to be stored to data.
+                                    ob.UpdateDuration(firstPartDuration);// Update duration of existing obstacle
+                                    ObstacleData secondPart = new ObstacleData(secondPartTime, ob.lineIndex, ob.lineLayer, secondPartDuration, ob.width, ob.height);// And create a new obstacle after it
+                                    data.AddBeatmapObjectDataInOrder(secondPart);
                                     obstacles.Enqueue(secondPart);
                                     //Plugin.Log.Info($"Wall SPLIT: 1st Half starts: {ob.time} duration: {firstPartDuration} 2nd Half starts: Time: {secondPartTime}, Index: {ob.lineIndex}, Layer: {ob.lineLayer}, Dur: {secondPartDuration}, Width: {ob.width}, Height: {ob.height}");
 
-                                    break;
                                 }
                                 else if (firstPartDuration >= MinWallDuration)
                                 {
-                                    // Just update the existing obstacle, the second piece of the cut wall is too small
-                                    ob.UpdateDuration(firstPartDuration);
+                                    ob.UpdateDuration(firstPartDuration);// Just update the existing obstacle, the second piece of the cut wall is too small
                                     //Plugin.Log.Info($"Wall shortened starts: {ob.time} duration: {firstPartDuration}");
-
-                                    break;
                                 }
                                 else if (secondPartDuration >= MinWallDuration)
                                 {
                                     // Reuse the obstacle and use it as second part
                                     if (secondPartTime != ob.time && secondPartDuration != ob.duration)
                                     {
-                                        //Plugin.Log.Info("Queue 7");
                                         ob.UpdateTime(secondPartTime);
                                         ob.UpdateDuration(secondPartDuration);
                                         obstacles.Enqueue(ob);
-
                                         //Plugin.Log.Info($"Wall shortened 2nd half starts: {secondPartTime} duration: {secondPartDuration}");
-                                        break;
                                     }
                                 }
                                 else
                                 {
-                                    // When this wall is cut, both pieces are too small, remove it
-                                    dataItems.Remove(ob);
+                                    dataItems.Remove(ob);// When this wall is cut, both pieces are too small, remove it
                                     //Plugin.Log.Info($"Remove Wall since 1st & 2nd half too small: start: {ob.time} cutTime: {cutTime}");
-                                    break;
-
-                                    
                                 }
-                                
-                                //Plugin.Log.Info($"Split wall at {cutTime}: {originalTime}({originalDuration}) -> {firstPartTime}({firstPartDuration}) <|> {secondPartTime}({secondPartDuration}) cutMultiplier={cutMultiplier}");
-
                             }
                         }
-                        //-------------BW added --- remove any walls whose duration is long enough to get enough rotations that the wall becomes visible again as it exits through the user space (is visible traveling backwards)-------------
-                        // Check if the total rotations is more than 60 degrees (4*15) which means it is no longer visible and therefore probably not needed and possibly will be seen leaving the user space
+
+                        if (cutTime >= ob.time && cutTime < ob.time + ob.duration)//checks if rotations occur during a wall
                         {
-                            if (totalRotations > 5 || totalRotations < -5)//5*15 is 75 degress which means the wall is way out of viewing range at this cutTime. I testing higher numbers but this seems to work.
+                            totalRotations += cutAmount;// Total number of rotations during the current obstacle - resets to 0 with each ob
+
+                            if ((totalRotations > 5 || totalRotations < -5))
                             {
-                                //Plugin.Log.Info($"---totalRotations during wall starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
-                                ob.UpdateDuration((cutTime-ob.time)/2.3f);//cutTime - ob.Time is the duration of the wall at the moment the wall was has 5+ total rotations. but the wall duration includes 1/2 in front of the user and half behind the user. so divide by 2 to avoid seeing the back half. chose 2.3 as a little bit more to shorten wall more since still seeing walls moving away for a moment traveling away from the user.
-                                //Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
-                                break;
+                                Plugin.Log.Info($"Wall found with more than 5 rotations during its duration -- starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
+                                float newDuration = (cutTime - ob.time) / 2.3f;
+                                if (newDuration >= MinWallDuration)
+                                {
+                                    ob.UpdateDuration(newDuration);
+                                    Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
+                                    break;
+                                }
+                                else
+                                {
+                                    dataItems.Remove(ob);
+                                    Plugin.Log.Info($"------Wall removed since shorter than MinWallDuration");
+                                    break;
+                                }
                             }
-                            //obstacleCutAlready = true;
                         }
-                        //---------------------------------------------------------------------------------------------
-                        //Plugin.Log.Info($"No Changes so Far!!! loops again - current cutTime: {cutTime} while current wall ends at {ob.time+ob.duration}");
                     }
-
                 }
+                /*
+                //This WORKS!
+                Queue<ObstacleData> obstacles1 = new Queue<ObstacleData>(dataItems.OfType<ObstacleData>());
+                while (obstacles1.Count > 0)
+                {
+                    ObstacleData ob = obstacles1.Dequeue();
+                    int totalRotations = 0;
+                    foreach ((float cutTime, int cutAmount) in wallCutMoments)
+                    {
+                        //This works 
+                        if (ob.duration <= 0f)
+                            break;
+                        if (cutTime <= ob.time)
+                            continue;
+                        if (cutTime > ob.time + ob.duration)
+                            break;
 
-            }
+                        {
+                            totalRotations += cutAmount;
+                            if ((totalRotations > 5 || totalRotations < -5))
+                            {
+                                Plugin.Log.Info($"Wall found with more than 5 rotations during its duration -- starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
+                                float newDuration = (cutTime - ob.time) / 2.3f;
+                                if (newDuration >= MinWallDuration)
+                                {
+                                    ob.UpdateDuration(newDuration);
+                                    Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
+                                    break;
+                                }
+                                else
+                                {
+                                    dataItems.Remove(ob);
+                                    Plugin.Log.Info($"------Wall removed since shorter than MinWallDuration");
+                                    break;
+                                }
+                            }
+                        
+                    }
+                }*/
+            } 
             #endregion
 
             #region Remove Bombs
@@ -890,55 +895,81 @@ namespace Beat360fyerPlugin
                 // Iterate through the next three notes
                 for (int j = i + 1; j < Math.Min(i + 4, notes.Count); j++)
                 {
+                    //Plugin.Log.Info($"Beat Sage j: {j}"); 
+
                     NoteData nextNote = notes[j];
 
                     // Check if the 2 notes are the same time or within .0001 sec of each other so they appear to almost overlap
-                    if (nextNote.time - currentNote.time <= 0.03f)//0.08 will start to catch bombs from different beats.
+                    if (nextNote.time - currentNote.time <= 0.03f)//0.08 will start to catch notes from different beats.
                     {
-                        // Check if the two notes (not any bombs) have the same lineIndex, and different noteLineLayer (they may be side-by-side)
-                        if (currentNote.lineIndex == nextNote.lineIndex &&
-                            currentNote.noteLineLayer != nextNote.noteLineLayer && // Check for different layers
-                            currentNote.gameplayType == GameplayType.Normal && // Check if both are "Normal" notes
-                            nextNote.gameplayType == GameplayType.Normal)
+                        //Plugin.Log.Info($"Beat Sage found 2 notes at the exact same time (or close) of {currentNote.time} current note: {currentNote.gameplayType} index: {currentNote.lineIndex} layer: {currentNote.noteLineLayer} --- Nextnote: {nextNote.gameplayType} index: {nextNote.lineIndex} layer: {nextNote.noteLineLayer}");
+
+                        // Check for SIDE-BY-SIDE Notes. -- Check if the two notes (not any bombs) have the same layer, and different index (they may be side-by-side)
+                        if (currentNote.noteLineLayer == nextNote.noteLineLayer && // Check for same layer
+                            Math.Abs(currentNote.lineIndex - nextNote.lineIndex) == 1 && //side-by-side based on index values
+                            currentNote.gameplayType  == GameplayType.Normal && // Check if both are "Normal" notes
+                            nextNote.gameplayType     == GameplayType.Normal)
                         {
-                            // Check if they are side by side based on layer values
-                            if (Math.Abs(currentNote.noteLineLayer - nextNote.noteLineLayer) == 1)
+                            // Check if the leftmost note has cutDirection Left and the rightmost note has cutDirection Right - and other impossible configurations
+                            if (currentNote.lineIndex < nextNote.lineIndex)
                             {
-                                // Check if the leftmost note has cutDirection Left and the rightmost note has cutDirection Right - and other impossible configurations
-                                if (currentNote.noteLineLayer < nextNote.noteLineLayer)
+                                if ((currentNote.cutDirection == NoteCutDirection.Left || currentNote.cutDirection == NoteCutDirection.DownLeft || currentNote.cutDirection == NoteCutDirection.UpLeft))
                                 {
-                                    if ((currentNote.cutDirection == NoteCutDirection.Left && nextNote.cutDirection == NoteCutDirection.Right) || (currentNote.cutDirection == NoteCutDirection.DownLeft && nextNote.cutDirection == NoteCutDirection.DownRight) || (currentNote.cutDirection == NoteCutDirection.UpLeft && nextNote.cutDirection == NoteCutDirection.UpRight))
-                                    {
-                                        indicesToRemove.Add(j);
-                                        Plugin.Log.Info($"Beat Sage 1");
-                                    }
+                                    indicesToRemove.Add(i);
+                                    Plugin.Log.Info($"Beat Sage 1 - remove note side-by-side with another note in impossible cutDirection at {currentNote.time}");
                                 }
-                                else
+                            }
+                            else
+                            {
+                                if ((currentNote.cutDirection == NoteCutDirection.Right || currentNote.cutDirection == NoteCutDirection.DownRight || currentNote.cutDirection == NoteCutDirection.UpRight))
                                 {
-                                    if ((currentNote.cutDirection == NoteCutDirection.Right && nextNote.cutDirection == NoteCutDirection.Left) || (currentNote.cutDirection == NoteCutDirection.DownRight && nextNote.cutDirection == NoteCutDirection.DownLeft) || (currentNote.cutDirection == NoteCutDirection.UpRight && nextNote.cutDirection == NoteCutDirection.UpLeft))
-                                    {
-                                        indicesToRemove.Add(i);
-                                        Plugin.Log.Info($"Beat Sage 2");
-                                    }
+                                    indicesToRemove.Add(i);
+                                    Plugin.Log.Info($"Beat Sage 2 - remove note side-by-side with another note in impossible cutDirection at {currentNote.time}");
                                 }
                             }
                         }
-                        // Check if the two notes have the same lineIndex, and noteLineLayer
-                        else if (currentNote.lineIndex == nextNote.lineIndex &&
-                                 currentNote.noteLineLayer == nextNote.noteLineLayer)
+                        // Check for ONE-ABOVE-THE-OTHER Notes. -- Check if the two notes (not any bombs) have the same index, and different layer (they may be one-above-the-other)
+                        else if (currentNote.lineIndex   == nextNote.lineIndex && // Check for same index
+                                Math.Abs(currentNote.noteLineLayer - nextNote.noteLineLayer) == 1 && //one-above-the-other based on layer values
+                                currentNote.gameplayType == GameplayType.Normal && // Check if both are "Normal" notes
+                                nextNote.gameplayType    == GameplayType.Normal)
                         {
+                            // Check if the bottommost note has cutDirection Down and the uppermost note has cutDirection Up - and other impossible configurations
+                            if (currentNote.noteLineLayer < nextNote.noteLineLayer)
+                            {
+                                if ((currentNote.cutDirection == NoteCutDirection.Down || currentNote.cutDirection == NoteCutDirection.DownLeft || currentNote.cutDirection == NoteCutDirection.DownRight))
+                                {
+                                    indicesToRemove.Add(i);
+                                    Plugin.Log.Info($"Beat Sage 1 - remove note one-above-the-other with another note in impossible cutDirection at {currentNote.time}");
+                                }
+                            }
+                            else
+                            {
+                                if ((currentNote.cutDirection == NoteCutDirection.Up || currentNote.cutDirection == NoteCutDirection.UpLeft || currentNote.cutDirection == NoteCutDirection.UpRight))
+                                {
+                                    indicesToRemove.Add(i);
+                                    Plugin.Log.Info($"Beat Sage 2 - remove note one-above-the-other with another note in impossible cutDirection at {currentNote.time}");
+                                }
+                            }
+                        }
+                        // Check for OVERLAPPING NOTES. -- Check if the two notes have the same lineIndex, and noteLineLayer
+                        else if (currentNote.lineIndex     == nextNote.lineIndex &&
+                                 currentNote.noteLineLayer == nextNote.noteLineLayer)
+                        { 
+                            Plugin.Log.Info($"Found overlapping notes at: {currentNote.time} of type: {currentNote.gameplayType} & {nextNote.gameplayType}. Should delete one of them in next log.");
                             // Check if either of the notes is a bomb
                             if (currentNote.gameplayType == GameplayType.Bomb)
                             {
                                 // Remove the bomb note (1st note)
                                 indicesToRemove.Add(i);
-                                Plugin.Log.Info($"Beat Sage 3");
+                                Plugin.Log.Info($"Beat Sage 1 - remove bomb overlapping a 2nd bomb/note at {currentNote.time}");
                             }
                             else
                             {
-                                // If not a bomb, remove the 2nd note
+                                // remove the 2nd note whether a bomb or not
                                 indicesToRemove.Add(j);
-                                Plugin.Log.Info($"Beat Sage 4");
+                                j++; //since j is removed, skip it in the next iteration
+                                Plugin.Log.Info($"Beat Sage 2 - remove type: {nextNote.gameplayType} overlapping a note at {currentNote.time}");
                             }
                         }
                     }
@@ -1036,7 +1067,7 @@ namespace Beat360fyerPlugin
                     if (note.time >= obstacle.time && note.time <= obstacleEndTime && note.lineIndex == obstacle.lineIndex && note.noteLineLayer >= obstacle.lineLayer)
                     {
                         indicesToRemove.Add(i);
-                        Plugin.Log.Info($"Beat Sage Map had a note/bomb inside a wall at: {note.time} and will be removed later");
+                        //Plugin.Log.Info($"Beat Sage Map had a note/bomb inside a wall at: {note.time} and will be removed later");
                     }
                     else if (note.time > obstacleEndTime)
                     {
@@ -1049,7 +1080,7 @@ namespace Beat360fyerPlugin
             for (int i = indicesToRemove.Count - 1; i >= 0; i--)
             {
                 int indexToRemove = indicesToRemove[i];
-                Plugin.Log.Info($"Beat Sage Map had a note/bomb cut at: {notes[indexToRemove].time}");
+                //Plugin.Log.Info($"Beat Sage Map had a note/bomb cut at: {notes[indexToRemove].time}");
                 notes.RemoveAt(indexToRemove);   
             }
             if (indicesToRemove.Count == 0)

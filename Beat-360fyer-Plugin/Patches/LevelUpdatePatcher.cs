@@ -505,8 +505,8 @@ namespace Beat360fyerPlugin.Patches
                             Plugin.Log.Info($"LightPillar NOT found!!!!");
                     }
                 }
-                else
-                    Plugin.Log.Info($"Environment NOT found!!!!");
+                //else
+                    //Plugin.Log.Info($"Environment NOT found!!!!");
 
                 //create a default color scheme for custom maps since the default doesn't work in 360 (a bug)
                 /*
