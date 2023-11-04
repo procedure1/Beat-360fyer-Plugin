@@ -10,6 +10,11 @@
         <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc." rich-text='true' font-color='~TextColorSliderLimitRotations360' interactable="~EnableSliderLimitRotations360"></slider-setting>
         <!--<text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>-->
         <slider-setting text="Limit Rotations 90" apply-on-change="true" value="LimitRotations90" bind-value="true" show-buttons="true"  increment="30" min="30" max="360" formatter="AngleFormatter" hover-hint="Limit or expand the rotation amount for 90° maps. Works the same as the setting above for 360° maps."></slider-setting>
+
+        <!--<toggle-setting text='AddXtraRotation' apply-on-change='true' value='AddXtraRotation' bind-value='true' hover-hint="Turns on more rotation for low rotation map portions."></toggle-setting>
+        <slider-setting text="RotGrpLimit" apply-on-change="true" value="RotationGroupLimit" bind-value="true" show-buttons="true" increment="1" min="0" max="24" hover-hint="TESTING - how many rotation steps will be added during the group of rotations."></slider-setting>
+        <slider-setting text="RotGrpSize" apply-on-change="true"  value="RotationGroupSize"  bind-value="true" show-buttons="true" increment="1" min="0" max="100" hover-hint="TESTING - how many rotations in a group to test for needed rotations."></slider-setting>-->
+
         <toggle-setting text='Wall Generator' apply-on-change='true' value='EnableWallGenerator' bind-value='true' hover-hint="Walls are cool in 360! Adds more walls for visual interest."></toggle-setting>
         <toggle-setting text='Big Walls' apply-on-change='true' value='BigWalls' bind-value='true' hover-hint="Adds super wide walls if Wall Generator is enabled."></toggle-setting>
         <toggle-setting text='Big Lasers' apply-on-change='true' value='BigLasers' bind-value='true' hover-hint="Scales up laser size."></toggle-setting>
@@ -30,7 +35,7 @@
         <toggle-setting text='Allow Lean Walls' apply-on-change='true' value='AllowLeanWalls' bind-value='true' hover-hint="It's hard to see these walls coming on faster maps."></toggle-setting>
         <!--<slider-setting text="Rotation Angle Multiplier" apply-on-change="true" value="RotationAngleMultiplier" bind-value="true" show-buttons="true" increment=".1" min="1" max="2"></slider-setting>-->
         <!--<text text="Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc." align="Left" fontSize="2" size-delta-y='8'/>-->
-        <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="3" hover-hint="Increase or decrease rotations. Default is 1. Disables score submission if set below 0.8,"></slider-setting>
+        <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="3" hover-hint="Increase or decrease rotations. Default is 1. Disables score submission if set below 0.8."></slider-setting>
         <!--<list-setting text='Color Boost stole this from Technicolro' value='colorboost' choices='colorboostchoices' apply-on-change='true' hover-hint='The higher the number, the brighter the colors!' formatter='float'></list-setting>-->
         <!--<text text="Change how frequently rotations are spawned." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>

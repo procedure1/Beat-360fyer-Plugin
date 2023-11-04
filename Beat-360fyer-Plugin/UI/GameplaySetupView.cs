@@ -62,6 +62,28 @@ namespace Beat360fyerPlugin.UI
             int intValue = Mathf.RoundToInt(value);
             return $"{intValue}°";
         }
+        //TESTING -----------------------------------------------------------
+        /*
+        [UIValue("AddXtraRotation")]
+        public bool AddXtraRotation
+        {
+            get => Config.Instance.AddXtraRotation;
+            set => Config.Instance.AddXtraRotation = value;
+        }
+        [UIValue("RotationGroupLimit")]
+        public float RotationGroupLimit
+        {
+            get => Config.Instance.RotationGroupLimit;
+            set => Config.Instance.RotationGroupLimit = value;
+        }
+        [UIValue("RotationGroupSize")]
+        public float RotationGroupSize
+        {
+            get => Config.Instance.RotationGroupSize;
+            set => Config.Instance.RotationGroupSize = value;
+        }
+        */
+        //END TESTING ------------------------------------------------------
         [UIValue("EnableWallGenerator")]
         public bool EnableWallGenerator
         {

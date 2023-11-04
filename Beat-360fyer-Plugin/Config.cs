@@ -43,6 +43,15 @@ namespace Beat360fyerPlugin
         public virtual bool ShowGenerated90 { get; set; } = false;
         public virtual bool OnlyOneSaber { get; set; } = false;//BW Disables scoring also
         public virtual bool LeftHandedOneSaber { get; set; } = false;
+
+
+        //TESTING
+        public virtual bool AddXtraRotation { get; set; } = true;//for periods of low rotation, will make sure rotations for direction-less notes move in same direction as last rotation so totalRotation will increase.
+        public virtual float RotationGroupLimit { get; set; } = 10f;//If totalRotations are under this limit, will add more rotations
+        public virtual float RotationGroupSize { get; set; } = 12;//The number of rotations to remain inactive for adding rotations
+
+
+
         //BW added this baseded on NoteLimiter UI. enums cannot use a digit so had to change 90Degree to NinetyDegree
         //public virtual string TextColor { get; set; } = "#555555";//BW sets the color of the LimitRotations360 menu text. Dims it if deactivated by Wireless360;
 

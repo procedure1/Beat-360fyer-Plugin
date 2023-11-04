@@ -31,7 +31,6 @@ using System.Diagnostics.Eventing.Reader;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 using System.Security.Cryptography;
 using UnityEngine.PlayerLoop;
-using UnityEngine;
 using IPA.Utilities;
 
 namespace Beat360fyerPlugin.Patches
@@ -81,12 +80,10 @@ namespace Beat360fyerPlugin.Patches
             {
                 if (Config.Instance.BrightLights)
                 {
-                    float mult;
+                    float mult = 1;
                     if (Config.Instance.BigLasers)
                         mult = 2f;// 1 + TechnicolorConfig.Instance.ColorBoost;//slider goes up from 0-1000 i think; private readonly List<object> _colorboostChoices = new() { -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.4f, -0.3f, -0.2f, -0.1f, 0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f, 1.2f, 1.4f, 1.6f, 1.8f, 2f, 2.5f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 20f, 100f };
 
-                    else
-                        mult = 2f;//even brighter for small lasers
                     color.a *= mult;
                 }
             }
@@ -281,7 +278,7 @@ namespace Beat360fyerPlugin.Patches
     [HarmonyPatch(typeof(BeatmapObjectSpawnMovementData), "Init")]
     internal class SpawnMovementDataUpdatePatch
     {
-        private static bool OriginalValuesSet = false; // Flag to ensure original values are only stored once
+        //private static bool OriginalValuesSet = false; // Flag to ensure original values are only stored once
         public static float OriginalNJS; // Store the original startNoteJumpMovementSpeed
         public static float OriginalNJO;
         internal static void Prefix(ref float startNoteJumpMovementSpeed, float startBpm, NoteJumpValueType noteJumpValueType, ref float noteJumpValue)//, IJumpOffsetYProvider jumpOffsetYProvider, Vector3 rightVec, Vector3 forwardVec)
@@ -291,27 +288,28 @@ namespace Beat360fyerPlugin.Patches
                 BigLasers myOtherInstance = new BigLasers();
                 myOtherInstance.Big();
 
-
                 //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
-                if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
-                {
+                //if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
+                //{
                     OriginalNJS = TransitionPatcher.noteJumpMovementSpeed;
                     OriginalNJO = TransitionPatcher.noteJumpStartBeatOffset;
 
-                    OriginalValuesSet = true;
-                    Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
-                    Plugin.Log.Info("Original noteJumpMovementSpeed: "   + OriginalNJS);
-                    Plugin.Log.Info("Original noteJumpStartBeatOffset: " + OriginalNJO);
-                }
+                    //OriginalValuesSet = true;
+                //}
+
+                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
+                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpMovementSpeed: " + OriginalNJS + " and from SpawnMovementDataUpdatePatch startNoteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
+                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpStartBeatOffset: " + OriginalNJO);
+
                 if (Config.Instance.EnableNJS)
                 {
                     startNoteJumpMovementSpeed = Config.Instance.NJS;
-                    noteJumpValue = Config.Instance.NJO;
+                    noteJumpValue = Config.Instance.NJO;// this works but if you read this before setting it, it has the wrong number. its always .5 i think.
 
                     if (Config.Instance.NJS < OriginalNJS || Config.Instance.NJO > OriginalNJO)
                     {
                         ScoreSubmission.DisableSubmission("360Fyer");
-                        Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score disabled by NJS NJO - NJSOrig: " + OriginalNJS + " NewNJS " + Config.Instance.NJS + " OrigNJO " + OriginalNJO + " NewNJO: " + Config.Instance.NJO);
+                        Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score disabled by NJS NJO - NJS Orig: " + OriginalNJS + " New NJS " + Config.Instance.NJS + " Orig NJO " + OriginalNJO + " New NJO: " + Config.Instance.NJO);
                     }
                     else
                     {
@@ -697,6 +695,8 @@ namespace Beat360fyerPlugin.Patches
 
             noteJumpMovementSpeed = difficultyBeatmap.noteJumpMovementSpeed;
             noteJumpStartBeatOffset = difficultyBeatmap.noteJumpStartBeatOffset;
+
+            Plugin.Log.Info($"\nTransitionPatcher original NJS: {noteJumpMovementSpeed} original NJO {noteJumpStartBeatOffset}");
 
             //Sets the variable to the name of the map being started (Standard, Generated360Degree, etc)          
             startingGameMode = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
