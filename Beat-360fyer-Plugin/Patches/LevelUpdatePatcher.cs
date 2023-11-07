@@ -80,11 +80,12 @@ namespace Beat360fyerPlugin.Patches
             {
                 if (Config.Instance.BrightLights)
                 {
-                    float mult = 1;
-                    if (Config.Instance.BigLasers)
-                        mult = 2f;// 1 + TechnicolorConfig.Instance.ColorBoost;//slider goes up from 0-1000 i think; private readonly List<object> _colorboostChoices = new() { -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.4f, -0.3f, -0.2f, -0.1f, 0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f, 1.2f, 1.4f, 1.6f, 1.8f, 2f, 2.5f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 20f, 100f };
+                    //float mult = 1;
+                    //if (Config.Instance.BigLasers)
+                    //   mult = 2f;// 1 + TechnicolorConfig.Instance.ColorBoost;//slider goes up from 0-1000 i think; private readonly List<object> _colorboostChoices = new() { -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.4f, -0.3f, -0.2f, -0.1f, 0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f, 1.2f, 1.4f, 1.6f, 1.8f, 2f, 2.5f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 20f, 100f };
 
-                    color.a *= mult;
+
+                    color.a *= 2f;// mult;
                 }
             }
         }
@@ -96,7 +97,7 @@ namespace Beat360fyerPlugin.Patches
     {
         public void Big()
         {
-            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree")//not working for non-generated maps anyway || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree" || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
             {
                 if (Config.Instance.BigLasers)
                 {
@@ -276,6 +277,7 @@ namespace Beat360fyerPlugin.Patches
     //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
 
     [HarmonyPatch(typeof(BeatmapObjectSpawnMovementData), "Init")]
+    [HarmonyPriority(Priority.Low)]//was asked to do this for other mods
     internal class SpawnMovementDataUpdatePatch
     {
         //private static bool OriginalValuesSet = false; // Flag to ensure original values are only stored once
@@ -283,10 +285,15 @@ namespace Beat360fyerPlugin.Patches
         public static float OriginalNJO;
         internal static void Prefix(ref float startNoteJumpMovementSpeed, float startBpm, NoteJumpValueType noteJumpValueType, ref float noteJumpValue)//, IJumpOffsetYProvider jumpOffsetYProvider, Vector3 rightVec, Vector3 forwardVec)
         {
-            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree")//only do this for gen 360 or else it will do this for all maps
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree" || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
             {
                 BigLasers myOtherInstance = new BigLasers();
                 myOtherInstance.Big();
+            }
+
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree")//only do this for gen 360 or else it will do this for all maps
+            {
+                
 
                 //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
                 //if (!OriginalValuesSet)// Store the original values if they haven't been stored yet

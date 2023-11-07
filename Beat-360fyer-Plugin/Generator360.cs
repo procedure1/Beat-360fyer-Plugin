@@ -483,7 +483,7 @@ namespace Beat360fyerPlugin
                     }
 
 
-
+                    #region AddXtraRotation
                     //############################################################################
                     //BW had to add more rotations directly in the main loop. tried it outside this main loop. the problem with being outside the loop is you cannot decide if a map is really low on rotations until after the map is finished.
                     //add more rotation to maps without much rotation. If there are few rotations, look for directionless notes up/down/dot/bomb and make their rotation direction the same as the previous direction so that there will be increased totalRotation.
@@ -517,7 +517,7 @@ namespace Beat360fyerPlugin
 
                                 totalRotationsGroup = 0;
 
-                                Plugin.Log.Info($"Change to NOT ACTIVE since passed the limit!!! RotationGroupLimit: {RotationGroupLimit}\t totalRotationsGroup: {totalRotationsGroup}");
+                                //Plugin.Log.Info($"Change to NOT ACTIVE since passed the limit!!! RotationGroupLimit: {RotationGroupLimit}\t totalRotationsGroup: {totalRotationsGroup}");
 
                                 offSetR = r;//need this since when passes the limit, r may be close or equal to being a multiple of RotationGroupSize. that means it could be active soon again. so need to offset r so it will stay off for RotationGroupSize rotations.(r - offSetR) will be 0 on first rotation...
                             }
@@ -533,7 +533,7 @@ namespace Beat360fyerPlugin
                                 { 
                                     addMoreRotations = false;
 
-                                    Plugin.Log.Info($"Continue to be NOT ACTIVE: Inactive rotations are over the limit so stay inactive for {RotationGroupSize} rotations. RotationGroupLimit: {RotationGroupLimit}\t RotationGroupSize set to: 0 ++++++++++++++++++++++++++++++++++++++++++++++++");
+                                    //Plugin.Log.Info($"Continue to be NOT ACTIVE: Inactive rotations are over the limit so stay inactive for {RotationGroupSize} rotations. RotationGroupLimit: {RotationGroupLimit}\t RotationGroupSize set to: 0 ++++++++++++++++++++++++++++++++++++++++++++++++");
                                 }
                                 else//if the total rotations was under the limit, activate more rotations
                                 { 
@@ -550,7 +550,7 @@ namespace Beat360fyerPlugin
 
                                     alternateParams = !alternateParams; // Toggles every other time addMoreRotations is true
 
-                                    Plugin.Log.Info($"ACTIVE:     RotationGroupLimit: {RotationGroupLimit}\t RotationGroupSize: {RotationGroupSize}------------------------------------------------");
+                                    //Plugin.Log.Info($"ACTIVE:     RotationGroupLimit: {RotationGroupLimit}\t RotationGroupSize: {RotationGroupSize}------------------------------------------------");
                                 }
 
                                 totalRotationsGroup = 0;
@@ -566,7 +566,7 @@ namespace Beat360fyerPlugin
                     }
 
                     //############################################################################
-
+                    #endregion
 
 
 
@@ -893,6 +893,86 @@ namespace Beat360fyerPlugin
                 }
             }
             */
+            //Works but rotations are stored at the current total map rotation. So so rotation may be -175 for example (where the prvious may have been -160). So deleting a rotation will allow the next rotation to be a giant rotation leap. 
+            //Could update all other roations when a rotation is deleted. OR move a similar tool before rotations are created and stop a new rotation from being added if its inside an arc.
+            #region Arc Fix
+            if (Config.Instance.ArcFix)
+            {
+                Plugin.Log.Info($"Starting Arc Fix:");
+
+                List<SliderData> sliders = dataItems.OfType<SliderData>().ToList();
+
+                foreach (SliderData slider in dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList())//only search normal sliders (arcs) not burst sliders
+                {
+
+                    List<SpawnRotationBeatmapEventData> sliderRotations = new List<SpawnRotationBeatmapEventData>();//list of roations during this slider
+                    
+                    float lastRotationBeforeSlider = 0;
+
+                    Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
+
+                    foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().Where((e) => e.time >= sliders[0].time).ToList())
+                    {
+                        if (ro.time < slider.time - .001f)//if ro.time is at least .001s less than slider.time (so defiantely less)
+                        {
+                            lastRotationBeforeSlider = ro.rotation;//get the last rotation before or at the head of the slider
+                        }
+                        else if (ro.time <= slider.tailTime + .001f)//can be a tiny bit .01s past the tailTime
+                        {
+                            //totalSliderRotations.Add(ro.rotation);
+
+                            sliderRotations.Add(ro);//list of roations during this slider
+                            //dataItems.Remove(ro);
+                            Plugin.Log.Info($"--- lastRotationBeforeSlider: {lastRotationBeforeSlider}. During Slider found rotation at: {ro.time} amount: {ro.rotation} -- # of rotations inside so far: {sliderRotations.Count}");
+                        }
+                        else//after the slider now
+                        {
+                            if (sliderRotations.Count > 0)
+                            {
+                                Plugin.Log.Info($"------ Checking the total rotations for all {sliderRotations.Count} rotation(s) inside the ARC:");
+                                if (Config.Instance.ArcFixFull)
+                                {
+                                    foreach (SpawnRotationBeatmapEventData delRot in sliderRotations)
+                                    {
+                                        Plugin.Log.Info($"--------------- DELETE rotation at: {delRot.time} amount: {delRot.rotation}");
+                                        dataItems.Remove(delRot); //data.RemoveBeatmapEventData(rot);//
+                                        //delRot.RecalculateRotationFromPreviousEvent(delRot);
+                                    }
+                                }
+                                else if (sliderRotations.Count == 1 || (lastRotationBeforeSlider != sliderRotations[sliderRotations.Count - 1].rotation))//if there is only 1 rotation then begin and end total rotations will be the same but needs to be deleted anyway. means there w
+                                {
+                                    foreach (SpawnRotationBeatmapEventData delRot in sliderRotations)
+                                    {
+                                        Plugin.Log.Info($"--------------- DELETE rotation at: {delRot.time} amount: {delRot.rotation}");
+                                        dataItems.Remove(delRot); //data.RemoveBeatmapEventData(rot);//
+                                        //delRot.RecalculateRotationFromPreviousEvent(delRot);
+                                    }
+                                }
+                                else
+                                {
+                                    Plugin.Log.Info($"--------- ARC contains {sliderRotations.Count} rotations but can keep them all! lastRotationBeforeSlider: {lastRotationBeforeSlider} and end total rot: {sliderRotations[sliderRotations.Count - 1].rotation} -- Results in slight mismatch of the tail :(");
+                                }
+
+                            }
+                            else
+                            {
+                                Plugin.Log.Info($"--- ARC contains NO rotations.");
+                            }
+                            //Plugin.Log.Info($"--- BREAK to next slider!");
+                            break;
+                        }
+                    }
+                }
+                /*
+                Plugin.Log.Info($"=========================== rotation that remain================================================");
+                foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
+                {
+                    Plugin.Log.Info($"rotation amount: {ro.rotation} at: {ro.time}");
+                }
+                */
+            }
+            #endregion
+
             #region Wall Removal
             //BW noodle extensions causes BS crash in the section somewhere below. Could drill down and figure out why. Haven't figured out how to test for noodle extensions but noodle extension have custom walls that crash Beat Saber so BW added test for custom walls.
 

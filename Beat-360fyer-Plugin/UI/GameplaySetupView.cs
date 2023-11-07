@@ -63,6 +63,18 @@ namespace Beat360fyerPlugin.UI
             return $"{intValue}°";
         }
         //TESTING -----------------------------------------------------------
+        [UIValue("ArcFix")]
+        public bool ArcFix
+        {
+            get => Config.Instance.ArcFix;
+            set => Config.Instance.ArcFix = value;
+        }
+        [UIValue("ArcFixFull")]
+        public bool ArcFixFull
+        {
+            get => Config.Instance.ArcFixFull;
+            set => Config.Instance.ArcFixFull = value;
+        }
         /*
         [UIValue("AddXtraRotation")]
         public bool AddXtraRotation
