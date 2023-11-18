@@ -114,6 +114,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.BoostLighting;
             set => Config.Instance.BoostLighting = value;
         }
+        /*
         [UIValue("EnableSlidersNJS")]
         public bool EnableSlidersNJS
         {
@@ -157,7 +158,8 @@ namespace Beat360fyerPlugin.UI
         {
             get => Config.Instance.NJO;
             set => Config.Instance.NJO = value;
-        }
+        }*/
+
         [UIValue("AllowCrouchWalls")]
         public bool AllowCrouchWalls
         {

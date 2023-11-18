@@ -20,9 +20,11 @@ namespace Beat360fyerPlugin
         public virtual bool BigLasers { get; set; } = true;
         public virtual bool BrightLights { get; set; } = true;
         public virtual bool BoostLighting { get; set; } = true;
-        public virtual bool EnableNJS { get; set; } = false;
-        public virtual float NJS { get; set; } = 15f;
-        public virtual float NJO { get; set; } = 0f;
+
+        //public virtual bool EnableNJS { get; set; } = false;
+        //public virtual float NJS { get; set; } = 15f;
+        //public virtual float NJO { get; set; } = 0f;
+
         public virtual bool AllowCrouchWalls { get; set; } = false;//BW added this
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
         

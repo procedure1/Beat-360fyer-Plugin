@@ -27,12 +27,14 @@
         <toggle-setting text='Bright Lights' apply-on-change='true' value='BrightLights' bind-value='true' hover-hint="Brightens low key lights. This affects all 360/90 degree maps."></toggle-setting>
         <toggle-setting text='Boost Lighting Events' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds 'boost' lighting events to maps that don't have them. Occurs based on rotations."></toggle-setting>
       </vertical>
-      <text text="NJS-NJO" align="Center" fontSize="2.5" />
+      
+      <!--<text text="NJS-NJO" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Note Jump Speed and Offset' apply-on-change='true' value='EnableNJS' bind-value='true' hover-hint='Please disable JDFixer and other similar mods to use this. Set Player Settings>Jump Duration Type to Dynamic.'></toggle-setting>
         <slider-setting text="NJS" apply-on-change="true" value="NJS" bind-value="true" show-buttons="true" increment=".1"  min="1"   max="30" hover-hint="Desired Note Jump Speed for generated maps. Disables score submission if set easier than original."  rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
         <slider-setting text="NJO" apply-on-change="true" value="NJO" bind-value="true" show-buttons="true" increment=".01" min="-10" max="10" hover-hint="Desired Note Jump Offset for generated maps. Disables score submission if set easier than original." rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
-      </vertical>
+      </vertical>-->
+      
       <text text="90" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Enable Generated 90 Maps' apply-on-change='true' value='ShowGenerated90' bind-value='true' hover-hint='Requires restart for maps that have already been selected in the menu.'></toggle-setting>

@@ -93,7 +93,7 @@ namespace Beat360fyerPlugin.Patches
         }
     }
     #endregion
-    #region 5 Prefix - BeatmapObjectSpawnMovementData NJS NJO
+    #region 5 Prefix - BeatmapObjectSpawnMovementData Call BigLasers
     //BW 5th item that runs. JDFixer uses this method so that the user can update the MaxJNS over and over. i tried it in LevelUpdatePatcher. it works but can only be updated before play song one time https://github.com/zeph-yr/JDFixer/blob/b51c659def0e9cefb9e0893b19647bb9d97ee9ae/HarmonyPatches.cs
     //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
 
@@ -102,53 +102,14 @@ namespace Beat360fyerPlugin.Patches
     internal class SpawnMovementDataUpdatePatch
     {
         //private static bool OriginalValuesSet = false; // Flag to ensure original values are only stored once
-        public static float OriginalNJS; // Store the original startNoteJumpMovementSpeed
-        public static float OriginalNJO;
+        //public static float OriginalNJS; // Store the original startNoteJumpMovementSpeed
+        //public static float OriginalNJO;
         internal static void Prefix(ref float startNoteJumpMovementSpeed, float startBpm, NoteJumpValueType noteJumpValueType, ref float noteJumpValue)//, IJumpOffsetYProvider jumpOffsetYProvider, Vector3 rightVec, Vector3 forwardVec)
         {
             if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree" || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
             {
                 BigLasers myOtherInstance = new BigLasers();
                 myOtherInstance.Big();
-            }
-
-            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree")//only do this for gen 360 or else it will do this for all maps
-            {
-
-
-                //BW Version 2, uses enable/disable. Will change the NJS & NJO to the user value no matter whether the original is higher or lower
-                //if (!OriginalValuesSet)// Store the original values if they haven't been stored yet
-                //{
-                OriginalNJS = TransitionPatcher.noteJumpMovementSpeed;
-                OriginalNJO = TransitionPatcher.noteJumpStartBeatOffset;
-
-                //OriginalValuesSet = true;
-                //}
-
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpMovementSpeed: " + OriginalNJS + " and from SpawnMovementDataUpdatePatch startNoteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
-                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpStartBeatOffset: " + OriginalNJO);
-
-                if (Config.Instance.EnableNJS)
-                {
-                    startNoteJumpMovementSpeed = Config.Instance.NJS;
-                    noteJumpValue = Config.Instance.NJO;// this works but if you read this before setting it, it has the wrong number. its always .5 i think.
-
-                    if (Config.Instance.NJS < OriginalNJS || Config.Instance.NJO > OriginalNJO)
-                    {
-                        ScoreSubmission.DisableSubmission("360Fyer");
-                        Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score disabled by NJS NJO - NJS Orig: " + OriginalNJS + " New NJS " + Config.Instance.NJS + " Orig NJO " + OriginalNJO + " New NJO: " + Config.Instance.NJO);
-                    }
-                    else
-                    {
-                        //Plugin.Log.Info(LevelUpdatePatcher.SongName + "Score NOT disabled by NJS NJO");
-                    }
-
-                    //Plugin.Log.Info("--------------------");
-                    //Plugin.Log.Info("SongName: " + LevelUpdatePatcher.SongName);
-                    //Plugin.Log.Info("New noteJumpMovementSpeed: "   + startNoteJumpMovementSpeed);
-                    //Plugin.Log.Info("New noteJumpStartBeatOffset: " + noteJumpValue);
-                }
             }
         }
     }
