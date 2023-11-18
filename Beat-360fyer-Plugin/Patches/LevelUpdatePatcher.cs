@@ -24,7 +24,6 @@ using System.Xml.Linq;
 using System.Threading;
 using static BeatmapObjectSpawnMovementData;
 using System.Windows.Markup;
-using CustomJSONData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics.Eventing.Reader;
@@ -272,6 +271,7 @@ namespace Beat360fyerPlugin.Patches
     }
     */
     #endregion
+
     #region 5 Prefix - BeatmapObjectSpawnMovementData NJS NJO
     //BW 5th item that runs. JDFixer uses this method so that the user can update the MaxJNS over and over. i tried it in LevelUpdatePatcher. it works but can only be updated before play song one time https://github.com/zeph-yr/JDFixer/blob/b51c659def0e9cefb9e0893b19647bb9d97ee9ae/HarmonyPatches.cs
     //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
@@ -304,9 +304,9 @@ namespace Beat360fyerPlugin.Patches
                     //OriginalValuesSet = true;
                 //}
 
-                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
-                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpMovementSpeed: " + OriginalNJS + " and from SpawnMovementDataUpdatePatch startNoteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
-                Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpStartBeatOffset: " + OriginalNJO);
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpMovementSpeed: " + OriginalNJS + " and from SpawnMovementDataUpdatePatch startNoteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
+                //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch Original TransitionPatcher.noteJumpStartBeatOffset: " + OriginalNJO);
 
                 if (Config.Instance.EnableNJS)
                 {
@@ -330,8 +330,11 @@ namespace Beat360fyerPlugin.Patches
                 }
                 else
                 {
-                    startNoteJumpMovementSpeed = OriginalNJS;
-                    noteJumpValue = OriginalNJO;
+                    //this sets the map correctly, but if Note Jump Duration Type set to Static makes super fast notes for some reason, and if Dynamic, has no effect.
+                    //startNoteJumpMovementSpeed = OriginalNJS;
+                    //noteJumpValue = OriginalNJO;
+                    //Plugin.Log.Info("Using Original noteJumpMovementSpeed: " + OriginalNJS);
+                    //Plugin.Log.Info("Using Original noteJumpStartBeatOffset: " + OriginalNJO);
 
                     //Plugin.Log.Info("BW SpawnMovementDataUpdatePatch SongName: " + LevelUpdatePatcher.SongName);
                     //Plugin.Log.Info("Using Original noteJumpMovementSpeed: " + startNoteJumpMovementSpeed);
@@ -380,9 +383,10 @@ namespace Beat360fyerPlugin.Patches
                 }
                 */
             }
-        }
+       }
     }
     #endregion
+
     #region 4 Postfix - CreateTransformedBeatmapData
     //BW 4th item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher https://harmony.pardeike.net/articles/patching-prefix.html
     //This runs after 3rd item automatically
@@ -444,10 +448,17 @@ namespace Beat360fyerPlugin.Patches
                         //Plugin.Log.Info("Score Not disabled by Standard or Multiplier" + gen.RotationSpeedMultiplier);
                     }
 
+
                     if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_90DEGREE_MODE)
                     {   //BW devided by 2 to make the rotation angle accurate. 90 degrees was 180 degress without this 
                         gen.LimitRotations = (int)((Config.Instance.LimitRotations90 / 360f / 2f) * (24f));// / Config.Instance.RotationAngleMultiplier));//BW this convert the angle into LimitRotation units of 15 degree slices. Need to divide the Multiplier since it causes the angle to change from 15 degrees. this will keep the desired limit to work if a multiplier is added.
                         gen.BottleneckRotations = gen.LimitRotations / 2;
+
+                        if (Config.Instance.LimitRotations90 < 90)
+                        {
+                            ScoreSubmission.DisableSubmission("360Fyer");
+                            Plugin.Log.Info("Score disabled by LimitRotations90 set less than 90.");
+                        }
                     }
                     else if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_360DEGREE_MODE)
                     {
@@ -458,6 +469,11 @@ namespace Beat360fyerPlugin.Patches
                         }
                         else
                         {   //BW devided by 2 to make the rotation angle accurate. 90 degrees was 180 degress without this 
+                            if (Config.Instance.LimitRotations360 < 135)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
+                            {
+                                ScoreSubmission.DisableSubmission("360Fyer");
+                                Plugin.Log.Info("Score disabled by LimitRotations360 set less than 135.");
+                            }
                             gen.LimitRotations = (int)((Config.Instance.LimitRotations360 / 360f / 2f) * (24f));// / Config.Instance.RotationAngleMultiplier));//BW this convert the angle into LimitRotation units of 15 degree slices. Need to divide the Multiplier since it causes the angle to change from 15 degrees. this will keep the desired limit to work if a multiplier is added.
                             gen.BottleneckRotations = gen.LimitRotations / 2;
                         }
@@ -669,6 +685,8 @@ namespace Beat360fyerPlugin.Patches
             IReadonlyBeatmapData RetrieveBeatmapData(IDifficultyBeatmap theDifficultyBeatmap, EnvironmentInfoSO environmentInfo, PlayerSpecificSettings thePlayerSpecificSettings)
             {
                 IReadonlyBeatmapData theBeatmapData = Task.Run(() => difficultyBeatmap.GetBeatmapDataAsync(environmentInfo, playerSpecificSettings)).Result;
+                Plugin.Log.Info($"PlayerSpecificSettings - NoteJumpDurationTypeSettings: {playerSpecificSettings.noteJumpDurationTypeSettings}. if Static - noteJumpFixedDuration(reaction time): {playerSpecificSettings.noteJumpFixedDuration} or if Dynamic - Note Jump Offset: {playerSpecificSettings.noteJumpStartBeatOffset}");
+
                 return theBeatmapData;
             }
             if (RetrieveBeatmapData(difficultyBeatmap, previewBeatmapLevel.environmentInfo, playerSpecificSettings) is CustomBeatmapData dataCB)
@@ -972,53 +990,16 @@ namespace Beat360fyerPlugin.Patches
 
                     //Testing this in its place: adjusting NJS and NJO
                     CustomDifficultyBeatmap[] difficultyBeatmaps = basedOnGameMode.difficultyBeatmaps.Cast<CustomDifficultyBeatmap>().Select((cbm) => {
-
-                        //CuttableNotesCount = cbm.beatmapDataBasicInfo.cuttableNotesCount;
-
-                        //Plugin.Log.Info("BW 2 StandardLevelDetailView Average NPS: " + averageNPS);
-                        //Plugin.Log.Info("Total Notes in Map: " + cbm.beatmapDataBasicInfo.cuttableNotesCount);
-                        //Plugin.Log.Info("Total Duration: " + cbm.level.songDuration);
-
-                        /*
-                         * 
-                        //Moved to new harmony patch
-                        Plugin.Log.Info("Original noteJumpMovementSpeed: " + cbm.noteJumpMovementSpeed);
-                        Plugin.Log.Info("Original noteJumpStartBeatOffset: " + cbm.noteJumpStartBeatOffset);
-
-                        float MaxNJS = Config.Instance.MaxNJS;
-                        float modifiedNJS = cbm.noteJumpMovementSpeed;
-                        float modifiedNJO = cbm.noteJumpStartBeatOffset;
-
-                        //if the note jump speed is greater than the user desired max note jump speed
-                        //note jump offset determines how far away notes spawn from you. A negative modifier means notes will spawn closer to you, and a positive modifier means notes will spawn further away
-                        if (cbm.noteJumpMovementSpeed > MaxNJS || (cbm.noteJumpMovementSpeed >= MaxNJS-1 && cbm.noteJumpStartBeatOffset < 0))
-                        {
-                            if (averageNPS > 3.5f)//for very fast maps, reduce it a little more.
-                            {
-                                modifiedNJS = MaxNJS - 1;
-                            }
-                            else
-                            {
-                                modifiedNJS = MaxNJS;
-                            }
-                            modifiedNJO = 0f;
-
-                            Plugin.Log.Info("New noteJumpMovementSpeed: " + modifiedNJS);
-                            Plugin.Log.Info("New noteJumpStartBeatOffset: " + modifiedNJO);
-                        }
-                        */
-
-
                         return new CustomDifficultyBeatmap(
                             cbm.level,
                             customSet,
                             cbm.difficulty,
                             cbm.difficultyRank,
-                            cbm.noteJumpMovementSpeed,//modifiedNJS,
-                            cbm.noteJumpStartBeatOffset,//modifiedNJO,
+                            cbm.noteJumpMovementSpeed,
+                            cbm.noteJumpStartBeatOffset,
                             cbm.beatsPerMinute,
-                            cbm.beatmapColorSchemeIdx,//BW v1.31.0 added
-                            cbm.environmentNameIdx,//BW v1.31.0 added
+                            cbm.beatmapColorSchemeIdx,
+                            cbm.environmentNameIdx,
                             cbm.beatmapSaveData,
                             cbm.beatmapDataBasicInfo);
                         }).ToArray();

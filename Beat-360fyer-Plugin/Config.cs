@@ -21,6 +21,8 @@ namespace Beat360fyerPlugin
         public virtual bool BrightLights { get; set; } = true;
         public virtual bool BoostLighting { get; set; } = true;
 
+        //public virtual bool EnableSpin { get; set; } = true;
+
         //BW Disable scoring on all below------------------------
         public virtual bool EnableNJS { get; set; } = false;
         public virtual float NJS { get; set; } = 15f;
@@ -46,7 +48,7 @@ namespace Beat360fyerPlugin
 
 
         //TESTING
-        public virtual bool AddXtraRotation { get; set; } = true;//for periods of low rotation, will make sure rotations for direction-less notes move in same direction as last rotation so totalRotation will increase.
+        public virtual bool AddXtraRotation { get; set; } = false;//for periods of low rotation, will make sure rotations for direction-less notes move in same direction as last rotation so totalRotation will increase.
         public virtual float RotationGroupLimit { get; set; } = 10f;//If totalRotations are under this limit, will add more rotations
         public virtual float RotationGroupSize { get; set; } = 12;//The number of rotations to remain inactive for adding rotations
 

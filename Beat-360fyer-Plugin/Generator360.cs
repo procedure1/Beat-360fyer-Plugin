@@ -24,6 +24,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 using static SpawnRotationBeatmapEventData;
 using System.Text.RegularExpressions;
+using UnityEngine.UI;
 //using Newtonsoft.Json;//BW added to work with JSON files - rt click solution explorer and manage NuGet packages
 //using System.IO;//BW for file writing
 
@@ -107,9 +108,11 @@ namespace Beat360fyerPlugin
 
         public IReadonlyBeatmapData Generate(IReadonlyBeatmapData bmData, float bpm)
         {
-            Plugin.Log.Info($"Song: {LevelUpdatePatcher.SongName}-----------------------------");
-            Plugin.Log.Info($"PBD:  {PreferredBarDuration}");
-            Plugin.Log.Info($"RotationGroupLimit:  {Config.Instance.RotationGroupLimit} RotationGroupSize: {Config.Instance.RotationGroupSize}"); 
+            //EnableSpin = Config.Instance.EnableSpin;
+
+            Plugin.Log.Info($"SongName: {LevelUpdatePatcher.SongName}-----------------------------");
+            //Plugin.Log.Info($"PBD:  {PreferredBarDuration}");
+            //Plugin.Log.Info($"RotationGroupLimit:  {Config.Instance.RotationGroupLimit} RotationGroupSize: {Config.Instance.RotationGroupSize}"); 
             Plugin.Log.Info(" ");
 
             // Find the MultiplierSet based on the RotationAngleMultiplier
@@ -137,8 +140,7 @@ namespace Beat360fyerPlugin
             bool previousDirection = true;
             float previousSpinTime = float.MinValue;
 
-            #region Rotate
-            int  boostInteration = 0; // Counter for tracking iterations
+            int boostInteration = 0; // Counter for tracking iterations
             bool boostOn = true; // Initial boolean value
 
             int r = 1;
@@ -152,23 +154,36 @@ namespace Beat360fyerPlugin
             int newRotation = 0;
             bool addMoreRotations = false;
             int RotationGroupLimit = (int)Config.Instance.RotationGroupLimit;
-
-            int RotationGroupSize  = (int)Config.Instance.RotationGroupSize;
+            int RotationGroupSize = (int)Config.Instance.RotationGroupSize;
 
             bool alternateParams = false;
 
             int offSetR = 0;
 
+            List<SliderData> sliders = dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList();//only use normal sliders (arcs) not burst sliders
+            List<SliderData> slidersWithRotations = new List<SliderData>();
+            List<SpawnRotationBeatmapEventData>sliderRotations = new List<SpawnRotationBeatmapEventData>();
+
+            /*
+            List<(float, float)> rotationsNotAllowed = new List<(float, float)>();//float head of slider, float tail of slider
+            foreach (SliderData slider in dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList())//only search normal sliders (arcs) not burst sliders
+            {
+                rotationsNotAllowed.Add((slider.time, slider.tailTime));
+                Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
+            }
+            */
+
+            #region Rotate
             //Each rotation is 15 degree increments so 24 positive rotations is 360. Negative numbers rotate to the left, positive to the right
             void Rotate(float time, int amount, SpawnRotationBeatmapEventData.SpawnRotationEventType moment, bool enableLimit = true)
-            {
-                //Allows 4*15=60 degree turn max and -60 degree min -- however amounts are never passed in higher than 3 or lower than -3. I in testing I only see 2 to -2
-                if (amount == 0)
-                    return;
+            {             
+                if (amount == 0)//Allows 4*15=60 degree turn max and -60 degree min -- however amounts are never passed in higher than 3 or lower than -3. I in testing I only see 2 to -2
+                    return;               
                 if (amount < -4)
                     amount = -4;
                 if (amount > 4)
                     amount = 4;
+
 
                 if (enableLimit)//always true unless you enableSpin in settings
                 {
@@ -181,6 +196,48 @@ namespace Beat360fyerPlugin
 
                     totalRotation += amount;
                     //Plugin.Log.Info($"totalRotation: {totalRotation} at time: {time}.");
+                }
+
+                if (Config.Instance.ArcFixFull)
+                {
+                    //SpawnRotationBeatmapEventData lastRotationBeforeSlider = new SpawnRotationBeatmapEventData(0, moment, 0);//get the last rotation before or at the head of the slider--doesn't work. amount will be 0 when you read it later
+                    
+                    //These were only needed if plan to include an ArcFix after the loop to restore some rotations to arcs.
+                    //float lastRotationBeforeSlider = 0;
+                    //float lastTimeBeforeSlider = 0;
+                    //Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
+
+
+
+                    foreach (SliderData slider in sliders)
+                    {
+
+                        if (time < slider.time - .001f)//if rotation time is at least .001s less than slider.time (so defiantely less)
+                        {
+                            //lastRotationBeforeSlider = new SpawnRotationBeatmapEventData(time, moment, (float)amount * 15f);//get the last rotation before or at the head of the slider--doesn't work. amount will be 0 when you read it later
+                            //lastRotationBeforeSlider = amount * 15f;
+                            //lastTimeBeforeSlider = time;
+                            //Plugin.Log.Info($"--- ARC FIX: Set lastRotationBeforeSlider time: {lastTimeBeforeSlider} rotation: {lastRotationBeforeSlider}. This is BEFORE Slider time: {slider.time} tailTime: {slider.tailTime}.");
+                            
+                            break;//if the rotation is before a slider, it will be before all the remaining sliders too so can break from the foreach // lastRotationBeforeSlider = amount;//get the last rotation before or at the head of the slider
+                        }
+                        else if (time <= slider.tailTime + .001f)//can be a tiny bit .01s past the tailTime
+                        {
+                            //Plugin.Log.Info($"----- ARC FIX: Cancelled Rotation time: {time} amount: {amount * 15f}. During Slider time: {slider.time} tailTime: {slider.tailTime}.");
+
+                            //if (lastRotationBeforeSlider != 0)
+                            //    sliderRotations.Add(new SpawnRotationBeatmapEventData(lastTimeBeforeSlider, SpawnRotationEventType.Late, lastRotationBeforeSlider));
+
+                            //sliderRotations.Add(new SpawnRotationBeatmapEventData(time, moment, amount * 15f));//create a list of unused rotation so can check later in the arc fix section to see if some can be used
+                            //slidersWithRotations.Add(slider);
+
+                            return;//exit rotate() and thus cancel the rotation
+
+                            //Plugin.Log.Info($"--- lastRotationBeforeSlider: {lastRotationBeforeSlider}. During Slider found rotation at: {ro.time} amount: {ro.rotation} -- # of rotations inside so far: {sliderRotations.Count}");
+
+                        }
+
+                    }
                 }
 
                 previousDirection = amount > 0;
@@ -228,7 +285,6 @@ namespace Beat360fyerPlugin
                     if (boostInteration == 33) { boostInteration = 0; }
                 }
             }
-
             #endregion
 
             float beatDuration = 60f / bpm;
@@ -266,7 +322,7 @@ namespace Beat360fyerPlugin
 #if DEBUG
             Plugin.Log.Info($"Setup bpm={bpm} beatDuration={beatDuration} barLength={barLength} firstNoteTime={firstBeatmapNoteTime} firstnoteGameplayType={notes[0].gameplayType} firstnoteColorType={notes[0].colorType}");
 #endif
-
+            #region Main Loop
             for (int i = 0; i < notes.Count;)
             {
                 float currentBarStart = Floor((notes[i].time - firstBeatmapNoteTime) / barLength) * barLength;
@@ -294,6 +350,7 @@ namespace Beat360fyerPlugin
                 if (notesInBar.Count == 0)
                     continue;
 
+                /*
                 if (EnableSpin && notesInBar.Count >= 2 && currentBarStart - previousSpinTime > SpinCooldown && notesInBar.All((e) => Math.Abs(e.time - notesInBar[0].time) < 0.001f))
                 {
 #if DEBUG
@@ -322,7 +379,7 @@ namespace Beat360fyerPlugin
                     previousSpinTime = currentBarStart;
                     continue;
                 }
-
+                */
                 // Divide the current bar in x pieces (or notes), for each piece, a rotation event CAN be emitted
                 // Is calculated from the amount of notes in the current bar
                 // barDivider | rotations
@@ -502,8 +559,8 @@ namespace Beat360fyerPlugin
                                     else
                                         newRotation = -Math.Abs(rotation);
 
-                                    if (newRotation != rotation)
-                                        Plugin.Log.Info($"r: {r} Old Rotation: {rotation} New Rotation: {newRotation}");// totalRotationsGroup: {totalRotationsGroup}");
+                                    //if (newRotation != rotation)
+                                    //    Plugin.Log.Info($"r: {r} Old Rotation: {rotation} New Rotation: {newRotation}");// totalRotationsGroup: {totalRotationsGroup}");
 
                                     rotation = newRotation;
 
@@ -575,9 +632,9 @@ namespace Beat360fyerPlugin
                     //The condition for setting rotationCount to 3 is that timeDiff (the time difference between afterLastNote and lastNote) is greater than or equal to barLength. If your test data rarely or never satisfies this condition, you won't see rotation values of -3 or 3.
                     //Similarly, the condition for setting rotationCount to 2 is that timeDiff is greater than or equal to barLength / 8. If this condition is rarely met in your test cases, it would explain why you mostly see rotation values of - 2, -1, 0, 1, or 2.
 
-                    Rotate(lastNote.time, rotation, SpawnRotationBeatmapEventData.SpawnRotationEventType.Late);
+                    //Plugin.Log.Info($"Rotate() r: {r}\t Time: {Math.Round(lastNote.time, 2).ToString("0.00")}\t Rotation Step:\t {rotation}\t lastNoteDir:\t {lastNote.cutDirection}\t totalRotation:\t {totalRotation}\t totalRotationsGroup:\t {totalRotationsGroup}");// Type: {(int)SpawnRotationBeatmapEventData.SpawnRotationEventType.Late}"); \t Beat: {lastNote.time * bpm / 60f}
 
-                    Plugin.Log.Info($"Rotate() r: {r}\t Time: {Math.Round(lastNote.time, 2).ToString("0.00")}\t Rotation Step:\t {rotation}\t lastNoteDir:\t {lastNote.cutDirection}\t totalRotation:\t {totalRotation}\t totalRotationsGroup:\t {totalRotationsGroup}");// Type: {(int)SpawnRotationBeatmapEventData.SpawnRotationEventType.Late}"); \t Beat: {lastNote.time * bpm / 60f}
+                    Rotate(lastNote.time, rotation, SpawnRotationBeatmapEventData.SpawnRotationEventType.Late);
 
                     r++;
 
@@ -774,7 +831,10 @@ namespace Beat360fyerPlugin
 
                                     int lineIndex = 3;// (width1 != 1) ? 4 : 3; //if width is one of the wide walls move the wall further away from user so not as obtrusive.
 
-                                    data.AddBeatmapObjectDataInOrder(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//note width is always 1 here. BW changed to make all walls 5 high since this version of plugin shortens height of walls which i don't like - default:  wallHeight)); wallHeight));
+                                    //Convert to CJD because chroma gets errors without this
+                                    CustomObstacleData customObsData = new CustomObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5, new CustomData(), true);
+                                    data.AddBeatmapObjectDataInOrder(customObsData);//(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//note width is always 1 here. BW changed to make all walls 5 high since this version of plugin shortens height of walls which i don't like - default:  wallHeight)); wallHeight));
+
 
                                     //string temp; if (wallHeight == 1) { temp = "Top"; } else { temp = "Base"; };
                                     //Plugin.Log.Info($"Wall Generate1: Time: {wallTime}, Index: 3, Layer: {temp}, Dur: {wallDuration}, Width: {randomNumber}, Height: 5");
@@ -813,11 +873,12 @@ namespace Beat360fyerPlugin
 
                                     int lineIndex = 0;//= (width2 != 1) ? -1 : 0; //if width is one of the wide walls move the wall further away from user so not as obtrusive.
 
-
-                                    data.AddBeatmapObjectDataInOrder(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//BW wallHeight));
+                                    //Convert to CJD because chroma gets errors without this
+                                    CustomObstacleData customObsData = new CustomObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5, new CustomData(), true);
+                                    data.AddBeatmapObjectDataInOrder(customObsData);// new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//BW wallHeight));
 
                                     //string temp; if (wallHeight == 1) { temp = "Top"; } else { temp = "Base"; };
-                                    //Plugin.Log.Info($"Wall Generate2: Time: {wallTime}, Index: 0, Layer: {temp}, Dur: {wallDuration}, Width: {randomNumber}, Height: 5");
+                                    //Plugin.Log.Info($"Wall Generator: Time: {wallTime}, Index: 0, Layer: {temp}, Dur: {wallDuration}, Width: {width}, Height: 5");
 
                                 }
                             }
@@ -835,6 +896,8 @@ namespace Beat360fyerPlugin
                 Plugin.Log.Info($"[{currentBarStart + firstBeatmapNoteTime}({(currentBarStart + firstBeatmapNoteTime) / beatDuration}) -> {currentBarEnd + firstBeatmapNoteTime}({(currentBarEnd + firstBeatmapNoteTime) / beatDuration})] count={notesInBar.Count} segments={builder} barDiviver={barDivider}");
 #endif
             }//End for loop over all notes---------------------------------------------------------------
+            #endregion
+
             /*
             if (needsMoreRotations)
             {
@@ -893,14 +956,100 @@ namespace Beat360fyerPlugin
                 }
             }
             */
-            //Works but rotations are stored at the current total map rotation. So so rotation may be -175 for example (where the prvious may have been -160). So deleting a rotation will allow the next rotation to be a giant rotation leap. 
-            //Could update all other roations when a rotation is deleted. OR move a similar tool before rotations are created and stop a new rotation from being added if its inside an arc.
-            #region Arc Fix
+
+
+            //Arcfix below was being designed to allow sliders with multiple rotations inside them to used if the head of the slider and the tail end up on the same rotation track
+            //The problem with attempting to add rotations outside the main loop is that other items like wall generation require knowing where rotation are located. Doing this can cause walls to cross in frot of the user during sliders if a wall exists there.
+            //So before this was perfected I stopped working on it.
+            
+            /*
+            #region Arc Fix NEW - Restores some rotations during Arcs
+            if (Config.Instance.ArcFix)
+            {
+                Plugin.Log.Info($"Starting Arc Fix to check for removed rotations that can be added back:");
+
+                float previousSliderTime = 0;
+
+                foreach (SliderData slider in slidersWithRotations)//dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList())//only search normal sliders (arcs) not burst sliders
+                {
+                    List<SpawnRotationBeatmapEventData> rotationsInsideThisSlider = new List<SpawnRotationBeatmapEventData>();//list of roations during this slider
+
+                    float lastRotationBeforeSlider = -1f;
+
+                    Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
+
+                    foreach (SpawnRotationBeatmapEventData ro in sliderRotations)
+                    {
+                        if (ro.time < slider.time - .001f)//if ro.time is at least .001s less than slider.time (so defiantely less)
+                        {
+                            lastRotationBeforeSlider = ro.rotation;//get the last rotation before or at the head of the slider
+                        }
+                        else if (ro.time <= slider.tailTime + .01f)//can be a tiny bit .01s past the tailTime
+                        {
+                            //totalSliderRotations.Add(ro.rotation);
+
+                            rotationsInsideThisSlider.Add(ro);//list of roations during this slider
+
+                            Plugin.Log.Info($"--- lastRotationBeforeSlider: {lastRotationBeforeSlider}. During Slider found rotation at: {ro.time} amount: {ro.rotation} -- # of rotations inside so far: {rotationsInsideThisSlider.Count}");
+                        }
+                        else//after the slider now
+                        {
+                            if (rotationsInsideThisSlider.Count > 1)//if there is 0 rotations don't do anything. if there is only 1 rotation then there is no way it can rotate back to the same rotation before the slider
+                            {
+                                Plugin.Log.Info($"------ Checking the total rotations for all {rotationsInsideThisSlider.Count} rotation(s) inside the ARC:");
+
+                                if (lastRotationBeforeSlider != rotationsInsideThisSlider[rotationsInsideThisSlider.Count - 1].rotation)//rotation before slider must equal the rotation at the end of the slider
+                                {
+                                    foreach (SpawnRotationBeatmapEventData insertRotation in rotationsInsideThisSlider)
+                                    {
+                                        if (previousSliderTime != slider.time)//2 or more sliders can occur at the same time. so don't insert the same rotations again
+                                        {
+                                            Plugin.Log.Info($"--------------- Insert rotation at: {insertRotation.time} amount: {insertRotation.rotation}");
+                                            data.InsertBeatmapEventDataInOrder(insertRotation);
+                                        }
+                                        else
+                                            Plugin.Log.Info($"--------------- Already Inserted rotation at: {insertRotation.time} amount: {insertRotation.rotation}");
+                                    }
+                                }
+                                else
+                                {
+                                    Plugin.Log.Info($"--------- ARC contains {sliderRotations.Count} rotations but can keep them all! lastRotationBeforeSlider: {lastRotationBeforeSlider} and end total rot: {sliderRotations[sliderRotations.Count - 1].rotation} -- Results in slight mismatch of the tail :(");
+                                }
+
+                            }
+                            else
+                            {
+                                Plugin.Log.Info($"--- ARC contains NO rotations or only 1 rotation which means it cannot rotate back to starting amount before slider. So nothing to insert.");
+                            }
+                            //Plugin.Log.Info($"--- BREAK to next slider!");
+
+                            previousSliderTime = slider.time;
+                            break;
+                        }
+                    }
+                    previousSliderTime = slider.time;
+                }
+
+                Plugin.Log.Info($"=========================== All Rotations Now ================================================");
+                foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
+                {
+                   Plugin.Log.Info($"rotation amount: {ro.rotation} at: {ro.time}");
+                }
+
+            }
+
+            #endregion
+            */
+            /*
+            //Works but rotations are stored at the current total map rotation. So rotation may be -175 for example (where the prvious may have been -160). So deleting a rotation will allow the next rotation to be a giant rotation leap. 
+            //Would need to update all other roations when a rotation is deleted.
+            //Decided to move a similar tool before rotations are created and to stop a new rotation from being added if its inside an arc. but then you lose the possibilty of having some arcs contain some rotations.
+            #region Arc Fix OLD            
             if (Config.Instance.ArcFix)
             {
                 Plugin.Log.Info($"Starting Arc Fix:");
 
-                List<SliderData> sliders = dataItems.OfType<SliderData>().ToList();
+                List<SliderData> sliders1 = dataItems.OfType<SliderData>().ToList();
 
                 foreach (SliderData slider in dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList())//only search normal sliders (arcs) not burst sliders
                 {
@@ -911,13 +1060,13 @@ namespace Beat360fyerPlugin
 
                     Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
 
-                    foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().Where((e) => e.time >= sliders[0].time).ToList())
+                    foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().Where((e) => e.time >= sliders1[0].time).ToList())
                     {
-                        if (ro.time < slider.time - .001f)//if ro.time is at least .001s less than slider.time (so defiantely less)
+                        if (ro.time < slider.time - .3f)//if ro.time is at least .001s less than slider.time (so defiantely less)
                         {
                             lastRotationBeforeSlider = ro.rotation;//get the last rotation before or at the head of the slider
                         }
-                        else if (ro.time <= slider.tailTime + .001f)//can be a tiny bit .01s past the tailTime
+                        else if (ro.time <= slider.tailTime + .3f)//can be a tiny bit .01s past the tailTime
                         {
                             //totalSliderRotations.Add(ro.rotation);
 
@@ -963,15 +1112,18 @@ namespace Beat360fyerPlugin
                         }
                     }
                 }
-                /*
-                Plugin.Log.Info($"=========================== rotation that remain================================================");
-                foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
-                {
-                    Plugin.Log.Info($"rotation amount: {ro.rotation} at: {ro.time}");
-                }
-                */
+                
+                //Plugin.Log.Info($"=========================== rotation that remain================================================");
+                //foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
+                //{
+                //    Plugin.Log.Info($"rotation amount: {ro.rotation} at: {ro.time}");
+                //}
+                
             }
+            
             #endregion
+            */
+
 
             #region Wall Removal
             //BW noodle extensions causes BS crash in the section somewhere below. Could drill down and figure out why. Haven't figured out how to test for noodle extensions but noodle extension have custom walls that crash Beat Saber so BW added test for custom walls.

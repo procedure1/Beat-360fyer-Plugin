@@ -63,19 +63,19 @@ namespace Beat360fyerPlugin.UI
             return $"{intValue}°";
         }
         //TESTING -----------------------------------------------------------
-        [UIValue("ArcFix")]
+        /*[UIValue("EnableSpin")]
         public bool ArcFix
         {
-            get => Config.Instance.ArcFix;
-            set => Config.Instance.ArcFix = value;
-        }
+            get => Config.Instance.EnableSpin;
+            set => Config.Instance.EnableSpin = value;
+        }*/
         [UIValue("ArcFixFull")]
         public bool ArcFixFull
         {
             get => Config.Instance.ArcFixFull;
             set => Config.Instance.ArcFixFull = value;
         }
-        /*
+        
         [UIValue("AddXtraRotation")]
         public bool AddXtraRotation
         {
@@ -94,7 +94,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.RotationGroupSize;
             set => Config.Instance.RotationGroupSize = value;
         }
-        */
+        
         //END TESTING ------------------------------------------------------
         [UIValue("EnableWallGenerator")]
         public bool EnableWallGenerator
