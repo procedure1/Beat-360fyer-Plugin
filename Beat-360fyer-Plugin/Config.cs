@@ -20,21 +20,13 @@ namespace Beat360fyerPlugin
         public virtual bool BigLasers { get; set; } = true;
         public virtual bool BrightLights { get; set; } = true;
         public virtual bool BoostLighting { get; set; } = true;
-
-        //public virtual bool EnableSpin { get; set; } = true;
-
-        //BW Disable scoring on all below------------------------
         public virtual bool EnableNJS { get; set; } = false;
         public virtual float NJS { get; set; } = 15f;
         public virtual float NJO { get; set; } = 0f;
-        //public virtual float MaxNJS { get; set; } = 30;//BW maximum desired note jump speed - can't be INT for some reason with BSML i think
-        //public virtual float AllowedRotationsPerSec { get; set; } = 10;
-        //public virtual float FastMapPBD { get; set; } = 3f;//BW Fast map preferred bar duration
-        //public virtual float SlowMapPBD { get; set; } = 1.5f;//BW Slow map preferred bar duration
         public virtual bool AllowCrouchWalls { get; set; } = false;//BW added this
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
         
-        //BW Not needed since feels the same as the speed multiplier
+        //BW Not needed since rotates outside of the 15 degree pasages
         //public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
 
         public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
@@ -43,16 +35,16 @@ namespace Beat360fyerPlugin
         //BW Requires Beat Saber restart
         public virtual bool ShowGenerated360 { get; set; } = true;
         public virtual bool ShowGenerated90 { get; set; } = false;
-        public virtual bool OnlyOneSaber { get; set; } = false;//BW Disables scoring also
+
+        public virtual bool OnlyOneSaber { get; set; } = false;
         public virtual bool LeftHandedOneSaber { get; set; } = false;
 
 
-        //TESTING
         public virtual bool AddXtraRotation { get; set; } = false;//for periods of low rotation, will make sure rotations for direction-less notes move in same direction as last rotation so totalRotation will increase.
         public virtual float RotationGroupLimit { get; set; } = 10f;//If totalRotations are under this limit, will add more rotations
         public virtual float RotationGroupSize { get; set; } = 12;//The number of rotations to remain inactive for adding rotations
 
-        public virtual bool ArcFix { get; set; } = true;//remove rotation during sliders unless the head and tail rotation ends up the same. results is partial mismatch of tail
+        //public virtual bool ArcFix { get; set; } = true;//remove rotation during sliders unless the head and tail rotation ends up the same. results is partial mismatch of tail
         public virtual bool ArcFixFull { get; set; } = false;//removes all rotations during sliders
 
         //BW added this baseded on NoteLimiter UI. enums cannot use a digit so had to change 90Degree to NinetyDegree

@@ -2,24 +2,17 @@
 	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <settings-scroll-view background-color="transparent" >
     <vertical preferred-width="90" vertical-fit="PreferredSize"  anchor="UpperCenter">
-      <!--<text text="360/90 maps currently do not support the default color scheme." fontSize="3" align="Center" />
-      <text text="Please use COLORS > OVERRIDE DEFAULT COLORS" fontSize="3" align="Center" rich-text='true' font-color='#FFFF00'/>-->
       <text text="360" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Enable Generated 360 Maps' apply-on-change='true' value='ShowGenerated360' bind-value='true' hover-hint='Requires restart for maps that have already been selected in the menu.'></toggle-setting>
         <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true' hover-hint="For wireless VR with no rotation restrictions and no tendencies to reverse direction."></toggle-setting>
-        <!--<text text="For wireless VR with no rotation restrictions and no tendencies to reverse direction." align="Left" fontSize="2" size-delta-y='8'/>-->
         <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc. Disables score submission if set less than 135." rich-text='true' font-color='~TextColorSliderLimitRotations360' interactable="~EnableSliderLimitRotations360"></slider-setting>
-        <!--<text text="For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!)." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
       <text text="Rotation" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
-        <!--<toggle-setting text='TestEnableSpin' apply-on-change='true' value='EnableSpin' bind-value='true' hover-hint="Adds retations without notes."></toggle-setting>-->
         <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="3" hover-hint="Increase or decrease rotations. Default is 1. Disables score submission if set below 0.8."></slider-setting>
         <toggle-setting text='Arc Fix' apply-on-change='true' value='ArcFixFull' bind-value='true' hover-hint="Remove rotations during arcs to keep the tails connected to tail notes. Turn this off for more rotations."></toggle-setting>
         <toggle-setting text='AddXtraRotation' apply-on-change='true' value='AddXtraRotation' bind-value='true' hover-hint="Adds more rotations in a consistent direction. Useful for maps with low overall rotation."></toggle-setting>
-        <!--<slider-setting text="RotGrpLimit" apply-on-change="true" value="RotationGroupLimit" bind-value="true" show-buttons="true" increment="1" min="0" max="24" hover-hint="TESTING - how many rotation steps will be added during the group of rotations."></slider-setting>
-        <slider-setting text="RotGrpSize" apply-on-change="true"  value="RotationGroupSize"  bind-value="true" show-buttons="true" increment="1" min="0" max="100" hover-hint="TESTING - how many rotations in a group to test for needed rotations."></slider-setting>-->
       </vertical>
       <text text="Walls" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
@@ -33,23 +26,12 @@
         <toggle-setting text='Big Lasers' apply-on-change='true' value='BigLasers' bind-value='true' hover-hint="Scales up laser size. This affects all 360/90 degree maps."></toggle-setting>
         <toggle-setting text='Bright Lights' apply-on-change='true' value='BrightLights' bind-value='true' hover-hint="Brightens low key lights. This affects all 360/90 degree maps."></toggle-setting>
         <toggle-setting text='Boost Lighting Events' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds 'boost' lighting events to maps that don't have them. Occurs based on rotations."></toggle-setting>
-        <!--<text text="Walls are cool in 360! Adds more walls for visual interest." align="Left" fontSize="2" size-delta-y='8'/>-->
-     
-        <!--<text text="The items below disable score submission:" align="Center" fontSize="2.5" />-->
       </vertical>
       <text text="NJS-NJO" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Note Jump Speed and Offset' apply-on-change='true' value='EnableNJS' bind-value='true' hover-hint='Please disable JDFixer and other similar mods to use this. Set Player Settings>Jump Duration Type to Dynamic.'></toggle-setting>
         <slider-setting text="NJS" apply-on-change="true" value="NJS" bind-value="true" show-buttons="true" increment=".1"  min="1"   max="30" hover-hint="Desired Note Jump Speed for generated maps. Disables score submission if set easier than original."  rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
         <slider-setting text="NJO" apply-on-change="true" value="NJO" bind-value="true" show-buttons="true" increment=".01" min="-10" max="10" hover-hint="Desired Note Jump Offset for generated maps. Disables score submission if set easier than original." rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
-
-        <!--<slider-setting text="Allowed Rotations" apply-on-change="true" value="AllowedRotationsPerSec" bind-value="true" show-buttons="true" increment="1" min="1" max="10" hover-hint="Max allowed rotations per sec."></slider-setting>-->
-        <!--<slider-setting text="Fast Map PBD" apply-on-change="true" value="FastMapPBD" bind-value="true" show-buttons="true" increment=".1" min="1.2" max="3.5" hover-hint="Preferred Bar Duration for fast maps of 10anps or more."></slider-setting>-->
-        <!--<slider-setting text="Slow Map PBD" apply-on-change="true" value="SlowMapPBD" bind-value="true" show-buttons="true" increment=".1" min="1.2" max="3.5" hover-hint="Preferred Bar Duration for slow maps of 0anps"></slider-setting>-->
-         <!--<slider-setting text="Rotation Angle Multiplier" apply-on-change="true" value="RotationAngleMultiplier" bind-value="true" show-buttons="true" increment=".1" min="1" max="2"></slider-setting>-->
-        <!--<text text="Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc." align="Left" fontSize="2" size-delta-y='8'/>-->
-        <!--<list-setting text='Color Boost stole this from Technicolro' value='colorboost' choices='colorboostchoices' apply-on-change='true' hover-hint='The higher the number, the brighter the colors!' formatter='float'></list-setting>-->
-        <!--<text text="Change how frequently rotations are spawned." align="Left" fontSize="2" size-delta-y='8'/>-->
       </vertical>
       <text text="90" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
@@ -61,7 +43,6 @@
         <toggle-setting text='Only One Saber' apply-on-change='true' value='OnlyOneSaber' bind-value='true' hover-hint="360 and 90 maps with only one saber."></toggle-setting>
         <toggle-setting text='Left Handed One Saber' apply-on-change='true' value='LeftHandedOneSaber' bind-value='true'></toggle-setting>
       </vertical>
-
       <text text="Base Map" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <dropdown-list-setting text='Based On' value='BasedOn' choices='available-bases' bind-value='true' apply-on-change='true' hover-hint="Base map for generated 360 and 90 maps. Disables score submission if not set to Standard. May require restart."/></vertical>

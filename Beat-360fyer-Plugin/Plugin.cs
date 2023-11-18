@@ -1,19 +1,9 @@
 ﻿using HarmonyLib;
 using IPA;
-using IPA.Config;
 using IPA.Config.Stores;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using Beat360fyerPlugin;//BW UI
 using Beat360fyerPlugin.UI;//BW UI
 using IPALogger = IPA.Logging.Logger;
 using IPAConfig = IPA.Config.Config;
-using System.ComponentModel;
-using static Beat360fyerPlugin.Plugin;
 using Zenject;
 using SiraUtil.Zenject;//needed to get Zenjector for installer
 

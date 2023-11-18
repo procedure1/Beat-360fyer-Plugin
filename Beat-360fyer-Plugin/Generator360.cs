@@ -1,30 +1,14 @@
 ﻿using Beat360fyerPlugin.Patches;
-using BeatmapSaveDataVersion3;
-using CustomJSONData;
 using CustomJSONData.CustomBeatmap;
-using UnityEngine;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using IPA.Config.Data;
 using static IPA.Logging.Logger;
-using System.Runtime;
-using UnityEngine.Serialization;
-using Newtonsoft.Json;
 using static BeatmapLevelSO.GetBeatmapLevelDataResult;
 using static HMUI.IconSegmentedControl;
 using static NoteData;
-using System.Diagnostics.Eventing.Reader;
-using System.Threading;
-using Unity.Collections.LowLevel.Unsafe;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 using static SpawnRotationBeatmapEventData;
-using System.Text.RegularExpressions;
-using UnityEngine.UI;
 //using Newtonsoft.Json;//BW added to work with JSON files - rt click solution explorer and manage NuGet packages
 //using System.IO;//BW for file writing
 
@@ -133,12 +117,8 @@ namespace Beat360fyerPlugin
             // Moments where a wall should be cut
             List<(float, int)> wallCutMoments = new List<(float, int)>();
 
-            // BW added - keeps track of total rotations at time of each rotation so that later i can decide if want to add more rotations for maps that are not getting many rotations.
-            //List<(float, int)> totalRotationMoments = new List<(float, int)>();
-
             // Previous spin direction, false is left, true is right
             bool previousDirection = true;
-            float previousSpinTime = float.MinValue;
 
             int boostInteration = 0; // Counter for tracking iterations
             bool boostOn = true; // Initial boolean value
@@ -147,10 +127,7 @@ namespace Beat360fyerPlugin
             int totalRotationsGroup = 0;
             //int totalRotationUpdated = 0;
             bool prevRotationPositive = true;
-            //List<(bool, float, int, int)> newRotations = new List<(bool, float, int, int)>();//bool - replace with new rotations group?, float - time, int - rotation step, int - how many in are in this group
-            //bool needsMoreRotations = true;
-            //int prevGroupIndex = 0;
-            //nt groupCount = 0;
+
             int newRotation = 0;
             bool addMoreRotations = false;
             int RotationGroupLimit = (int)Config.Instance.RotationGroupLimit;
@@ -200,36 +177,17 @@ namespace Beat360fyerPlugin
 
                 if (Config.Instance.ArcFixFull)
                 {
-                    //SpawnRotationBeatmapEventData lastRotationBeforeSlider = new SpawnRotationBeatmapEventData(0, moment, 0);//get the last rotation before or at the head of the slider--doesn't work. amount will be 0 when you read it later
-                    
-                    //These were only needed if plan to include an ArcFix after the loop to restore some rotations to arcs.
-                    //float lastRotationBeforeSlider = 0;
-                    //float lastTimeBeforeSlider = 0;
-                    //Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
-
-
 
                     foreach (SliderData slider in sliders)
                     {
 
                         if (time < slider.time - .001f)//if rotation time is at least .001s less than slider.time (so defiantely less)
                         {
-                            //lastRotationBeforeSlider = new SpawnRotationBeatmapEventData(time, moment, (float)amount * 15f);//get the last rotation before or at the head of the slider--doesn't work. amount will be 0 when you read it later
-                            //lastRotationBeforeSlider = amount * 15f;
-                            //lastTimeBeforeSlider = time;
-                            //Plugin.Log.Info($"--- ARC FIX: Set lastRotationBeforeSlider time: {lastTimeBeforeSlider} rotation: {lastRotationBeforeSlider}. This is BEFORE Slider time: {slider.time} tailTime: {slider.tailTime}.");
-                            
                             break;//if the rotation is before a slider, it will be before all the remaining sliders too so can break from the foreach // lastRotationBeforeSlider = amount;//get the last rotation before or at the head of the slider
                         }
                         else if (time <= slider.tailTime + .001f)//can be a tiny bit .01s past the tailTime
                         {
                             //Plugin.Log.Info($"----- ARC FIX: Cancelled Rotation time: {time} amount: {amount * 15f}. During Slider time: {slider.time} tailTime: {slider.tailTime}.");
-
-                            //if (lastRotationBeforeSlider != 0)
-                            //    sliderRotations.Add(new SpawnRotationBeatmapEventData(lastTimeBeforeSlider, SpawnRotationEventType.Late, lastRotationBeforeSlider));
-
-                            //sliderRotations.Add(new SpawnRotationBeatmapEventData(time, moment, amount * 15f));//create a list of unused rotation so can check later in the arc fix section to see if some can be used
-                            //slidersWithRotations.Add(slider);
 
                             return;//exit rotate() and thus cancel the rotation
 
@@ -243,23 +201,7 @@ namespace Beat360fyerPlugin
                 previousDirection = amount > 0;
                 eventCount++;
                 wallCutMoments.Add((time, amount));
-                //totalRotationMoments.Add((time, totalRotation));
-
-                /*
-                Plugin.Log.Info($"Rotate Event - amount before: {amount}");
-                if (RotationAngleMultiplier > 1)
-                {
-                    if (selectedMultiplierSet.Values[selectedMultiplierIndex])
-                    {
-                        if (amount == 1) { amount = 2; }
-                            else if (amount == -1) { amount = -2; };
-                    }
-                    // Increment the index and wrap around to 0 after reaching the end or 10 in this case
-                    selectedMultiplierIndex = (selectedMultiplierIndex + 1) % 10;// selectedMultiplierSet.Values.Length;
-                }
-                Plugin.Log.Info($"Rotate Event - amount after: {amount}");
-                */
-
+  
                 //BW Discord help said to change InsertBeatmapEventData to InsertBeatmapEventDataInOrder which allowed content to be stored to data.
                 data.InsertBeatmapEventDataInOrder(new SpawnRotationBeatmapEventData(time, moment, amount * 15.0f));// * RotationAngleMultiplier));//discord suggestion
 
@@ -291,12 +233,6 @@ namespace Beat360fyerPlugin
 
             // Align PreferredBarDuration to beatDuration
             float barLength = beatDuration;
-
-            //float multiplier = 1;
-            //if (RotationSpeedMultiplier > 1)
-            //    multiplier = 1 + (RotationSpeedMultiplier - 1) / 2.5f;//example user sets 1.4 but this sets it to 1.2
-            //else if (RotationSpeedMultiplier < 1)
-            //    multiplier = 1 - (1 - RotationSpeedMultiplier) / 2.5f;//example user sets .8 but this set it to .9
 
             while (barLength >= PreferredBarDuration * 1.25f / RotationSpeedMultiplier)
             {
@@ -334,52 +270,13 @@ namespace Beat360fyerPlugin
                 for (; i < notes.Count && notes[i].time - firstBeatmapNoteTime < currentBarEnd; i++)
                 {
                     //Plugin.Log.Info($"Setup Notes added to NotesInBar:");
-                    // If isn't bomb
-                    //if (notes[i].gameplayType != NoteData.GameplayType.Bomb)//BW CHANGED THIS TO TEST to see if have more rotations
-                    //{
                     notesInBar.Add(notes[i]);
-                    //Plugin.Log.Info($"Setup Note added to NotesInBar={notes[i].time}");
-                    //Plugin.Log.Info($"notesInBar --- _cutDirection: {notes[i].cutDirection} _lineIndex: {(int)notes[i].lineIndex} _lineLayer: {(int)notes[i].noteLineLayer} _time: {notes[i].time} _type: {notes[i].colorType}");//convert to beats
-                    //}
-                    //else
-                    //{
-                    //    Plugin.Log.Info($"Bomb not added to notesInBar: {notes[i].time}");
-                    //}
                 }
 
                 if (notesInBar.Count == 0)
                     continue;
 
-                /*
-                if (EnableSpin && notesInBar.Count >= 2 && currentBarStart - previousSpinTime > SpinCooldown && notesInBar.All((e) => Math.Abs(e.time - notesInBar[0].time) < 0.001f))
-                {
-#if DEBUG
-                    Plugin.Log.Info($"[Generator] Spin effect at {firstBeatmapNoteTime + currentBarStart}");
-#endif
-                    int leftCount = notesInBar.Count((e) => e.cutDirection == NoteCutDirection.Left || e.cutDirection == NoteCutDirection.UpLeft || e.cutDirection == NoteCutDirection.DownLeft);
-                    int rightCount = notesInBar.Count((e) => e.cutDirection == NoteCutDirection.Right || e.cutDirection == NoteCutDirection.UpRight || e.cutDirection == NoteCutDirection.DownRight);
-
-                    int spinDirection;
-                    if (leftCount == rightCount)
-                        spinDirection = previousDirection ? -1 : 1;
-                    else if (leftCount > rightCount)
-                        spinDirection = -1;
-                    else
-                        spinDirection = 1;
-
-                    float spinStep = TotalSpinTime / 24;
-                    for (int s = 0; s < 24; s++)//amount (spinDirectin) is either -1 or 1
-                    {
-                        //EnableSpin is FALSE in the settings. So this never runs.
-                        //Plugin.Log.Info($"Spin Rotate--- Time: {firstBeatmapNoteTime + currentBarStart + spinStep * s} Rotation: {spinDirection * 15.0f} Type: {(int)SpawnRotationBeatmapEventData.SpawnRotationEventType.Early}");
-                        Rotate(firstBeatmapNoteTime + currentBarStart + spinStep * s, spinDirection, SpawnRotationBeatmapEventData.SpawnRotationEventType.Early, false);
-                    }
-
-                    // Do not emit more rotation events after this
-                    previousSpinTime = currentBarStart;
-                    continue;
-                }
-                */
+                
                 // Divide the current bar in x pieces (or notes), for each piece, a rotation event CAN be emitted
                 // Is calculated from the amount of notes in the current bar
                 // barDivider | rotations
@@ -440,13 +337,9 @@ namespace Beat360fyerPlugin
                     int leftCount = lastNotes.Count((e) => e.lineIndex <= 1 || e.cutDirection == NoteCutDirection.Left || e.cutDirection == NoteCutDirection.UpLeft || e.cutDirection == NoteCutDirection.DownLeft);
                     int rightCount = lastNotes.Count((e) => e.lineIndex >= 2 || e.cutDirection == NoteCutDirection.Right || e.cutDirection == NoteCutDirection.UpRight || e.cutDirection == NoteCutDirection.DownRight);
 
-                    //if (i == 12 ||  i == 26 || i == 37)
-                    //Plugin.Log.Info($"1-i:{i} j:{j} k:{k} leftCount: {leftCount} rightCount: {rightCount} ");
-
                     NoteData afterLastNote = (k < notesInBar.Count ? notesInBar[k] : i < notes.Count ? notes[i] : null);
 
                     // Determine amount to rotate at once
-                    // TODO: Create formula out of these if statements
                     int rotationCount = 1;
                     if (afterLastNote != null)
                     {
@@ -460,35 +353,19 @@ namespace Beat360fyerPlugin
                                 rotationCount = 3;
                             else if (timeDiff >= barLength8thRound)//barLength / 8)BW ---- This is the place where exe vs plugin maps will differ due to rounding between the 2 applications. i added rounding to 4 digits in order to match the output between the 2
                                 rotationCount = 2;
-                            //else if (timeDiff - barLength / 8 > epsilon)//(timeDiff >= barLength / 8)//works also (Math.Round(timeDiff, 7) >= Math.Round(barLength / 8, 7))
-                            //rotationCount = 2;
-                            //else if (Math.Abs(timeDiff - barLength / 8) < epsilon)
-                            //rotationCount = 2;
+
                         }
-                        /*
-                        if (i == 12 || i == 26 || i == 37)
-                        {
-                            Plugin.Log.Info($"1-i:{i} j:{j} k:{k} timeDiff: {timeDiff} = afterLastNote.time: {afterLastNote.time} - lastNote.time: {lastNote.time}");
-                            //Plugin.Log.Info($"3-i:{i} j:{j} k:{k} barLength: {barLength} barLength/8: {barLength / 8}");
-                            Plugin.Log.Info($"2-i:{i} j:{j} k:{k} timeDiff: {timeDiff} barLength8thRound: {barLength8thRound}");
-                            //Plugin.Log.Info($"2-rotationCount: {rotationCount}");
-                        }
-                        */
                     }
 
 
                     int rotation = 0;
                     if (leftCount > rightCount)
                     {
-                        //if (i == 12 || i == 26 || i == 37)
-                        //Plugin.Log.Info("3-Rotation Tree One: 1");
                         // Most of the notes are pointing to the left, rotate to the left
                         rotation = -rotationCount;
                     }
                     else if (rightCount > leftCount)
                     {
-                        //if (i == 12 || i == 26 || i == 37)
-                        //Plugin.Log.Info("3-Rotation Tree One: 2");
                         // Most of the notes are pointing to the right, rotate to the right
                         rotation = rotationCount;
                     }
@@ -497,19 +374,16 @@ namespace Beat360fyerPlugin
                         // Rotate to left or right
                         if (totalRotation >= BottleneckRotations)
                         {
-                            //Plugin.Log.Info("Rotation Tree One: 3");
                             // Prefer rotating to the left if moved a lot to the right
                             rotation = -rotationCount;
                         }
                         else if (totalRotation <= -BottleneckRotations)
                         {
-                            //Plugin.Log.Info("Rotation Tree One: 4");
                             // Prefer rotating to the right if moved a lot to the left
                             rotation = rotationCount;
                         }
                         else
                         {
-                            //Plugin.Log.Info("Rotation Tree One: 5");
                             // Rotate based on previous direction
                             rotation = previousDirection ? rotationCount : -rotationCount;
                         }
@@ -519,23 +393,19 @@ namespace Beat360fyerPlugin
 
                     if (totalRotation >= BottleneckRotations && rotationCount > 1)
                     {
-                        //Plugin.Log.Info("Rotation Tree TWO: 1");
                         rotationCount = 1;
                     }
                     else if (totalRotation <= -BottleneckRotations && rotationCount < -1)
                     {
-                        //Plugin.Log.Info("Rotation Tree TWO: 2");
                         rotationCount = -1;
                     }
 
                     if (totalRotation >= LimitRotations - 1 && rotationCount > 0)
                     {
-                        //Plugin.Log.Info("Rotation Tree THREE: 1");
                         rotationCount = -rotationCount;
                     }
                     else if (totalRotation <= -LimitRotations + 1 && rotationCount < 0)
                     {
-                        //Plugin.Log.Info("Rotation Tree THREE: 2");
                         rotationCount = -rotationCount;
                     }
 
@@ -637,88 +507,6 @@ namespace Beat360fyerPlugin
                     Rotate(lastNote.time, rotation, SpawnRotationBeatmapEventData.SpawnRotationEventType.Late);
 
                     r++;
-
-
-                    /*
-                    //THIS CONCEPT DOESN'T WORK well. its because updating rotations after walls are generated will cause some walls to be misplaced and will be vision blockers. would have to re-update walls or move them out of the main loop
-                    //This works with a loop that is placed after this main note loop.
-
-                    //A better solution is NOT to update the rotations again in a loop after the first loop of rotations. go ahead and add more rotations directly in the main loop. the problem is you cannot decide if a map is really low on rotations. the new idea will update all maps.
-
-                    //BW try to add more rotation to maps without much rotation. see if there are few total rotations in 20 rotations. if not, look for directionless notes up/down/dot/bomb
-                    if (r % 20 != 0)//multiple of 20 of lastNotes since lastNote is when rotation occurs so counting rotations
-                    {
-                        if (lastNote.cutDirection == NoteCutDirection.Up || lastNote.cutDirection == NoteCutDirection.Down || lastNote.cutDirection == NoteCutDirection.Any || lastNote.cutDirection == NoteCutDirection.None)
-                        {
-                            int newRot = 0;
-
-                            if (prevRotation < 0)
-                            {
-                                if (rotation == -3 || rotation == 3)
-                                {
-                                    newRot = -3;
-                                }
-                                else
-                                    newRot = -2;
-                            }
-                            else if (prevRotation > 0)
-                            {
-                                if (rotation == -3 || rotation == 3)
-                                {
-                                    newRot = 3;
-                                }
-                                else
-                                    newRot = 2;
-                            }
-                            else
-                                newRot = rotation;
-
-                            newRotations.Add((false, lastNote.time, newRot, 0));
-                            groupCount++;
-
-                            totalRotationUpdated += newRot;
-
-                            Plugin.Log.Info($"--- New Rotation: {newRot} Index: {newRotations.Count-1} -- only used if group rotations are too low. totalRotationUpdated: {totalRotationUpdated}");
-                        }
-                        else
-                            totalRotationUpdated += rotation;
-
-                        prevRotation = rotation;
-                        totalRotationsGroup += rotation;
-
-                        if (totalRotationsGroup < -12 && totalRotationsGroup > 12)
-                        {
-                            needsMoreRotations = false;
-                            Plugin.Log.Info($"+++++++++++++++++++ Contains MORE than -12 and 12 rotations so we are good here! Will not add rotations to this group.");
-                        }
-
-                    }
-                    else
-                    {
-                        Plugin.Log.Info($"------ Group of 20 rotations!!! r: {r} totalRotationsGroup: {totalRotationsGroup} prevGroupIndex: {prevGroupIndex} and newRotations.Count is {newRotations.Count}");
-                        if (needsMoreRotations)
-                        {
-                            newRotations[prevGroupIndex] = (true, newRotations[prevGroupIndex].Item2, newRotations[prevGroupIndex].Item3, groupCount);
-                            Plugin.Log.Info($"^^^^^^^^^^^^ Contains between -12 and 12 rotations or less so needs more! {newRotations[prevGroupIndex].Item1}\t time: {newRotations[prevGroupIndex].Item2}\t new rotation: {newRotations[prevGroupIndex].Item3}");
-
-                        }
-
-                        needsMoreRotations = true;
-                        totalRotationsGroup = 0;
-                        prevGroupIndex = newRotations.Count-1;
-                        groupCount = 0;
-                    }
-                   
-                    r++;   
-                    */
-
-                    /*
-                    if (i == 12 || i == 26 || i == 37)
-                    {
-                        Plugin.Log.Info($"3-i:{i} j:{j} k:{k} rotation: {rotation} rotationCount: {rotationCount} totalRotation: {totalRotation}");
-                        Plugin.Log.Info("-----------");
-                    }
-                    */
 
                     //Plugin.Log.Info($"Total Rotations: {totalRotation*15} Time: {lastNote.time} Rotation: {rotation*15}");
                     #region OneSaber
@@ -898,233 +686,6 @@ namespace Beat360fyerPlugin
             }//End for loop over all notes---------------------------------------------------------------
             #endregion
 
-            /*
-            if (needsMoreRotations)
-            {
-                int p = 1;
-                foreach (var item in newRotations)
-                {
-                    Plugin.Log.Info($"{p} newRotations: Are rotations needed in the group of 20 starting here? {item.Item1} time: {item.Item2} new rotation: {item.Item3}");
-                    p++;
-                }
-            }
-            else
-                Plugin.Log.Info($"Don't need to add more rotations.");
-            */
-            /*
-            //v1 & v2 -- THIS CONCEPT DOESN'T WORK well. its because updating rotations after walls are generated will cause some walls to be misplaced and will be vision blockers. would have to re-update walls or move them out of the main loop
-
-
-
-            //v2
-            //FIX!! Not working since need for old rotations and newRotation to have same number and corresponding elements. currently, newRotations only saves a new item when cutdirection is up or down or any or none. so doesn't have all the direction left, right, etc rotations
-
-            List <SpawnRotationBeatmapEventData> rd = dataItems.OfType<SpawnRotationBeatmapEventData>().ToList();
-
-            for (int i = 0; i < newRotations.Count; i++)
-            {
-                var newRotation = newRotations[i];
-
-                if (newRotation.Item1)
-                {
-                    data.RemoveBeatmapEventData(rd[i]);
-                    data.InsertBeatmapEventDataInOrder(new SpawnRotationBeatmapEventData(newRotation.Item2, SpawnRotationEventType.Late, newRotation.Item3 * 15.0f));// * RotationAngleMultiplier));//discord suggestion
-                    Plugin.Log.Info($"*****REPLACED rotations.");
-                }
-            }
-
-            /*
-            //v1
-            //If new rotations are needed (newRotation.Item1 == true) then finds if newRotation time and old rotation data match and replaces them. not really finished.
-            //Not working anyway since time is not a good way to compare them since there can be many notes with the same time.
-            foreach (SpawnRotationBeatmapEventData rd in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
-            {
-                int p = 0;
-                foreach (var newRotation in newRotations)
-                {
-                    if (newRotation.Item1)
-                    {
-                        if (Math.Abs(rd.time - newRotation.Item2) < .001f && rd.rotation != newRotation.Item3) // Check if the times are nearly equal and if the rotations are different between the 2 lists
-                        {
-                            // Update the rotation event with the new rotation value
-                            data.RemoveBeatmapEventData(rd);
-                            data.InsertBeatmapEventDataInOrder(new SpawnRotationBeatmapEventData(newRotation.Item2, SpawnRotationEventType.Late, newRotation.Item3 * 15.0f));// * RotationAngleMultiplier));//discord suggestion
-                            Plugin.Log.Info($"*****REPLACED rotations.");
-                        }
-                    }
-
-                }
-            }
-            */
-
-
-            //Arcfix below was being designed to allow sliders with multiple rotations inside them to used if the head of the slider and the tail end up on the same rotation track
-            //The problem with attempting to add rotations outside the main loop is that other items like wall generation require knowing where rotation are located. Doing this can cause walls to cross in frot of the user during sliders if a wall exists there.
-            //So before this was perfected I stopped working on it.
-            
-            /*
-            #region Arc Fix NEW - Restores some rotations during Arcs
-            if (Config.Instance.ArcFix)
-            {
-                Plugin.Log.Info($"Starting Arc Fix to check for removed rotations that can be added back:");
-
-                float previousSliderTime = 0;
-
-                foreach (SliderData slider in slidersWithRotations)//dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList())//only search normal sliders (arcs) not burst sliders
-                {
-                    List<SpawnRotationBeatmapEventData> rotationsInsideThisSlider = new List<SpawnRotationBeatmapEventData>();//list of roations during this slider
-
-                    float lastRotationBeforeSlider = -1f;
-
-                    Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
-
-                    foreach (SpawnRotationBeatmapEventData ro in sliderRotations)
-                    {
-                        if (ro.time < slider.time - .001f)//if ro.time is at least .001s less than slider.time (so defiantely less)
-                        {
-                            lastRotationBeforeSlider = ro.rotation;//get the last rotation before or at the head of the slider
-                        }
-                        else if (ro.time <= slider.tailTime + .01f)//can be a tiny bit .01s past the tailTime
-                        {
-                            //totalSliderRotations.Add(ro.rotation);
-
-                            rotationsInsideThisSlider.Add(ro);//list of roations during this slider
-
-                            Plugin.Log.Info($"--- lastRotationBeforeSlider: {lastRotationBeforeSlider}. During Slider found rotation at: {ro.time} amount: {ro.rotation} -- # of rotations inside so far: {rotationsInsideThisSlider.Count}");
-                        }
-                        else//after the slider now
-                        {
-                            if (rotationsInsideThisSlider.Count > 1)//if there is 0 rotations don't do anything. if there is only 1 rotation then there is no way it can rotate back to the same rotation before the slider
-                            {
-                                Plugin.Log.Info($"------ Checking the total rotations for all {rotationsInsideThisSlider.Count} rotation(s) inside the ARC:");
-
-                                if (lastRotationBeforeSlider != rotationsInsideThisSlider[rotationsInsideThisSlider.Count - 1].rotation)//rotation before slider must equal the rotation at the end of the slider
-                                {
-                                    foreach (SpawnRotationBeatmapEventData insertRotation in rotationsInsideThisSlider)
-                                    {
-                                        if (previousSliderTime != slider.time)//2 or more sliders can occur at the same time. so don't insert the same rotations again
-                                        {
-                                            Plugin.Log.Info($"--------------- Insert rotation at: {insertRotation.time} amount: {insertRotation.rotation}");
-                                            data.InsertBeatmapEventDataInOrder(insertRotation);
-                                        }
-                                        else
-                                            Plugin.Log.Info($"--------------- Already Inserted rotation at: {insertRotation.time} amount: {insertRotation.rotation}");
-                                    }
-                                }
-                                else
-                                {
-                                    Plugin.Log.Info($"--------- ARC contains {sliderRotations.Count} rotations but can keep them all! lastRotationBeforeSlider: {lastRotationBeforeSlider} and end total rot: {sliderRotations[sliderRotations.Count - 1].rotation} -- Results in slight mismatch of the tail :(");
-                                }
-
-                            }
-                            else
-                            {
-                                Plugin.Log.Info($"--- ARC contains NO rotations or only 1 rotation which means it cannot rotate back to starting amount before slider. So nothing to insert.");
-                            }
-                            //Plugin.Log.Info($"--- BREAK to next slider!");
-
-                            previousSliderTime = slider.time;
-                            break;
-                        }
-                    }
-                    previousSliderTime = slider.time;
-                }
-
-                Plugin.Log.Info($"=========================== All Rotations Now ================================================");
-                foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
-                {
-                   Plugin.Log.Info($"rotation amount: {ro.rotation} at: {ro.time}");
-                }
-
-            }
-
-            #endregion
-            */
-            /*
-            //Works but rotations are stored at the current total map rotation. So rotation may be -175 for example (where the prvious may have been -160). So deleting a rotation will allow the next rotation to be a giant rotation leap. 
-            //Would need to update all other roations when a rotation is deleted.
-            //Decided to move a similar tool before rotations are created and to stop a new rotation from being added if its inside an arc. but then you lose the possibilty of having some arcs contain some rotations.
-            #region Arc Fix OLD            
-            if (Config.Instance.ArcFix)
-            {
-                Plugin.Log.Info($"Starting Arc Fix:");
-
-                List<SliderData> sliders1 = dataItems.OfType<SliderData>().ToList();
-
-                foreach (SliderData slider in dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList())//only search normal sliders (arcs) not burst sliders
-                {
-
-                    List<SpawnRotationBeatmapEventData> sliderRotations = new List<SpawnRotationBeatmapEventData>();//list of roations during this slider
-                    
-                    float lastRotationBeforeSlider = 0;
-
-                    Plugin.Log.Info($"Looking inside ARC now: arc head: {slider.time} arc tail: {slider.tailTime}");
-
-                    foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().Where((e) => e.time >= sliders1[0].time).ToList())
-                    {
-                        if (ro.time < slider.time - .3f)//if ro.time is at least .001s less than slider.time (so defiantely less)
-                        {
-                            lastRotationBeforeSlider = ro.rotation;//get the last rotation before or at the head of the slider
-                        }
-                        else if (ro.time <= slider.tailTime + .3f)//can be a tiny bit .01s past the tailTime
-                        {
-                            //totalSliderRotations.Add(ro.rotation);
-
-                            sliderRotations.Add(ro);//list of roations during this slider
-                            //dataItems.Remove(ro);
-                            Plugin.Log.Info($"--- lastRotationBeforeSlider: {lastRotationBeforeSlider}. During Slider found rotation at: {ro.time} amount: {ro.rotation} -- # of rotations inside so far: {sliderRotations.Count}");
-                        }
-                        else//after the slider now
-                        {
-                            if (sliderRotations.Count > 0)
-                            {
-                                Plugin.Log.Info($"------ Checking the total rotations for all {sliderRotations.Count} rotation(s) inside the ARC:");
-                                if (Config.Instance.ArcFixFull)
-                                {
-                                    foreach (SpawnRotationBeatmapEventData delRot in sliderRotations)
-                                    {
-                                        Plugin.Log.Info($"--------------- DELETE rotation at: {delRot.time} amount: {delRot.rotation}");
-                                        dataItems.Remove(delRot); //data.RemoveBeatmapEventData(rot);//
-                                        //delRot.RecalculateRotationFromPreviousEvent(delRot);
-                                    }
-                                }
-                                else if (sliderRotations.Count == 1 || (lastRotationBeforeSlider != sliderRotations[sliderRotations.Count - 1].rotation))//if there is only 1 rotation then begin and end total rotations will be the same but needs to be deleted anyway. means there w
-                                {
-                                    foreach (SpawnRotationBeatmapEventData delRot in sliderRotations)
-                                    {
-                                        Plugin.Log.Info($"--------------- DELETE rotation at: {delRot.time} amount: {delRot.rotation}");
-                                        dataItems.Remove(delRot); //data.RemoveBeatmapEventData(rot);//
-                                        //delRot.RecalculateRotationFromPreviousEvent(delRot);
-                                    }
-                                }
-                                else
-                                {
-                                    Plugin.Log.Info($"--------- ARC contains {sliderRotations.Count} rotations but can keep them all! lastRotationBeforeSlider: {lastRotationBeforeSlider} and end total rot: {sliderRotations[sliderRotations.Count - 1].rotation} -- Results in slight mismatch of the tail :(");
-                                }
-
-                            }
-                            else
-                            {
-                                Plugin.Log.Info($"--- ARC contains NO rotations.");
-                            }
-                            //Plugin.Log.Info($"--- BREAK to next slider!");
-                            break;
-                        }
-                    }
-                }
-                
-                //Plugin.Log.Info($"=========================== rotation that remain================================================");
-                //foreach (SpawnRotationBeatmapEventData ro in dataItems.OfType<SpawnRotationBeatmapEventData>().ToList())
-                //{
-                //    Plugin.Log.Info($"rotation amount: {ro.rotation} at: {ro.time}");
-                //}
-                
-            }
-            
-            #endregion
-            */
-
-
             #region Wall Removal
             //BW noodle extensions causes BS crash in the section somewhere below. Could drill down and figure out why. Haven't figured out how to test for noodle extensions but noodle extension have custom walls that crash Beat Saber so BW added test for custom walls.
 
@@ -1230,46 +791,7 @@ namespace Beat360fyerPlugin
                         }
                     }
                 }
-            }
-            /*
-            //This WORKS!
-            Queue<ObstacleData> obstacles1 = new Queue<ObstacleData>(dataItems.OfType<ObstacleData>());
-            while (obstacles1.Count > 0)
-            {
-                ObstacleData ob = obstacles1.Dequeue();
-                int totalRotations = 0;
-                foreach ((float cutTime, int cutAmount) in wallCutMoments)
-                {
-                    //This works 
-                    if (ob.duration <= 0f)
-                        break;
-                    if (cutTime <= ob.time)
-                        continue;
-                    if (cutTime > ob.time + ob.duration)
-                        break;
-
-                    {
-                        totalRotations += cutAmount;
-                        if ((totalRotations > 5 || totalRotations < -5))
-                        {
-                            Plugin.Log.Info($"Wall found with more than 5 rotations during its duration -- starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
-                            float newDuration = (cutTime - ob.time) / 2.3f;
-                            if (newDuration >= MinWallDuration)
-                            {
-                                ob.UpdateDuration(newDuration);
-                                Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
-                                break;
-                            }
-                            else
-                            {
-                                dataItems.Remove(ob);
-                                Plugin.Log.Info($"------Wall removed since shorter than MinWallDuration");
-                                break;
-                            }
-                        }
-                        
-                }
-            }*/
+            }    
 
             #endregion
 
@@ -1301,33 +823,6 @@ namespace Beat360fyerPlugin
 
             Plugin.Log.Info($"rotationEventsCount: {rotationEventsCount}");
             Plugin.Log.Info($"obstaclesCount: {obstaclesCount}");
-
-            /*
-            if (data is CustomBeatmapData dataCB)
-            {
-                string json = JsonConvert.SerializeObject(dataCB.beatmapCustomData, Newtonsoft.Json.Formatting.Indented);//this has the choseninfo.dat individual difficulty custom data such as _suggestion chroma and _colorRight etc for custom colors
-                Plugin.Log.Info($"Generator: BeatmapData - GetBeatmapCustomData()");
-                Plugin.Log.Info(json);
-            }
-            else
-            {
-                Plugin.Log.Info("Not custom json data");
-            }
-            */
-
-            //Test to see if everything is sorted and yes they are sorted without any sort() function. it must be done internally somehow
-            /*
-            foreach (NoteData nd in dataItems.OfType<NoteData>().ToList()) {
-                Plugin.Log.Info($"Notes: {nd.gameplayType} {nd.time}");
-            }
-            foreach (BeatmapEventData e in dataItems.OfType<BeatmapEventData>().ToList()) {
-                Plugin.Log.Info($"Events: {e.time}");
-            }
-            
-            foreach (ObstacleData o in dataItems.OfType<ObstacleData>().ToList()) {
-                Plugin.Log.Info($"Obstacles: LineIndex: {o.lineIndex} {o.time}");
-            }
-            */
 
             if (LevelUpdatePatcher.BeatSage)
                 CleanUpBeatSage(notes, new List<ObstacleData>(dataItems.OfType<ObstacleData>()));
@@ -1443,80 +938,7 @@ namespace Beat360fyerPlugin
             }
 
 
-            //Only compares a note to the following note. so if 4 notes have the same or almost the same time and the 1st and 4th note are on the same grid space, this code will not delete it.
-            /*
-            // Create a list to store the indices of notes to remove
-            List<int> indicesToRemove = new List<int>();
-
-            // Iterate through the notes list
-            for (int i = 0; i < notes.Count; i++)
-            {
-                NoteData currentNote = notes[i];
-
-                // Iterate through the remaining notes
-                for (int j = i + 1; j < notes.Count; j++)
-                {
-                    NoteData nextNote = notes[j];
-
-                    // Check if the 2 notes are the same time or within .0001 sec of each other so they appear to almost overlap
-                    if (nextNote.time - currentNote.time <= 0.03f)//0.08 will start to catch bombs from different beats.
-                    {
-                        // Check if the two notes (not any bombs) have the same lineIndex, and different noteLineLayer (they may be side-by-side)
-                        if (currentNote.lineIndex == nextNote.lineIndex &&
-                            currentNote.noteLineLayer != nextNote.noteLineLayer && // Check for different layers
-                            currentNote.gameplayType == GameplayType.Normal && // Check if both are "Normal" notes
-                            nextNote.gameplayType == GameplayType.Normal)
-                        {
-                            // Check if they are side by side based on layer values
-                            if (Math.Abs(currentNote.noteLineLayer - nextNote.noteLineLayer) == 1)
-                            {
-                                // Check if the leftmost note has cutDirection Left and the rightmost note has cutDirection Right
-                                if (currentNote.noteLineLayer < nextNote.noteLineLayer)
-                                {
-                                    if (currentNote.cutDirection == NoteCutDirection.Left && nextNote.cutDirection == NoteCutDirection.Right)
-                                    {
-                                        indicesToRemove.Add(j);
-                                        Plugin.Log.Info($"Beat Sage 1");
-
-                                    }
-                                       
-                                }
-                                else
-                                {
-                                    if (currentNote.cutDirection == NoteCutDirection.Right && nextNote.cutDirection == NoteCutDirection.Left)
-                                    {
-                                        indicesToRemove.Add(i);
-                                        Plugin.Log.Info($"Beat Sage 2");
-                                    }
-                                        
-                                }
-                            }
-                        }
-                        // Check if the two notes have the same lineIndex, and noteLineLayer
-                        else if (currentNote.lineIndex == nextNote.lineIndex &&
-                                 currentNote.noteLineLayer == nextNote.noteLineLayer)
-                        {
-                            Plugin.Log.Info($"Beat Sage 3/4: CurrentNote-time-Index-Layer: {currentNote.time} {currentNote.lineIndex} {currentNote.noteLineLayer} --NextNote: {nextNote.time} {nextNote.lineIndex} {nextNote.noteLineLayer}");
-                            // Check if either of the notes is a bomb
-                            if (currentNote.gameplayType == GameplayType.Bomb)
-                            {
-                                // Remove the bomb note (1st note)
-                                indicesToRemove.Add(i);
-                                Plugin.Log.Info($"Beat Sage 3");
-                            }
-                            else
-                            {
-                                // If its not a bomb, remove the 2nd note
-                                indicesToRemove.Add(j);
-                                Plugin.Log.Info($"Beat Sage 4");
-                            }
-                        }
-                    }
-                    else
-                        break;
-                }
-            }
-            */
+            
 
             // Remove notes inside obstacles (walls)
             foreach (ObstacleData obstacle in obs)

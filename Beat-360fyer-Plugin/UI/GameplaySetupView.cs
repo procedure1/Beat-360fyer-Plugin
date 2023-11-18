@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Parser;
-using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
-using Beat360fyerPlugin;//for access to config file
 using UnityEngine;
-using IPA.Config.Data;
 
 namespace Beat360fyerPlugin.UI
 {
@@ -62,15 +58,8 @@ namespace Beat360fyerPlugin.UI
             int intValue = Mathf.RoundToInt(value);
             return $"{intValue}°";
         }
-        //TESTING -----------------------------------------------------------
-        /*[UIValue("EnableSpin")]
-        public bool ArcFix
-        {
-            get => Config.Instance.EnableSpin;
-            set => Config.Instance.EnableSpin = value;
-        }*/
         [UIValue("ArcFixFull")]
-        public bool ArcFixFull
+        public bool ArcFix
         {
             get => Config.Instance.ArcFixFull;
             set => Config.Instance.ArcFixFull = value;
@@ -94,8 +83,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.RotationGroupSize;
             set => Config.Instance.RotationGroupSize = value;
         }
-        
-        //END TESTING ------------------------------------------------------
+
         [UIValue("EnableWallGenerator")]
         public bool EnableWallGenerator
         {
@@ -170,33 +158,6 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.NJO;
             set => Config.Instance.NJO = value;
         }
-        /*
-        [UIValue("MaxNJS")]
-        public float MaxNJS
-        {
-            get => Config.Instance.MaxNJS;
-            set => Config.Instance.MaxNJS = value;
-        }
-        
-        [UIValue("AllowedRotationsPerSec")]
-        public float AllowedRotationsPerSec
-        {
-            get => Config.Instance.AllowedRotationsPerSec;
-            set => Config.Instance.AllowedRotationsPerSec = value;
-        }
-        [UIValue("FastMapPBD")]
-        public float FastMapPBD
-        {
-            get => Config.Instance.FastMapPBD;
-            set => Config.Instance.FastMapPBD = value;
-        }
-        [UIValue("SlowMapPBD")]
-        public float SlowMapPBD
-        {
-            get => Config.Instance.SlowMapPBD;
-            set => Config.Instance.SlowMapPBD = value;
-        }
-        */
         [UIValue("AllowCrouchWalls")]
         public bool AllowCrouchWalls
         {
@@ -209,15 +170,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.AllowLeanWalls;
             set => Config.Instance.AllowLeanWalls = value;
         }
-        /*
-        //Don't need this. Feels same as the speed multiplier
-        [UIValue("RotationAngleMultiplier")]
-        public float RotationAngleMultiplier
-        {
-            get => Config.Instance.RotationAngleMultiplier;
-            set => Config.Instance.RotationAngleMultiplier = value;
-        }
-        */
+
         [UIValue("RotationSpeedMultiplier")]
         public float RotationSpeedMultiplier
         {
