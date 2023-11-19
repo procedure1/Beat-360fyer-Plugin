@@ -5,14 +5,14 @@
       <text text="360" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Enable Generated 360 Maps' apply-on-change='true' value='ShowGenerated360' bind-value='true' hover-hint='Requires restart for maps that have already been selected in the menu.'></toggle-setting>
-        <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true' hover-hint="For wireless VR with no rotation restrictions and no tendencies to reverse direction."></toggle-setting>
-        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc. Disables score submission if set less than 135." rich-text='true' font-color='~TextColorSliderLimitRotations360' interactable="~EnableSliderLimitRotations360"></slider-setting>
+        <toggle-setting text='Wireless 360' apply-on-change='true' value='Wireless360' bind-value='true' hover-hint="For wireless VR with no rotation restrictions and less tendencies to reverse direction."></toggle-setting>
+        <slider-setting text="Limit Rotations 360" apply-on-change="true" value="LimitRotations360" bind-value="true" show-buttons="true" increment="30" min="30" max="720" formatter="AngleFormatter" hover-hint="Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc. Disables score submission if set less than 150." rich-text='true' font-color='~TextColorSliderLimitRotations360' interactable="~EnableSliderLimitRotations360"></slider-setting>
       </vertical>
       <text text="Rotation" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="3" hover-hint="Increase or decrease rotations. Default is 1. Disables score submission if set below 0.8."></slider-setting>
         <toggle-setting text='Arc Fix' apply-on-change='true' value='ArcFixFull' bind-value='true' hover-hint="Remove rotations during arcs to keep the tails connected to tail notes. Turn this off for more rotations."></toggle-setting>
-        <toggle-setting text='AddXtraRotation' apply-on-change='true' value='AddXtraRotation' bind-value='true' hover-hint="Adds more rotations in a consistent direction. Useful for maps with low overall rotation."></toggle-setting>
+        <toggle-setting text='Add Extra Rotations' apply-on-change='true' value='AddXtraRotation' bind-value='true' hover-hint="Adds more rotations in a consistent direction. Useful for maps with low overall rotation."></toggle-setting>
       </vertical>
       <text text="Walls" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
@@ -25,16 +25,16 @@
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Big Lasers' apply-on-change='true' value='BigLasers' bind-value='true' hover-hint="Scales up laser size. This affects all 360/90 degree maps."></toggle-setting>
         <toggle-setting text='Bright Lights' apply-on-change='true' value='BrightLights' bind-value='true' hover-hint="Brightens low key lights. This affects all 360/90 degree maps."></toggle-setting>
-        <toggle-setting text='Boost Lighting Events' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds 'boost' lighting events to maps that don't have them. Occurs based on rotations."></toggle-setting>
+        <toggle-setting text='Boost Lighting Events' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds 'boost' lighting events to maps that don't have an authored color scheme. Occurs based on rotations. Use COLORS > OVERRIDE DEFAULT COLORS."></toggle-setting>
       </vertical>
-      
-      <!--<text text="NJS-NJO" align="Center" fontSize="2.5" />
+      <!--
+      <text text="NJS-NJO" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Note Jump Speed and Offset' apply-on-change='true' value='EnableNJS' bind-value='true' hover-hint='Please disable JDFixer and other similar mods to use this. Set Player Settings>Jump Duration Type to Dynamic.'></toggle-setting>
         <slider-setting text="NJS" apply-on-change="true" value="NJS" bind-value="true" show-buttons="true" increment=".1"  min="1"   max="30" hover-hint="Desired Note Jump Speed for generated maps. Disables score submission if set easier than original."  rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
         <slider-setting text="NJO" apply-on-change="true" value="NJO" bind-value="true" show-buttons="true" increment=".01" min="-10" max="10" hover-hint="Desired Note Jump Offset for generated maps. Disables score submission if set easier than original." rich-text='true' font-color='~TextColorEnableSlidersNJS' interactable="~EnableSlidersNJS"></slider-setting>
-      </vertical>-->
-      
+      </vertical>
+      -->
       <text text="90" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Enable Generated 90 Maps' apply-on-change='true' value='ShowGenerated90' bind-value='true' hover-hint='Requires restart for maps that have already been selected in the menu.'></toggle-setting>

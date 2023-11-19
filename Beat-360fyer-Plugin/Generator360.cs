@@ -185,7 +185,7 @@ namespace Beat360fyerPlugin
                         {
                             break;//if the rotation is before a slider, it will be before all the remaining sliders too so can break from the foreach // lastRotationBeforeSlider = amount;//get the last rotation before or at the head of the slider
                         }
-                        else if (time <= slider.tailTime + .001f)//can be a tiny bit .01s past the tailTime
+                        else if (time <= slider.tailTime + .001f)//can be a tiny bit .001s past the tailTime
                         {
                             //Plugin.Log.Info($"----- ARC FIX: Cancelled Rotation time: {time} amount: {amount * 15f}. During Slider time: {slider.time} tailTime: {slider.tailTime}.");
 
@@ -212,7 +212,7 @@ namespace Beat360fyerPlugin
                 //Log.Info($"\t_value: {amount * 15.0f}");
                 //Plugin.Log.Info("},");
 
-                //Creates a boost lighting event. if ON, will set color left to boost color left new color etc.
+                //Creates a boost lighting event. if ON, will set color left to boost color left new color etc. Will only boost a color scheme that has boost colors set so works primarily with COLORS > OVERRIDE DEFAULT COLORS. Or an authors color scheme must have boost colors set (that will probably never happen since they will have boost colors set if they use boost events).
                 if (Config.Instance.BoostLighting && !LevelUpdatePatcher.AlreadyUsingEnvColorBoost)
                 {
                     boostInteration++;

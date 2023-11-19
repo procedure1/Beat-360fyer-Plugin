@@ -108,7 +108,7 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.BrightLights;
             set => Config.Instance.BrightLights = value;
         }
-        [UIValue("BoostLighting")]
+        [UIValue("BoostLighting")]//Creates a boost lighting event. if ON, will set color left to boost color left new color etc. Will only boost a color scheme that has boost colors set so works primarily with COLORS > OVERRIDE DEFAULT COLORS. Or an authors color scheme must have boost colors set (that will probably never happen since they will have boost colors set if they use boost events).
         public bool BoostLighting
         {
             get => Config.Instance.BoostLighting;
@@ -158,8 +158,8 @@ namespace Beat360fyerPlugin.UI
         {
             get => Config.Instance.NJO;
             set => Config.Instance.NJO = value;
-        }*/
-
+        }
+        */
         [UIValue("AllowCrouchWalls")]
         public bool AllowCrouchWalls
         {

@@ -5,17 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using Zenject;
-using static AlphabetScrollInfo;
 using CustomJSONData.CustomBeatmap;
-using BS_Utils;//BW added to Disable Score submission https://github.com/Kylemc1413/Beat-Saber-Utils 
-using BS_Utils.Gameplay;
+using BS_Utils.Gameplay;//BW added to Disable Score submission https://github.com/Kylemc1413/Beat-Saber-Utils 
 using SongCore;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
-using static IPA.Logging.Logger;
 using static BeatmapObjectSpawnMovementData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 
 namespace Beat360fyerPlugin.Patches
 {
@@ -111,10 +106,10 @@ namespace Beat360fyerPlugin.Patches
                 BigLasers myOtherInstance = new BigLasers();
                 myOtherInstance.Big();
             }
+
         }
     }
     #endregion
-
     #region 4 Postfix - CreateTransformedBeatmapData
     //BW 4th item that runs after LevelUpdatePatcher & GameModeHelper & TransitionPatcher https://harmony.pardeike.net/articles/patching-prefix.html
     //This runs after 3rd item automatically
@@ -169,7 +164,7 @@ namespace Beat360fyerPlugin.Patches
                         }
                         else
                         {   //BW devided by 2 to make the rotation angle accurate. 90 degrees was 180 degress without this 
-                            if (Config.Instance.LimitRotations360 < 135)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
+                            if (Config.Instance.LimitRotations360 < 150)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
                             {
                                 ScoreSubmission.DisableSubmission("360Fyer");
                                 Plugin.Log.Info("Score disabled by LimitRotations360 set less than 135.");
@@ -186,14 +181,14 @@ namespace Beat360fyerPlugin.Patches
         }
     }
     #endregion
-    #region 3 Prefix - custom Colors
+    #region 3 Prefix - Custom Colors
     //This will set an author's custom color scheme to work. But built-in and non-customized colors on custom maps will get the standard default color scheme. Colors will revert to the player's color override if that is set.
     [HarmonyPatch(typeof(StandardLevelScenesTransitionSetupDataSO), "Init")]
     internal class ColorSchemeUpdatePatch
     {
         internal static void Prefix(IDifficultyBeatmap difficultyBeatmap, ref ColorScheme overrideColorScheme, ColorScheme beatmapOverrideColorScheme)
         {
-            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree")//only do this for gen 360 or else it will do this for all maps
+            if (TransitionPatcher.characteristicSerializedName == "Generated360Degree" || TransitionPatcher.characteristicSerializedName == "Generated90Degree" || TransitionPatcher.characteristicSerializedName == "360Degree" || TransitionPatcher.characteristicSerializedName == "90Degree")//only do this for gen 360 or else it will do this for all maps
             {
                 // Find the Environment GameObject
                 GameObject environment = GameObject.Find("Environment");
@@ -230,8 +225,6 @@ namespace Beat360fyerPlugin.Patches
 
                 if (TransitionPatcher.beatMapDataCB != null)//a Custom Beatmap Data file exits and it may have custom color scheme data added by the author
                 {
-                    //Plugin.Log.Info("1");
-
                     string json = JsonConvert.SerializeObject(TransitionPatcher.beatMapDataCB.beatmapCustomData);//this has the choseninfo.dat individual difficulty custom data such as _suggestion chroma and _colorRight etc for custom colors
 
                     //Plugin.Log.Info($"TransitionPatcher: beatmapCustomData:");

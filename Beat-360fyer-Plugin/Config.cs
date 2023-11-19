@@ -47,7 +47,7 @@ namespace Beat360fyerPlugin
         public virtual float RotationGroupSize { get; set; } = 12;//The number of rotations to remain inactive for adding rotations
 
         //public virtual bool ArcFix { get; set; } = true;//remove rotation during sliders unless the head and tail rotation ends up the same. results is partial mismatch of tail
-        public virtual bool ArcFixFull { get; set; } = false;//removes all rotations during sliders
+        public virtual bool ArcFixFull { get; set; } = true;//removes all rotations during sliders
 
         //BW added this baseded on NoteLimiter UI. enums cannot use a digit so had to change 90Degree to NinetyDegree
         //public virtual string TextColor { get; set; } = "#555555";//BW sets the color of the LimitRotations360 menu text. Dims it if deactivated by Wireless360;
