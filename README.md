@@ -1,12 +1,11 @@
 # Beat-360fyer-Plugin
 A Beat Saber plugin to play any beatmap in 360 or 90 degree mode. 
 
+This readme is a work-in-progress.
+
 [![showcase video](https://github.com/CodeStix/Beat-360fyer-Plugin/raw/master/preview.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
 ## Beat Saber PC Version
-v1.29.0
-
-## Note
-360/90 maps currently do not support the default color scheme. Please use COLORS > OVERRIDE DEFAULT COLORS in-game to set a color scheme. Without doing this, maps appear very dull and colorless.
+v1.31.1
 
 ## Installation
 
@@ -32,14 +31,21 @@ There is a settings menu in-game. Or you can tweak settings in the `Beat Saber/U
   "LimitRotations360": 360.0,
   "LimitRotations90": 90.0,
   "EnableWallGenerator": true,
+  "BigWalls": true,
+  "BigLasers": true,
+  "BrightLights": true,
+  "BoostLighting": true,
   "AllowCrouchWalls": false,
   "AllowLeanWalls": false,
-  "RotationAngleMultiplier": 1.0,
   "RotationSpeedMultiplier": 1.0,
   "ShowGenerated360": true,
   "ShowGenerated90": false,
   "OnlyOneSaber": false,
   "LeftHandedOneSaber": false,
+  "AddXtraRotation": false,
+  "RotationGroupLimit": 10.0,
+  "RotationGroupSize": 12.0,
+  "ArcFixFull": true,
   "BasedOn": "Standard"
 }
 ```
