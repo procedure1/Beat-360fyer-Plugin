@@ -66,8 +66,8 @@ namespace Beat360fyerPlugin.Patches
                         Transform parentTransform = boxController.gameObject.transform.parent;
                         Vector3 currentScale = parentTransform.localScale;
 
-                        if (i == 1)//so doesn't repear several times
-                            Plugin.Log.Info($"BoxLights Scaled");
+                        //if (i == 1)//so doesn't repear several times
+                        //    Plugin.Log.Info($"BoxLights Scaled");
 
 
                         if (parentTransform.name == "Laser")//Rotating lasers
@@ -139,7 +139,7 @@ namespace Beat360fyerPlugin.Patches
                     if (Config.Instance.BasedOn != Config.Base.Standard || gen.RotationSpeedMultiplier < 0.8f)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
                     {
                         ScoreSubmission.DisableSubmission("360Fyer");
-                        Plugin.Log.Info("Score disabled by Standard or Multiplier " + gen.RotationSpeedMultiplier);
+                        //Plugin.Log.Info("Score disabled by Standard or Multiplier " + gen.RotationSpeedMultiplier);
                     }
 
 
@@ -152,7 +152,7 @@ namespace Beat360fyerPlugin.Patches
                         if (Config.Instance.LimitRotations90 < 90)
                         {
                             ScoreSubmission.DisableSubmission("360Fyer");
-                            Plugin.Log.Info("Score disabled by LimitRotations90 set less than 90.");
+                            //Plugin.Log.Info("Score disabled by LimitRotations90 set less than 90.");
                         }
                     }
                     else if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_360DEGREE_MODE)
@@ -167,7 +167,7 @@ namespace Beat360fyerPlugin.Patches
                             if (Config.Instance.LimitRotations360 < 150)//|| gen.OnlyOneSaber || gen.AllowCrouchWalls || gen.AllowLeanWalls)// || gen.RotationAngleMultiplier != 1.0f)
                             {
                                 ScoreSubmission.DisableSubmission("360Fyer");
-                                Plugin.Log.Info("Score disabled by LimitRotations360 set less than 135.");
+                                //Plugin.Log.Info("Score disabled by LimitRotations360 set less than 150.");
                             }
                             gen.LimitRotations = (int)((Config.Instance.LimitRotations360 / 360f / 2f) * (24f));// / Config.Instance.RotationAngleMultiplier));//BW this convert the angle into LimitRotation units of 15 degree slices. Need to divide the Multiplier since it causes the angle to change from 15 degrees. this will keep the desired limit to work if a multiplier is added.
                             gen.BottleneckRotations = gen.LimitRotations / 2;
@@ -260,11 +260,11 @@ namespace Beat360fyerPlugin.Patches
                             obstaclesColor
                         );
 
-                        Plugin.Log.Info($"Authors's Custom Color Scheme found and applied!");
+                        //Plugin.Log.Info($"Authors's Custom Color Scheme found and applied!");
                     }
                     else//there is no custom color set added by the author
                     {
-                        Plugin.Log.Info("Author has not set custom color Scheme.");
+                        //Plugin.Log.Info("Author has not set custom color Scheme.");
 
                         //Find if the user has chosen colors>Override Default Colors
                         PlayerDataModel _playerDataModel = UnityEngine.Object.FindObjectOfType<PlayerDataModel>();
@@ -273,13 +273,13 @@ namespace Beat360fyerPlugin.Patches
 
                         if (overrideDefaultColours)//if the user has an override color scheme, do nothing since it will automatically override default colors
                         {
-                            Plugin.Log.Info("User HAS set an Override Color Scheme so it will be used.");
+                            //Plugin.Log.Info("User HAS set an Override Color Scheme so it will be used.");
                             return;
 
                         }
                         else//if the user doesn't have an override chose my default color scheme.
                         {
-                            Plugin.Log.Info("User HAS NOT set an Override Color Scheme. Using the original level color scheme.");
+                            //Plugin.Log.Info("User HAS NOT set an Override Color Scheme. Using the original level color scheme.");
                             overrideColorScheme = LevelUpdatePatcher.OriginalColorScheme;
                         }
                         //Plugin.Log.Info("No Custom Beat Map Data with Color Scheme");
@@ -313,7 +313,7 @@ namespace Beat360fyerPlugin.Patches
             IReadonlyBeatmapData RetrieveBeatmapData(IDifficultyBeatmap theDifficultyBeatmap, EnvironmentInfoSO environmentInfo, PlayerSpecificSettings thePlayerSpecificSettings)
             {
                 IReadonlyBeatmapData theBeatmapData = Task.Run(() => difficultyBeatmap.GetBeatmapDataAsync(environmentInfo, playerSpecificSettings)).Result;
-                Plugin.Log.Info($"PlayerSpecificSettings - NoteJumpDurationTypeSettings: {playerSpecificSettings.noteJumpDurationTypeSettings}. if Static - noteJumpFixedDuration(reaction time): {playerSpecificSettings.noteJumpFixedDuration} or if Dynamic - Note Jump Offset: {playerSpecificSettings.noteJumpStartBeatOffset}");
+                //Plugin.Log.Info($"PlayerSpecificSettings - NoteJumpDurationTypeSettings: {playerSpecificSettings.noteJumpDurationTypeSettings}. if Static - noteJumpFixedDuration(reaction time): {playerSpecificSettings.noteJumpFixedDuration} or if Dynamic - Note Jump Offset: {playerSpecificSettings.noteJumpStartBeatOffset}");
 
                 return theBeatmapData;
             }
@@ -328,7 +328,7 @@ namespace Beat360fyerPlugin.Patches
             noteJumpMovementSpeed = difficultyBeatmap.noteJumpMovementSpeed;
             noteJumpStartBeatOffset = difficultyBeatmap.noteJumpStartBeatOffset;
 
-            Plugin.Log.Info($"\nTransitionPatcher original NJS: {noteJumpMovementSpeed} original NJO {noteJumpStartBeatOffset}");
+            //Plugin.Log.Info($"\nTransitionPatcher original NJS: {noteJumpMovementSpeed} original NJO {noteJumpStartBeatOffset}");
 
             //Sets the variable to the name of the map being started (Standard, Generated360Degree, etc)          
             startingGameMode = difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.serializedName;
@@ -429,12 +429,12 @@ namespace Beat360fyerPlugin.Patches
 
                         if (difficultyData != null)
                         {
-                            Plugin.Log.Info($"{SongName} - Author already uses _envColorLeftBoost/_envColorRightBoost.");
+                            //Plugin.Log.Info($"{SongName} - Author already uses _envColorLeftBoost/_envColorRightBoost.");
                             AlreadyUsingEnvColorBoost = true;
                         }
                         else
                         {
-                            Plugin.Log.Info($"{SongName} - Author NOT using _envColorLeftBoost/_envColorRightBoost.");
+                            //Plugin.Log.Info($"{SongName} - Author NOT using _envColorLeftBoost/_envColorRightBoost.");
                             AlreadyUsingEnvColorBoost = false;
                         }
                     }

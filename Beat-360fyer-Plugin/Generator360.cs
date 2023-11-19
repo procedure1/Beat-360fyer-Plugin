@@ -94,10 +94,10 @@ namespace Beat360fyerPlugin
         {
             //EnableSpin = Config.Instance.EnableSpin;
 
-            Plugin.Log.Info($"SongName: {LevelUpdatePatcher.SongName}-----------------------------");
+            Plugin.Log.Info($"SongName: {LevelUpdatePatcher.SongName}");
             //Plugin.Log.Info($"PBD:  {PreferredBarDuration}");
             //Plugin.Log.Info($"RotationGroupLimit:  {Config.Instance.RotationGroupLimit} RotationGroupSize: {Config.Instance.RotationGroupSize}"); 
-            Plugin.Log.Info(" ");
+            //Plugin.Log.Info(" ");
 
             // Find the MultiplierSet based on the RotationAngleMultiplier
             //MultiplierSet selectedMultiplierSet = multiplierSets.FirstOrDefault(ms => ms.Multiplier == RotationAngleMultiplier);
@@ -108,7 +108,7 @@ namespace Beat360fyerPlugin
 
             //decides if there are at least 12 custom obstacles with with _position
             bool containsCustomWalls = dataItems.Count((e) => e is CustomObstacleData d && (d.customData?.ContainsKey("_position") ?? false)) > 12;
-            Plugin.Log.Info($"Contains custom walls: {containsCustomWalls}");
+            //Plugin.Log.Info($"Contains custom walls: {containsCustomWalls}");
 
             // Amount of rotation events emitted
             int eventCount = 0;
@@ -244,7 +244,7 @@ namespace Beat360fyerPlugin
             }
 
             //Plugin.Log.Info($"beatDuration: {beatDuration} barLength: {barLength}");
-            Plugin.Log.Info($"PreferredBarDuration: {PreferredBarDuration} * RotationSpeedMultiplier: {RotationSpeedMultiplier} = {PreferredBarDuration/RotationSpeedMultiplier}");
+            //Plugin.Log.Info($"PreferredBarDuration: {PreferredBarDuration} * RotationSpeedMultiplier: {RotationSpeedMultiplier} = {PreferredBarDuration/RotationSpeedMultiplier}");
             //Plugin.Log.Info($"RotationAngleMultiplier: {RotationAngleMultiplier}");
 
             //All in seconds
@@ -774,18 +774,18 @@ namespace Beat360fyerPlugin
 
                         if ((totalRotations > 5 || totalRotations < -5))
                         {
-                            Plugin.Log.Info($"Wall found with more than 5 rotations during its duration -- starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
+                            //Plugin.Log.Info($"Wall found with more than 5 rotations during its duration -- starting: {ob.time} duration: {ob.duration} are: {totalRotations} rotations");
                             float newDuration = (cutTime - ob.time) / 2.3f;
                             if (newDuration >= MinWallDuration)
                             {
                                 ob.UpdateDuration(newDuration);
-                                Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
+                                //Plugin.Log.Info($"------New Duration: {ob.duration} which is (cutTime - ob.time)/2 since half the wall occurs past the user play area");
                                 break;
                             }
                             else
                             {
                                 dataItems.Remove(ob);
-                                Plugin.Log.Info($"------Wall removed since shorter than MinWallDuration");
+                                //Plugin.Log.Info($"------Wall removed since shorter than MinWallDuration");
                                 break;
                             }
                         }
@@ -822,7 +822,7 @@ namespace Beat360fyerPlugin
             int obstaclesCount = data.allBeatmapDataItems.OfType<ObstacleData>().Count();
 
             Plugin.Log.Info($"rotationEventsCount: {rotationEventsCount}");
-            Plugin.Log.Info($"obstaclesCount: {obstaclesCount}");
+            //Plugin.Log.Info($"obstaclesCount: {obstaclesCount}");
 
             //if (LevelUpdatePatcher.BeatSage)
             //    CleanUpBeatSage(notes, new List<ObstacleData>(dataItems.OfType<ObstacleData>()));

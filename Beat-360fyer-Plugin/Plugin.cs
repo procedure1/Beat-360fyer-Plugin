@@ -45,7 +45,7 @@ namespace Beat360fyerPlugin
             public override void InstallBindings()
             {
                 Container.Bind<ParametricBoxController>().FromComponentInHierarchy().AsTransient();// Bind the ParametricBoxController as a transient dependency.
-                Plugin.Log.Info($"InstallBindings: ParametricBoxController");
+                //Plugin.Log.Info($"InstallBindings: ParametricBoxController");
             }
         }
         [OnExit]
