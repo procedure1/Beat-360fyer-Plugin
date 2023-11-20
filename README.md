@@ -20,7 +20,7 @@ After doing this, **every** beatmap will have the 360 degree gamemode enabled. J
 
 ## Algorithm
 
-The algorithm is completely deterministic and does not use random chance, it generates rotation events based on the notes in the *Standard* beatmap (the basemap can be changed in the menus from "Standard" to "OneSaber", "NoArrows", or "NinetyDegree" as well).
+The algorithm is completely deterministic and does not use random chance, it generates rotation events based on the notes in the *Standard* beatmap (the base map can be changed in the menus from "Standard" to "OneSaber", "NoArrows", or "NinetyDegree" as well).
 
 Wireless headset users can use the "Wireless 360" menu setting which has no rotation limits. Tethered headset users have settings to make sure to not ruin the cable by rotating too much.
 
@@ -54,15 +54,17 @@ There is a settings menu in-game. Or you can tweak settings in the `Beat Saber/U
 ```
 |Option|Description|
 |---|---|
-|`Wireless360`| `false` For wireless VR with no rotation restrictions and no tendencies to reverse direction. (default = `false`)|
-|`LimitRotations360`| For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!). (default = `360`)|
+|`360`|---|
+|`ShowGenerated360`| `true` If you want to enable 360 degree mode generation (default = `true`)|
+|`Wireless360`| `false` For wireless VR with no rotation restrictions and less tendencies to reverse direction. (default = `false`)|
+|`LimitRotations360`| Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc. Disables score submission if set less than 150. (default = `360`)|
 |`LimitRotations90`| For wired headsets in 90 degree mode. Add more or less rotation if you want. (default = `90`)|
 |`EnableWallGenerator`| Set to `false` to disable wall generation (default = `true`). Walls are not generated for NoodleExtension levels by default.|
 |`AllowCrouchWalls`| Allow crouch walls. This can be difficult to see coming in a fast 360 map. (default = `false`)|
 |`AllowLeanWalls`| Allow lean walls. This can be difficult to see coming in a fast 360 map. (default = `false`)|
 |`RotationAngleMultiplier`| Default 1.0 rotates in increments of 15°. 2.0 will rotate in increments of 30° etc. (default = `1.0`)|
 |`RotationSpeedMultiplier`| Change how frequently rotations are spawned. (default = `1.0`)|
-|`ShowGenerated360`| `true` If you want to enable 360 degree mode generation (default = `true`)|
+
 |`ShowGenerated90`| `true` If you want to enable 90 degree mode generation (default = `false`)|
 |`OnlyOneSaber`|`true` If you want to only keep one color during generation, this allows you to play `OneSaber` in 360 degree on any level, also the ones that don't have a OneSaber gamemode. (default = `false`, caution: experimental)|
 |`LeftHandedOneSaber`|`true` If you want to play left handed one saber mode (default = `false`, caution: experimental)|
