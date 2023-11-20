@@ -1,5 +1,5 @@
 # Beat Saber 360fyer Plugin
-A Beat Saber plugin to play any beatmap in 360 or 90 degree mode. 
+A Beat Saber mod to play any beatmap in 360 or 90 degree mode. 
 
 This mod was created by the genius CodeStix. https://github.com/CodeStix/
 I have updated the mod since it has been dormant for a long time.
