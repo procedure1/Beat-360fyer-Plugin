@@ -13,18 +13,18 @@ v1.31.1
 ## Installation
 
 - You can install this mod using ModAssistant.
-- Or install this mod manually by downloading a release from the [releases](https://github.com/CodeStix/Beat-360fyer-Plugin/releases) tab and placing it in the `Plugins/` directory of your modded Beat Saber installation.
+- Or install this mod manually by downloading a release from the [releases]https://github.com/procedure1/Beat-360fyer-Plugin/releases) tab and placing it in the `Plugins/` directory of your modded Beat Saber installation.
 - Requires CustomJSONData Mod
 
-After doing this, **every** beatmap will have the 360/90 degree gamemode enabled. Just choose `360` when you select a song. The level will be generated once you start the level.
+After doing this, **every** beatmap will have the 360 degree gamemode enabled. Just choose `360` when you select a song. The level will be generated once you start the level. 90 degree levels can also be enabled in the menu.
 
 ## Algorithm
 
-The algorithm is completely deterministic and does not use random chance, it generates rotation events based on the notes in the *Standard* beatmap. 
+The algorithm is completely deterministic and does not use random chance, it generates rotation events based on the notes in the *Standard* beatmap (the basemap can be changed in the menus from "Standard" to "OneSaber", "NoArrows", or "NinetyDegree" as well).
 
-**It also makes sure to not ruin your cable by rotating too much!** 
+Wireless headset users can use the "Wireless 360" menu setting which has no rotation limits. Tethered headset users have settings to make sure to not ruin the cable by rotating too much.
 
-## Config file
+## Menu Settings and Config file
 
 There is a settings menu in-game. Or you can tweak settings in the `Beat Saber/UserData/Beat-360fyer-Plugin.json` config file. You should open this file with notepad or another text editor.
 
