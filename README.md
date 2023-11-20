@@ -54,7 +54,7 @@ There is a settings menu in-game. Or you can tweak settings in the `Beat Saber/U
 ```
 |Option|Description|
 |---|---|
-|`360`||
+||360|
 |`ShowGenerated360`| `true` If you want to enable 360 degree mode generation. Requires restart for maps that have already been selected in the menu. (default = `true`)|
 |`Wireless360`| `false` For wireless VR with no rotation restrictions and less tendencies to reverse direction. (default = `false`)|
 |`LimitRotations360`| Disabled if Wireless 360 is enabled. For wired headsets use 360° or less. 720° will allow 2 full revolutions (cable rip!) etc. Disables score submission if set less than 150. (default = `360`)|
