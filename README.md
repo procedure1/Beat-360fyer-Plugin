@@ -1,10 +1,10 @@
 # Beat Saber 360fyer Plugin
-A Beat Saber mod to play any beatmap in 360 or 90 degree mode. 
+A Beat Saber mod to play most beatmaps in 360 or 90 degree mode. 
 
 This mod was created by the genius CodeStix. https://github.com/CodeStix/
 I have updated the mod since it has been dormant for a long time.
 
-I added menu settings and lots of customization. Much of the customization in this update is centered around attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out in 2019. The 360 environment is very low key with dim narrow lasers compared to modern environments. So I attempted to make it a bit flashier :) Turn it off if you don't approve.
+I added menu settings and lots of customization. Much of the customization in this update is centered around attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out in 2019. The 360 environment is very low key with dim narrow lasers compared to modern environments. So I attempted to make it a bit flashier :) Turn it off if you don't approve. Note: Noodle maps are currently disabled for 360.
 [![showcase video](https://github.com/CodeStix/Beat-360fyer-Plugin/raw/master/preview.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
 ## Beat Saber PC Version
 v1.31.1
