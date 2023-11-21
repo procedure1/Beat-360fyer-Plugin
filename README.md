@@ -4,8 +4,7 @@ A Beat Saber mod to play any beatmap in 360 or 90 degree mode.
 This mod was created by the genius CodeStix. https://github.com/CodeStix/
 I have updated the mod since it has been dormant for a long time.
 
-I added a menu and lots of customization. Much of the customization is centered around attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out. The 360 environment is very low key compared to modern environments so I attempted to make it a bit flashier :)
-
+I added menu settings and lots of customization. Much of the customization in this update is centered around attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out in 2019. The 360 environment is very low key with dim narrow lasers compared to modern environments. So I attempted to make it a bit flashier :) Turn it off if you don't approve.
 [![showcase video](https://github.com/CodeStix/Beat-360fyer-Plugin/raw/master/preview.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
 ## Beat Saber PC Version
 v1.31.1
@@ -22,7 +21,7 @@ After doing this, **every** beatmap will have the 360 degree gamemode enabled. J
 
 The algorithm is completely deterministic and does not use random chance, it generates rotation events based on the notes in the *Standard* beatmap (the base map can be changed in the menus from "Standard" to "OneSaber", "NoArrows", or "NinetyDegree" as well).
 
-Wireless headset users can use the "Wireless 360" menu setting which has no rotation limits and less tendencies to reverse direction. Tethered headset users have settings to make sure to not ruin the cable by rotating too much.
+Wireless headset users can use the "Wireless 360" menu setting which has no rotation limits and less tendencies to reverse direction. Tethered headset users have rotation limiting settings to make sure to not ruin the cable by rotating too much. You can also use these settings if your play space is limited (for example you could limit rotations to 150° or 180° if you want to face forward only).
 
 ## Menu Settings and Config file
 
