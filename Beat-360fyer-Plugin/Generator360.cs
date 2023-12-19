@@ -120,26 +120,24 @@ namespace Beat360fyerPlugin
             // Previous spin direction, false is left, true is right
             bool previousDirection = true;
 
+            //BOOST Lighting Events
             int boostInteration = 0; // Counter for tracking iterations
             bool boostOn = true; // Initial boolean value
 
+            //Add Extra Rotations
             int r = 1;
             int totalRotationsGroup = 0;
-            //int totalRotationUpdated = 0;
             bool prevRotationPositive = true;
-
             int newRotation = 0;
             bool addMoreRotations = false;
             int RotationGroupLimit = (int)Config.Instance.RotationGroupLimit;
             int RotationGroupSize = (int)Config.Instance.RotationGroupSize;
-
             bool alternateParams = false;
-
             int offSetR = 0;
 
             List<SliderData> sliders = dataItems.OfType<SliderData>().Where((e) => e.sliderType == SliderData.Type.Normal).ToList();//only use normal sliders (arcs) not burst sliders
-            List<SliderData> slidersWithRotations = new List<SliderData>();
-            List<SpawnRotationBeatmapEventData>sliderRotations = new List<SpawnRotationBeatmapEventData>();
+            //List<SliderData> slidersWithRotations = new List<SliderData>();
+            //List<SpawnRotationBeatmapEventData>sliderRotations = new List<SpawnRotationBeatmapEventData>();
 
             /*
             List<(float, float)> rotationsNotAllowed = new List<(float, float)>();//float head of slider, float tail of slider
@@ -334,7 +332,7 @@ namespace Beat360fyerPlugin
                     IEnumerable<NoteData> lastNotes = notesInBarBeat.Where((e) => Math.Abs(e.time - lastNote.time) < 0.005f);
 
                     // Amount of notes pointing to the left/right
-                    int leftCount = lastNotes.Count((e) => e.lineIndex <= 1 || e.cutDirection == NoteCutDirection.Left || e.cutDirection == NoteCutDirection.UpLeft || e.cutDirection == NoteCutDirection.DownLeft);
+                    int leftCount  = lastNotes.Count((e) => e.lineIndex <= 1 || e.cutDirection == NoteCutDirection.Left  || e.cutDirection == NoteCutDirection.UpLeft  || e.cutDirection == NoteCutDirection.DownLeft);
                     int rightCount = lastNotes.Count((e) => e.lineIndex >= 2 || e.cutDirection == NoteCutDirection.Right || e.cutDirection == NoteCutDirection.UpRight || e.cutDirection == NoteCutDirection.DownRight);
 
                     NoteData afterLastNote = (k < notesInBar.Count ? notesInBar[k] : i < notes.Count ? notes[i] : null);
@@ -564,7 +562,7 @@ namespace Beat360fyerPlugin
                         float wallDuration = dividedBarLength;
 
                         // Create a Random instance
-                        System.Random random = new System.Random();
+                        //System.Random random = new System.Random();
 
                         // Check if there is already a wall
                         bool generateWall = true;
