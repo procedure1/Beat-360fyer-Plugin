@@ -28,10 +28,6 @@ namespace Beat360fyerPlugin
         public virtual bool AllowCrouchWalls { get; set; } = false;//BW added this
         public virtual bool AllowLeanWalls { get; set; } = false;//BW added this
         
-        //BW Not needed since rotates outside of the 15 degree pasages
-        //public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
-
-        public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
         //-------------------------------------------------------
 
         //BW Requires Beat Saber restart
@@ -48,6 +44,26 @@ namespace Beat360fyerPlugin
 
         //public virtual bool ArcFix { get; set; } = true;//remove rotation during sliders unless the head and tail rotation ends up the same. results is partial mismatch of tail
         public virtual bool ArcFixFull { get; set; } = true;//removes all rotations during sliders
+
+        //BW Not needed since rotates outside of the 15 degree pasages
+        //public virtual float RotationAngleMultiplier { get; set; } = 1.0f;//BW added this to lessen/increase rotation angle amount
+        public virtual float RotationSpeedMultiplier { get; set; } = 1.0f;//BW This is a multiplier for PreferredBarDuration which has a default of 1.84f
+        public virtual float MaxRotationSize { get; set; } = 30f;//disallows single rotations larger than this
+
+        public virtual bool LightAutoMapper { get; set; } = true;
+        public virtual float LightFrequencyMultiplier { get; set; } = 1.0f;// Default is 1, adjust as needed use from 0 - 1 to reduce frequency
+        public virtual float BrightnessMultiplier { get; set; } = 1.0f;//affect the floatValue property can increase or decrease
+
+        public enum Style
+        {
+            ON = 1,
+            FLASH = 2,
+            FADE = 3,
+            TRANSITION = 4
+        }
+        public virtual Style LightStyle { get; set; } = Style.TRANSITION;//not using off
+
+
 
         //BW added this baseded on NoteLimiter UI. enums cannot use a digit so had to change 90Degree to NinetyDegree
         //public virtual string TextColor { get; set; } = "#555555";//BW sets the color of the LimitRotations360 menu text. Dims it if deactivated by Wireless360;

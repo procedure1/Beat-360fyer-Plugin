@@ -114,52 +114,61 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.BoostLighting;
             set => Config.Instance.BoostLighting = value;
         }
-        /*
-        [UIValue("EnableSlidersNJS")]
-        public bool EnableSlidersNJS
+        [UIValue("LightAutoMapper")]//Creates a boost lighting event. if ON, will set color left to boost color left new color etc. Will only boost a color scheme that has boost colors set so works primarily with COLORS > OVERRIDE DEFAULT COLORS. Or an authors color scheme must have boost colors set (that will probably never happen since they will have boost colors set if they use boost events).
+        public bool LightAutoMapper
         {
-            get => Config.Instance.EnableNJS;
+            get => Config.Instance.LightAutoMapper;
+            set => Config.Instance.LightAutoMapper = value;
+        }
+        [UIValue("LightFrequencyMultiplier")]
+        public float LightFrequencyMultiplier
+        {
+            get => Config.Instance.LightFrequencyMultiplier;
+            set => Config.Instance.LightFrequencyMultiplier = value;
+        }
+        [UIValue("BrightnessMultiplier")]
+        public float BrightnessMultiplier
+        {
+            get => Config.Instance.BrightnessMultiplier;
+            set => Config.Instance.BrightnessMultiplier = value;
+        }
+
+        // Dictionary for custom labels
+        private readonly Dictionary<Config.Style, string> _styleLabels = new Dictionary<Config.Style, string>
+        {
+            { Config.Style.ON, "Fast Strobe On" },
+            { Config.Style.FADE, "Med Fade" },
+            { Config.Style.FLASH, "Med Flash" },
+            { Config.Style.TRANSITION, "Slow Transition" }
+        };
+
+        [UIValue("available-styles")]
+        private List<object> _styles = new List<object>();
+
+        public GameplaySetupView() // Constructor with the class name
+        {
+            // Populate the dropdown list in the desired order
+            _styles.Add(_styleLabels[Config.Style.ON]);
+            _styles.Add(_styleLabels[Config.Style.FADE]);
+            _styles.Add(_styleLabels[Config.Style.FLASH]);
+            _styles.Add(_styleLabels[Config.Style.TRANSITION]);
+        }
+
+        [UIValue("LightStyle")]
+        public string LightStyle
+        {
+            get => _styleLabels[Config.Instance.LightStyle];
             set
             {
-                Config.Instance.EnableNJS = value;
-                NotifyPropertyChanged();
+                if (_styleLabels.ContainsValue(value))
+                {
+                    Config.Style style = _styleLabels.FirstOrDefault(x => x.Value == value).Key;
+                    Config.Instance.LightStyle = style;
+                    NotifyPropertyChanged();
+                }
             }
         }
-        [UIValue("EnableNJS")]
-        public bool EnableNJS
-        {
-            get => Config.Instance.EnableNJS;
-            set
-            {
-                Config.Instance.EnableNJS = value;
-                EnableSlidersNJS = value;
-                if (EnableSlidersNJS) TextColorEnableSlidersNJS = "#ffffff"; else TextColorEnableSlidersNJS = "#555555";
-                NotifyPropertyChanged();
-            }
-        }
-        //BW NJS & NJO sliders text dimmed if EnableNJS disabled
-        [UIValue("TextColorEnableSlidersNJS")]
-        public String TextColorEnableSlidersNJS
-        {
-            get => Config.Instance.EnableNJS ? "#ffffff" : "#555555";
-            set
-            {
-                NotifyPropertyChanged();
-            }
-        }
-        [UIValue("NJS")]
-        public float NJS
-        {
-            get => Config.Instance.NJS;
-            set => Config.Instance.NJS = value;
-        }
-        [UIValue("NJO")]
-        public float NJO
-        {
-            get => Config.Instance.NJO;
-            set => Config.Instance.NJO = value;
-        }
-        */
+
         [UIValue("AllowCrouchWalls")]
         public bool AllowCrouchWalls
         {

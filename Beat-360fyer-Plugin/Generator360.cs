@@ -94,7 +94,7 @@ namespace Beat360fyerPlugin
         {
             //EnableSpin = Config.Instance.EnableSpin;
 
-            Plugin.Log.Info($"SongName: {LevelUpdatePatcher.SongName}");
+            //Plugin.Log.Info($"SongName: {LevelUpdatePatcher.SongName} - Difficulty: {LevelUpdatePatcher.Difficulty}");
             //Plugin.Log.Info($"PBD:  {PreferredBarDuration}");
             //Plugin.Log.Info($"RotationGroupLimit:  {Config.Instance.RotationGroupLimit} RotationGroupSize: {Config.Instance.RotationGroupSize}"); 
             //Plugin.Log.Info(" ");
@@ -153,12 +153,14 @@ namespace Beat360fyerPlugin
             void Rotate(float time, int amount, SpawnRotationBeatmapEventData.SpawnRotationEventType moment, bool enableLimit = true)
             {             
                 if (amount == 0)//Allows 4*15=60 degree turn max and -60 degree min -- however amounts are never passed in higher than 3 or lower than -3. I in testing I only see 2 to -2
-                    return;               
-                if (amount < -4)
-                    amount = -4;
-                if (amount > 4)
-                    amount = 4;
+                    return;
 
+                int maxRotation = (int)Config.Instance.MaxRotationSize / 15;
+
+                if (amount < -maxRotation)
+                    amount = -maxRotation;
+                if (amount > maxRotation)
+                    amount = maxRotation;
 
                 if (enableLimit)//always true unless you enableSpin in settings
                 {
@@ -621,9 +623,8 @@ namespace Beat360fyerPlugin
                                     CustomObstacleData customObsData = new CustomObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5, new CustomData(), true);
                                     data.AddBeatmapObjectDataInOrder(customObsData);//(new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//note width is always 1 here. BW changed to make all walls 5 high since this version of plugin shortens height of walls which i don't like - default:  wallHeight)); wallHeight));
 
-
                                     //string temp; if (wallHeight == 1) { temp = "Top"; } else { temp = "Base"; };
-                                    //Plugin.Log.Info($"Wall Generate1: Time: {wallTime}, Index: 3, Layer: {temp}, Dur: {wallDuration}, Width: {randomNumber}, Height: 5");
+                                    //Plugin.Log.Info($"Wall Generator1: Time: {wallTime}, Index: 3, Layer: {temp}, Dur: {wallDuration}, Width: {width}, Height: 5");
                                 }
                             }
                             if (!notesInBarBeat.Any((e) => e.lineIndex == 0))//line index 0 is far left
@@ -664,7 +665,7 @@ namespace Beat360fyerPlugin
                                     data.AddBeatmapObjectDataInOrder(customObsData);// new ObstacleData(wallTime, lineIndex, wallHeight == 1 ? NoteLineLayer.Top : NoteLineLayer.Base, wallDuration, width, 5));//BW wallHeight));
 
                                     //string temp; if (wallHeight == 1) { temp = "Top"; } else { temp = "Base"; };
-                                    //Plugin.Log.Info($"Wall Generator: Time: {wallTime}, Index: 0, Layer: {temp}, Dur: {wallDuration}, Width: {width}, Height: 5");
+                                    //Plugin.Log.Info($"Wall Generator2: Time: {wallTime}, Index: 0, Layer: {temp}, Dur: {wallDuration}, Width: {width}, Height: 5");
 
                                 }
                             }
@@ -686,7 +687,6 @@ namespace Beat360fyerPlugin
 
             #region Wall Removal
             //BW noodle extensions causes BS crash in the section somewhere below. Could drill down and figure out why. Haven't figured out how to test for noodle extensions but noodle extension have custom walls that crash Beat Saber so BW added test for custom walls.
-
             Queue<ObstacleData> obstacles = new Queue<ObstacleData>(dataItems.OfType<ObstacleData>());
 
             while (obstacles.Count > 0)
@@ -824,6 +824,159 @@ namespace Beat360fyerPlugin
 
             //if (LevelUpdatePatcher.BeatSage)
             //    CleanUpBeatSage(notes, new List<ObstacleData>(dataItems.OfType<ObstacleData>()));
+
+            #region LightAutoMapper
+            if (Config.Instance.LightAutoMapper)
+            {
+                List<BasicBeatmapEventData> currentLightEvents = dataItems.OfType<BasicBeatmapEventData>().ToList();
+
+                // Initialize a Dictionary to keep track of the count of each event type
+                Dictionary<BasicBeatmapEventType, int> eventTypeCounts = new Dictionary<BasicBeatmapEventType, int>();
+
+                // Iterate over your list
+                foreach (BasicBeatmapEventData lightEvent in currentLightEvents)
+                {
+                    if ((int)lightEvent.basicBeatmapEventType <= 5)//only check types 0-5
+                    {
+                        // Update the count for each eventType in the dictionary
+                        if (eventTypeCounts.ContainsKey(lightEvent.basicBeatmapEventType))
+                        {
+                            eventTypeCounts[lightEvent.basicBeatmapEventType]++;
+                        }
+                        else
+                        {
+                            eventTypeCounts[lightEvent.basicBeatmapEventType] = 1;
+                        }
+                    }
+                }
+                // Check if there are enough of each type -boost is not handled by Basic events for v3
+                bool needsBACK = !eventTypeCounts.ContainsKey(BasicBeatmapEventType.Event0) || eventTypeCounts[BasicBeatmapEventType.Event0] < 6;
+                bool needsRING = !eventTypeCounts.ContainsKey(BasicBeatmapEventType.Event1) || eventTypeCounts[BasicBeatmapEventType.Event1] < 6;
+                bool needsLEFT = !eventTypeCounts.ContainsKey(BasicBeatmapEventType.Event2) || eventTypeCounts[BasicBeatmapEventType.Event2] < 20;
+                bool needsRIGHT = !eventTypeCounts.ContainsKey(BasicBeatmapEventType.Event3) || eventTypeCounts[BasicBeatmapEventType.Event3] < 20;
+                bool needsCENTER = !eventTypeCounts.ContainsKey(BasicBeatmapEventType.Event4) || eventTypeCounts[BasicBeatmapEventType.Event4] < 10;
+
+                if (needsBACK || needsRING || needsLEFT || needsRIGHT || needsCENTER)
+                {
+                    List<CustomBasicBeatmapEventData> lights = LightAutoMapper.CreateLight(currentLightEvents, notes, sliders, needsBACK, needsRING, needsLEFT, needsRIGHT, needsCENTER);
+
+                    // First, collect all items to be removed
+                    var oldEvents = data.allBeatmapDataItems.OfType<BasicBeatmapEventData>().ToList();
+
+                    // Then, remove them in a separate step to avoid interation errors
+                    foreach (var e in oldEvents)//must delete all these events since sent them into LightAutoMapper
+                    {
+                        dataItems.Remove(e);
+                    }
+
+
+                    foreach (BasicBeatmapEventData light in lights)
+                    {
+                        data.InsertBeatmapEventDataInOrder(light);
+                    }
+
+
+                }
+            }
+            #endregion
+
+            Plugin.Log.Info($"BasicBeatmapEventData Lights (final output including original lights):");
+
+            foreach (BasicBeatmapEventData light in data.allBeatmapDataItems.OfType<BasicBeatmapEventData>())
+            {
+                string eventName;
+
+                switch (light.basicBeatmapEventType)
+                {
+                    case BasicBeatmapEventType.Event0:
+                        eventName = "Back  ";
+                        break;
+                    case BasicBeatmapEventType.Event1:
+                        eventName = "Ring  ";
+                        break;
+                    case BasicBeatmapEventType.Event2:
+                        eventName = "Left  ";
+                        break;
+                    case BasicBeatmapEventType.Event3:
+                        eventName = "Right ";
+                        break;
+                    case BasicBeatmapEventType.Event4:
+                        eventName = "Center";
+                        break;
+                    case BasicBeatmapEventType.Event5:
+                        eventName = "Boost";
+                        break;
+                    case BasicBeatmapEventType.Event8:
+                        eventName = "RSpin";
+                        break;
+                    case BasicBeatmapEventType.Event9:
+                        eventName = "RZoom";
+                        break;
+                    case BasicBeatmapEventType.Event12:
+                        eventName = "LftSpd";
+                        break;
+                    case BasicBeatmapEventType.Event13:
+                        eventName = "RghtSpd";
+                        break;
+                    default:
+                        eventName = "Unknown";
+                        break;
+                }
+
+                string eventValue;
+
+                switch (light.value)
+                {
+                    case 0:
+                        eventValue = "Off       ";
+                        break;
+                    case 1:
+                        eventValue = "Blue On   ";
+                        break;
+                    case 2:
+                        eventValue = "Blue Flash";
+                        break;
+                    case 3:
+                        eventValue = "Blue Fade ";
+                        break;
+                    case 4:
+                        eventValue = "Blue Trans";
+                        break;
+                    case 5:
+                        eventValue = "Red On    ";
+                        break;
+                    case 6:
+                        eventValue = "Red Flash ";
+                        break;
+                    case 7:
+                        eventValue = "Red Fade  ";
+                        break;
+                    case 8:
+                        eventValue = "Red Trans ";
+                        break;
+                    case 9:
+                        eventValue = "White On   ";
+                        break;
+                    case 10:
+                        eventValue = "White Flash";
+                        break;
+                    case 11:
+                        eventValue = "White Fade";
+                        break;
+                    case 12:
+                        eventValue = "White Trans";
+                        break;
+                    default:
+                        eventValue = "Unknown    ";
+                        break;
+                }
+                if (eventName == "Unknown")
+                    Plugin.Log.Info($"time: {Math.Round(light.time, 1)}\t type: {light.basicBeatmapEventType}\t v: {light.value}\t float: {light.floatValue}");
+                else if (eventName == "LftSpd" || eventName == "RghtSpd")
+                    Plugin.Log.Info($"time: {Math.Round(light.time, 1)}\t type: {eventName}\t v: {light.value}\t float: {light.floatValue}");
+                else
+                    Plugin.Log.Info($"time: {Math.Round(light.time, 1)}\t type: {eventName}\t v: {eventValue}\t float: {light.floatValue}");
+            }
 
             return data;
         }

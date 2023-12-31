@@ -9,6 +9,8 @@ using SiraUtil.Zenject;//needed to get Zenjector for installer
 
 
 using JetBrains.Annotations;
+using System.Linq;
+using UnityEngine;
 
 namespace Beat360fyerPlugin
 {
@@ -45,7 +47,30 @@ namespace Beat360fyerPlugin
             public override void InstallBindings()
             {
                 Container.Bind<ParametricBoxController>().FromComponentInHierarchy().AsTransient();// Bind the ParametricBoxController as a transient dependency.
-                //Plugin.Log.Info($"InstallBindings: ParametricBoxController");
+                                                                                                   //Plugin.Log.Info($"InstallBindings: ParametricBoxController");
+
+                //Have to do this or will cause errors when do this. help from Meivyn
+                //1 play song then close BS. PlayerData.dat gets this: "levelId": "Cathedral","beatmapCharacteristicName": "Generated360Degree",
+                //2 Played Song then closed BS. PlayerData.dat gets this added to the above listed item: "levelId": "Cathedral","beatmapCharacteristicName": "MissingCharacteristic",
+                //3 Got error on opening BS the 3rd time. it resets the PlayerData.dat file and you lose custom colors etc.
+                BeatmapCharacteristicSO GameMode360 = GetCustomGameMode("GEN360", "Generated 360 mode", "Generated360Degree", "Generated360Degree");
+                BeatmapCharacteristicSO GameMode90 = GetCustomGameMode("GEN90", "Generated 90 mode", "Generated90Degree", "Generated90Degree");
+
+                BeatmapCharacteristicSO GetCustomGameMode(string characteristicName, string hintText, string serializedName, string compoundIdPartName, bool requires360Movement = true, bool containsRotationEvents = true, int sortingOrder = 99)
+                {
+                    BeatmapCharacteristicSO customGameMode = SongCore.Collections.customCharacteristics.Where(x => x.serializedName == serializedName).FirstOrDefault();
+                    if (customGameMode != null)
+                    {
+                        return customGameMode;
+                    }
+
+                    Texture2D tex = new Texture2D(50, 50);//unable to load 360 icon at this stage
+                    Sprite icon = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new UnityEngine.Vector2(0.5f, 0.5f));
+
+                    customGameMode = SongCore.Collections.RegisterCustomCharacteristic(icon, characteristicName, hintText, serializedName, compoundIdPartName, requires360Movement, containsRotationEvents, sortingOrder);
+
+                    return customGameMode;
+                }
             }
         }
         [OnExit]

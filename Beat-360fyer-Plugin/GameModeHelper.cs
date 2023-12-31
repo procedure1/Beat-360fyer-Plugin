@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using BGLib;
 
 namespace Beat360fyerPlugin
 {
@@ -39,19 +40,19 @@ namespace Beat360fyerPlugin
                 icon = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
             }
 
-            BeatmapCharacteristicSO customGameMode = BeatmapCharacteristicSO.CreateInstance<BeatmapCharacteristicSO>();
+            //Have to get this from songcore and i have registered this in OnApplicationStart() as per Meivyn
+            BeatmapCharacteristicSO customGameMode = SongCore.Collections.customCharacteristics.First(x => x.serializedName == serializedName);
+
             FieldHelper.Set(customGameMode, "_icon", icon);
             FieldHelper.Set(customGameMode, "_characteristicNameLocalizationKey", name);
             FieldHelper.Set(customGameMode, "_descriptionLocalizationKey", description);
-            FieldHelper.Set(customGameMode, "_serializedName", serializedName);
+            //FieldHelper.Set(customGameMode, "_serializedName", serializedName);
             FieldHelper.Set(customGameMode, "_compoundIdPartName", serializedName); // What is _compoundIdPartName? It gets added to the IDifficultyBeatMap serializedName 
             FieldHelper.Set(customGameMode, "_sortingOrder", 100);
             FieldHelper.Set(customGameMode, "_containsRotationEvents", containsRotationEvents);
             FieldHelper.Set(customGameMode, "_requires360Movement", requires360Movement);
             FieldHelper.Set(customGameMode, "_numberOfColors", numberOfColors);
-            
-            customGameMode.name = "360DegreeBeatmapCharacteristic";//BW added. not sure if it matters
-
+           
             /*
             // Logging the properties of the customGameMode object
             Plugin.Log.Info("BW 2 GameModeHelper - Properties of customGameMode:");

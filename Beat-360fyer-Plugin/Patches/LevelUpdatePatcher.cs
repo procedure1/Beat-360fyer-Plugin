@@ -125,8 +125,7 @@ namespace Beat360fyerPlugin.Patches
 
                 if (TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_360DEGREE_MODE || TransitionPatcher.startingGameMode == GameModeHelper.GENERATED_90DEGREE_MODE)
                 {
-
-                    Plugin.Log.Info($"\nGenerating rotation events for {TransitionPatcher.startingGameMode}...");
+                    Plugin.Log.Info($"\n Songname: {LevelUpdatePatcher.SongName} - Difficulty: {LevelUpdatePatcher.Difficulty} - Generating rotation events for {TransitionPatcher.startingGameMode}...");
 
                     Generator360 gen = new Generator360();
                     gen.WallGenerator = Config.Instance.EnableWallGenerator;
@@ -238,9 +237,12 @@ namespace Beat360fyerPlugin.Patches
                         Color saberBColor = beatmapCustomData["_colorRight"] != null ? new Color((float)beatmapCustomData["_colorRight"]["r"], (float)beatmapCustomData["_colorRight"]["g"], (float)beatmapCustomData["_colorRight"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.saberBColor;
                         Color environmentColor0 = beatmapCustomData["_envColorLeft"] != null ? new Color((float)beatmapCustomData["_envColorLeft"]["r"], (float)beatmapCustomData["_envColorLeft"]["g"], (float)beatmapCustomData["_envColorLeft"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor0;
                         Color environmentColor1 = beatmapCustomData["_envColorRight"] != null ? new Color((float)beatmapCustomData["_envColorRight"]["r"], (float)beatmapCustomData["_envColorRight"]["g"], (float)beatmapCustomData["_envColorRight"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor1;
+                        Color environmentColorW = beatmapCustomData["_envColorWhite"] != null ? new Color((float)beatmapCustomData["_envColorWhite"]["r"], (float)beatmapCustomData["_envColorWhite"]["g"], (float)beatmapCustomData["_envColorWhite"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColorW;//v1.34.2
                         bool supportsEnvironmentColorBoost = beatmapCustomData.Property("_envColorLeftBoost") != null && beatmapCustomData.Property("_envColorRightBoost") != null;
                         Color environmentColor0Boost = beatmapCustomData.Property("_envColorLeftBoost") != null ? new Color((float)beatmapCustomData["_envColorLeftBoost"]["r"], (float)beatmapCustomData["_envColorLeftBoost"]["g"], (float)beatmapCustomData["_envColorLeftBoost"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor0Boost;
                         Color environmentColor1Boost = beatmapCustomData.Property("_envColorRightBoost") != null ? new Color((float)beatmapCustomData["_envColorRightBoost"]["r"], (float)beatmapCustomData["_envColorRightBoost"]["g"], (float)beatmapCustomData["_envColorRightBoost"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColor1Boost;
+                        Color environmentColorWBoost = beatmapCustomData.Property("_envColorWhiteBoost") != null ? new Color((float)beatmapCustomData["_envColorWhiteBoost"]["r"], (float)beatmapCustomData["_envColorWhiteBoost"]["g"], (float)beatmapCustomData["_envColorWhiteBoost"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.environmentColorWBoost;//v1.34.2
+
                         Color obstaclesColor = beatmapCustomData.Property("_obstacleColor") != null ? new Color((float)beatmapCustomData["_obstacleColor"]["r"], (float)beatmapCustomData["_obstacleColor"]["g"], (float)beatmapCustomData["_obstacleColor"]["b"]) : LevelUpdatePatcher.OriginalColorScheme.obstaclesColor;
 
                         // Create the ColorScheme object and assign it
@@ -254,9 +256,11 @@ namespace Beat360fyerPlugin.Patches
                             saberBColor,
                             environmentColor0,
                             environmentColor1,
+                            environmentColorW,//v1.34
                             supportsEnvironmentColorBoost,
                             environmentColor0Boost,
                             environmentColor1Boost,
+                            environmentColorWBoost,//v1.34
                             obstaclesColor
                         );
 
@@ -295,7 +299,7 @@ namespace Beat360fyerPlugin.Patches
     //Runs when you click play button
     //BW v1.31.0 Class MenuTransitionsHelper method StartStandardLevel has 1 new item added. After 'ColorScheme overrideColorScheme', 'ColorScheme beatmapOverrideColorScheme' has been added. so i added: typeof(ColorScheme) after typeof(ColorScheme)
     [HarmonyPatch(typeof(MenuTransitionsHelper))]
-    [HarmonyPatch("StartStandardLevel", new[] { typeof(string), typeof(IDifficultyBeatmap), typeof(IPreviewBeatmapLevel), typeof(OverrideEnvironmentSettings), typeof(ColorScheme), typeof(ColorScheme), typeof(GameplayModifiers), typeof(PlayerSpecificSettings), typeof(PracticeSettings), typeof(string), typeof(bool), typeof(bool), typeof(Action), typeof(Action<DiContainer>), typeof(Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults>), typeof(Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults>) })]
+    [HarmonyPatch("StartStandardLevel", new[] { typeof(string), typeof(IDifficultyBeatmap), typeof(IPreviewBeatmapLevel), typeof(OverrideEnvironmentSettings), typeof(ColorScheme), typeof(ColorScheme), typeof(GameplayModifiers), typeof(PlayerSpecificSettings), typeof(PracticeSettings), typeof(string), typeof(bool), typeof(bool), typeof(Action), typeof(Action<DiContainer>), typeof(Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults>), typeof(Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults>), typeof(RecordingToolManager.SetupData) })]//v1.34 added last item
     public class TransitionPatcher
     {
         public static string startingGameMode;
@@ -345,16 +349,18 @@ namespace Beat360fyerPlugin.Patches
     public class LevelUpdatePatcher
     {
         public static string SongName;
+        public static string Difficulty;
         public static bool BeatSage;
-        public static float SongDuration;
+        //public static float SongDuration;
         public static ColorScheme OriginalColorScheme;
         public static bool AlreadyUsingEnvColorBoost;
         //public static float CuttableNotesCount;
 
         static void Prefix(StandardLevelDetailView __instance, IBeatmapLevel level, BeatmapDifficulty defaultDifficulty, BeatmapCharacteristicSO defaultBeatmapCharacteristic, PlayerData playerData)//level actually is of the class CustomBeatmapLevel which impliments interface IBeatmapLevel
         {
-            SongDuration = level.songDuration;
+            //SongDuration = level.songDuration;
             SongName = level.songName;
+            Difficulty = defaultDifficulty.ToString();
             BeatSage = level.levelAuthorName.Contains("Beat Sage");
 
             //This will get the color scheme of the 1st level or main level (usually standard)
@@ -425,7 +431,7 @@ namespace Beat360fyerPlugin.Patches
 
                     if (extras != null)
                     {
-                        var difficultyData = extras._difficulties.FirstOrDefault(difficultyDataInner => difficultyDataInner._envColorLeftBoost != null || difficultyDataInner._envColorRightBoost != null);
+                        var difficultyData = extras._difficulties.FirstOrDefault(difficultyDataInner => difficultyDataInner._envColorLeftBoost != null || difficultyDataInner._envColorRightBoost != null);//this looks to see if a boost color was set. it assumes there must not be boost events if no color was set.
 
                         if (difficultyData != null)
                         {

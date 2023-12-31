@@ -25,7 +25,11 @@
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
         <toggle-setting text='Big Lasers' apply-on-change='true' value='BigLasers' bind-value='true' hover-hint="Scales up laser size. This affects all 360/90 degree maps."></toggle-setting>
         <toggle-setting text='Bright Lights' apply-on-change='true' value='BrightLights' bind-value='true' hover-hint="Brightens low key lights. This affects all 360/90 degree maps."></toggle-setting>
-        <toggle-setting text='Boost Lighting Events' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds 'boost' lighting events to maps that don't have an authored color scheme. Occurs based on rotations. Use COLORS > OVERRIDE DEFAULT COLORS."></toggle-setting>
+        <toggle-setting text='Boost Lighting Events' apply-on-change='true' value='BoostLighting' bind-value='true' hover-hint="Adds 'boost' lighting events to maps that don't have them. Occurs based on rotations. Use COLORS > OVERRIDE DEFAULT COLORS."></toggle-setting>
+        <toggle-setting text='Automapper Lights' apply-on-change='true' value='LightAutoMapper' bind-value='true' hover-hint="Adds note-based generated lighting events to maps that don't have them. Thanks to Loloppe (ChroMapper-AutoMapper)."></toggle-setting>
+        <slider-setting text="Frequency Multiplier" apply-on-change="true" value="LightFrequencyMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="1" hover-hint="Default is 1. Lower this to reduce the number of automapped light events." rich-text='true'></slider-setting>
+        <slider-setting text="Brightness Multiplier" apply-on-change="true" value="BrightnessMultiplier" bind-value="true" show-buttons="true" increment="0.1" min=".1" max="2" hover-hint="Default is 1. Controls the brightness of automapped lights." rich-text='true'></slider-setting>
+        <dropdown-list-setting text='Light Style' value='LightStyle' choices='available-styles' bind-value='true' apply-on-change='true' hover-hint="Automapper light styles."/>
       </vertical>
       <!--
       <text text="NJS-NJO" align="Center" fontSize="2.5" />
