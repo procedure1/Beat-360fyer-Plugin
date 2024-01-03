@@ -20,9 +20,9 @@ v1.34.2
 
 After doing this, **every** beatmap will have the 360 degree gamemode enabled. Just choose `360` when you select a song. The level will be generated once you start the level. 90 degree levels can also be enabled in the menu.
 
-Aeroluna's Technicolor Mod is awesome with 360fyer https://github.com/Aeroluna/Technicolor
+Aeroluna's 'Technicolor' Mod is awesome with 360fyer https://github.com/Aeroluna/Technicolor
 
-https://github.com/procedure1/Beat-360fyer-Plugin/blob/BSv1.34/360fyer-Big-Lasers-Big-Walls-Technicolor.gif
+![Technicolor with 360fyer](https://github.com/procedure1/Beat-360fyer-Plugin/blob/BSv1.34/360fyer-Big-Lasers-Big-Walls-Technicolor.gif)
 
 ## Algorithm
 
