@@ -352,7 +352,6 @@
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <EmbeddedResource Include="UI\GameplaySetupView.bsml" />
     <None Include="packages.config" />
-    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
