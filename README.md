@@ -4,7 +4,7 @@ A Beat Saber mod to play most beatmaps in 360 or 90 degree mode.
 This mod was created by the genius CodeStix. https://github.com/CodeStix/
 I have updated the mod since it has been dormant for a long time.
 
-I added menu settings, lots of customization and now v3 maps are supported. Much of the customization in this update is centered around attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out in 2019. The 360 environment is very low key with dim narrow lasers compared to modern environments. Since the 360 environment doesn't work with v3 GLS lights (Group Lighting System), new OST GLS maps have no lights in 360. So I attempted to make 360 a bit flashier :) This can easily be disabled. Note: Noodle maps are currently disabled for 360/90.
+I added menu settings, lots of customization and now v3 maps with arcs and chains are supported. Much of the customization in this update is centered around attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out in 2019. The 360 environment is very low key with dim narrow lasers compared to modern environments. Since the 360 environment doesn't work with v3 GLS lights (Group Lighting System), new OST GLS maps have no lights in 360. So I attempted to make 360 a bit flashier :) This can easily be disabled. Note: Noodle maps are currently disabled for 360/90.
 
 [![showcase video](https://github.com/CodeStix/Beat-360fyer-Plugin/raw/master/preview.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
 ## Beat Saber PC Version
