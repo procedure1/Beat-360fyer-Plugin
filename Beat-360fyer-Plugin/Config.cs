@@ -56,12 +56,12 @@ namespace Beat360fyerPlugin
 
         public enum Style
         {
-            ON = 1,
-            FLASH = 2,
-            FADE = 3,
-            TRANSITION = 4
+            ON = 1,        // Fast Strobe: on & off events
+            FLASH = 2,     // Med Flash: flash & fade events
+            FADE = 3,      // Med Fade: fade events
+            TRANSITION = 4 // Slow Transition: transition & fade
         }
-        public virtual Style LightStyle { get; set; } = Style.TRANSITION;//not using off
+        public virtual Style LightStyle { get; set; } = Style.FLASH;//not using off
 
 
 

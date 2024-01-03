@@ -25,7 +25,7 @@ namespace Beat360fyerPlugin.Patches
 
         private static void BoostNewColor(ref Color newColor)
         {
-            BoostColor(ref newColor);
+            BoostColor(ref newColor);//this is not related to boost events
         }
         [HarmonyPrefix]
         [HarmonyPatch(typeof(BloomPrePassBackgroundColorsGradientTintColorWithLightIds), "ColorWasSet")]

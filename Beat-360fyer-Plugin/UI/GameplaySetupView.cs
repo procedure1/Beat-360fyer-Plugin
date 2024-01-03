@@ -71,6 +71,12 @@ namespace Beat360fyerPlugin.UI
             get => Config.Instance.AddXtraRotation;
             set => Config.Instance.AddXtraRotation = value;
         }
+        [UIValue("MaxRotationSize")]
+        public float MaxRotationSize
+        {
+            get => Config.Instance.MaxRotationSize;
+            set => Config.Instance.MaxRotationSize = value;
+        }
         [UIValue("RotationGroupLimit")]
         public float RotationGroupLimit
         {

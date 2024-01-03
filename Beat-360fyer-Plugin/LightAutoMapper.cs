@@ -1,7 +1,9 @@
 ﻿using CustomJSONData.CustomBeatmap;
+using IPA.Config.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Security.Cryptography;
 using UnityEngine;
 
@@ -60,7 +62,7 @@ namespace Beat360fyerPlugin
     {
         ON = 1,
         FLASH = 2,
-        FADE = 3,
+        FADE = 3, 
         TRANSITION = 4
     }
     #region Light
@@ -89,6 +91,10 @@ namespace Beat360fyerPlugin
                 case EventValue.RED_FADE: return EventValue.RED_ON;
                 case EventValue.BLUE_ON: return EventValue.BLUE_FADE;
                 case EventValue.RED_ON: return EventValue.RED_FADE;
+                case EventValue.BLUE_FLASH:return EventValue.BLUE_FADE;
+                case EventValue.RED_FLASH: return EventValue.RED_FADE;
+                case EventValue.BLUE_TRANSITION: return EventValue.BLUE_FADE;
+                case EventValue.RED_TRANSITION: return EventValue.RED_FADE;
                 default: return EventValue.OFF;
             }
         }
@@ -232,9 +238,6 @@ namespace Beat360fyerPlugin
             #region Foreach Note Process specific light using time
 
             lightEventMultiplierCounter = 0.0f;
-            
-            int lastLeftSpeed = -1;// Variables to keep track of the last speeds
-            int lastRightSpeed = -1;
 
             foreach (NoteData note in Notes)//Selection) //Process specific light using time.
             {
@@ -250,22 +253,27 @@ namespace Beat360fyerPlugin
 
                     if (!Light.NerfStrobes && doubleOn && now != last) //Off event
                     {
-                        if (now - last >= 1)
+                        // Only add OFF events if lightStyle is not FLASH or TRANSITION
+                        //if (lightStyle != Type.FLASH && lightStyle != Type.TRANSITION)
                         {
-                            if (needsBACK) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.BACK, EventValue.OFF));
-                            if (needsRING) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.RING, EventValue.OFF));
-                            if (needsLEFT) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.LEFT, EventValue.OFF));
-                            if (needsRIGHT) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.RIGHT, EventValue.OFF));
-                            if (needsCENTER) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.CENTER, EventValue.OFF));
-                        }
-                        else
-                        {
-                            // Will be fused with some events, but we will sort that out later on.
-                            if (needsBACK) eventTempo.Add(new BasicEventData(now, EventType.BACK, EventValue.OFF));
-                            if (needsRING) eventTempo.Add(new BasicEventData(now, EventType.RING, EventValue.OFF));
-                            if (needsLEFT) eventTempo.Add(new BasicEventData(now, EventType.LEFT, EventValue.OFF));
-                            if (needsRIGHT) eventTempo.Add(new BasicEventData(now, EventType.RIGHT, EventValue.OFF));
-                            if (needsCENTER) eventTempo.Add(new BasicEventData(now, EventType.CENTER, EventValue.OFF));
+                            if (now - last >= 1)
+                            {
+                                if (needsBACK) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.BACK, EventValue.OFF));
+                                if (needsRING) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.RING, EventValue.OFF));
+                                if (needsLEFT) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.LEFT, EventValue.OFF));
+                                if (needsRIGHT) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.RIGHT, EventValue.OFF));
+                                if (needsCENTER) eventTempo.Add(new BasicEventData(now - (now - last) / 2, EventType.CENTER, EventValue.OFF));
+                                Plugin.Log.Info($"Off 1!");                            }
+                            else
+                            {
+                                // Will be fused with some events, but we will sort that out later on.
+                                if (needsBACK) eventTempo.Add(new BasicEventData(now, EventType.BACK, EventValue.OFF));
+                                if (needsRING) eventTempo.Add(new BasicEventData(now, EventType.RING, EventValue.OFF));
+                                if (needsLEFT) eventTempo.Add(new BasicEventData(now, EventType.LEFT, EventValue.OFF));
+                                if (needsRIGHT) eventTempo.Add(new BasicEventData(now, EventType.RIGHT, EventValue.OFF));
+                                if (needsCENTER) eventTempo.Add(new BasicEventData(now, EventType.CENTER, EventValue.OFF));
+                                Plugin.Log.Info($"Off 2!");
+                            }
                         }
 
                         doubleOn = false;
@@ -296,58 +304,6 @@ namespace Beat360fyerPlugin
                             (EventValue color, float floatValue) = FindColor(Notes.First().time, time[0], lightStyle, true);
                             eventTempo.Add(new BasicEventData(now, EventType.CENTER, color, floatValue * brightnessMultiplier)); //Side Light
                         }
-
-                        /*
-                        //TESTING NOW!!!!!
-                        AddEventIfColorChanged(now, EventType.BACK,   color, floatValue * brightnessMultiplier, needsBACK, eventTempo, lastEventColors);
-                        AddEventIfColorChanged(now, EventType.RING,   color, floatValue * brightnessMultiplier, needsRING, eventTempo, lastEventColors);
-                        AddEventIfColorChanged(now, EventType.LEFT,   color, floatValue * brightnessMultiplier, needsLEFT, eventTempo, lastEventColors);
-                        AddEventIfColorChanged(now, EventType.RIGHT,  color, floatValue * brightnessMultiplier, needsRIGHT, eventTempo, lastEventColors);
-                        AddEventIfColorChanged(now, EventType.CENTER, color, floatValue * brightnessMultiplier, needsCENTER, eventTempo, lastEventColors);
-                        */
-                        //Plugin.Log.Info($"time[0]: {time[0]} - time[1]: {time[1]} = {time[0] - time[1]}");
-
-                        // Laser speed based on rhythm -- !!!!!!!!!!!!!!! this section is not working. time[0] always = tiem[1]
-                        if (time[0] - time[1] < 0.15)
-                        {
-                            currentSpeed = 12;
-                        }
-                        else if (time[0] - time[1] >= 0.15 && time[0] - time[1] < 0.25)
-                        {
-                            currentSpeed = 7;
-                        }
-                        else if (time[0] - time[1] >= 0.25 && time[0] - time[1] < 0.5)
-                        {
-                            currentSpeed = 5;// 5; BW lasers keep reseting the beams when this changes so only change when tempo really changes a lot
-                        }
-                        else if (time[0] - time[1] >= 0.5 && time[0] - time[1] < 1)
-                        {
-                            currentSpeed = 3;// 3; BW lasers keep reseting the beams when this changes so only change when tempo really changes a lot
-                        }
-                        else
-                        {
-                            currentSpeed = 1;
-                        }
-                        //Plugin.Log.Info($"Potential currentSpeed: {currentSpeed} and lastLeftSpeed: { lastLeftSpeed} and lastRightSpeed: {lastRightSpeed}");
-
-                        // Add events only if the current speed is different from the last set speed
-                        if (needsLEFT && lastLeftSpeed != currentSpeed)
-                        {
-                            eventTempo.Add(new BasicEventData(now, EventType.LEFT_SPEED, (EventValue)currentSpeed));
-                            lastLeftSpeed = currentSpeed; // Update the last speed for the left laser
-                            //Plugin.Log.Info($"1 Left Speed updated to {currentSpeed}");
-                        }
-                        //else
-                            //Plugin.Log.Info("1 Left Speed NO UPDATE");
-
-                        if (needsRIGHT && lastRightSpeed != currentSpeed)
-                        {
-                            eventTempo.Add(new BasicEventData(now, EventType.RIGHT_SPEED, (EventValue)currentSpeed));
-                            lastRightSpeed = currentSpeed; // Update the last speed for the right laser
-                            //Plugin.Log.Info($"1 Right Speed updated to {currentSpeed}");
-                        }
-                        //else
-                            //Plugin.Log.Info("1 Right Speed NO UPDATE");
 
                         doubleOn = true;
                         last = now;
@@ -427,13 +383,22 @@ namespace Beat360fyerPlugin
 
             lightEventMultiplierCounter = 0.0f;
 
-            // Variables to keep track of the last speeds
-            lastLeftSpeed  = -1;
-            lastRightSpeed = -1;
+            int lastLeftSpeed = -1;// Variables to keep track of the last speeds
+            int lastRightSpeed = -1;
+            EventValue lastLeftColor = EventValue.OFF;
+            EventValue lastRightColor = EventValue.OFF;
+            EventValue lastBackColor = EventValue.OFF;
+            EventValue lastRingColor = EventValue.OFF;
+            EventValue lastCenterColor = EventValue.OFF;
 
             foreach (NoteData note in Notes)//Selection) //Process all notes using time.
             {
-                time[0] = note.time;
+                for (int i = 3; i > 0; i--) //Keep the timing of up to three notes before.
+                {
+                    time[i] = time[i - 1];
+                }
+                
+                time[0] = note.time;// Set time[0] to the current note's time
 
                 // Accumulate the fractional value based on the multiplier - instead of incrmenting a counter, this will allow fractional changes to the multiplier. so 1.5 will reduce .666 and 2 will reduce by .5 etc
                 lightEventMultiplierCounter += frequencyMultiplier;
@@ -448,10 +413,10 @@ namespace Beat360fyerPlugin
                         {
                             sliderNoteCount--;
 
-                            for (int i = 3; i > 0; i--) //Keep the timing of up to three notes before.
-                            {
-                                time[i] = time[i - 1];
-                            }
+                            //for (int i = 3; i > 0; i--) //Keep the timing of up to three notes before.
+                            //{
+                            //    time[i] = time[i - 1];
+                            //}
                             continue;
                         }
                         else
@@ -574,32 +539,83 @@ namespace Beat360fyerPlugin
                         {
                             (EventValue color, float floatValue) = FindColor(Notes.First().time, time[0], lightStyle);
                             eventTempo.Add(new BasicEventData(time[0], (EventType)pattern[patternIndex], color, floatValue * brightnessMultiplier));
+
+                            if (lightStyle == Type.FLASH || lightStyle == Type.TRANSITION)
+                            {
+                                if ((EventType)pattern[patternIndex] == EventType.LEFT)
+                                {
+                                    lastLeftColor = color;
+                                }
+                                else if ((EventType)pattern[patternIndex] == EventType.RIGHT)
+                                {
+                                    lastRightColor = color;
+                                }
+                                else if ((EventType)pattern[patternIndex] == EventType.BACK)
+                                {
+                                    lastBackColor = color;
+                                }
+                                else if ((EventType)pattern[patternIndex] == EventType.RING)
+                                {
+                                    lastRingColor = color;
+                                }
+                                else if ((EventType)pattern[patternIndex] == EventType.CENTER)
+                                {
+                                    lastCenterColor = color;
+                                }
+                            }
                         }
 
-                        // Speed based on rhythm
-                        if (time[0] - time[1] < 0.15)
-                        {
-                            currentSpeed = 12;
+                        //If want to makes all difficulty levels have similar speed. so easy with few notes and expl with many notes will have more similar speeds. decided not to do this since afraid it would not work always
+                        //int totalNotes = Notes.Count;
+                        //float songDuration = ...;
+                        //float averageTimeInterval = songDuration / totalNotes;// Calculate average time interval between notes (Note Density)
+                        //float bpm = ...;
+                        //float densityFactor = averageTimeInterval * bpm / 120.0f;// Factor to scale the speed based on note density (you might need to adjust this formula) // 120.0f is a baseline BPM
+                        //densityFactor = Mathf.Clamp(densityFactor, 0.5f, 2.0f);// Ensure the factor is within a reasonable range
+                        //float adjustedX1 = x1 * densityFactor; float adjustedX2 = x2 * densityFactor;// Adjust the linear interpolation points based on the density factor
+                        //use adjustedX1 and adjustedX2 below instead of x1 and x2
+
+                        // Laser speed based on rhythm. Calculate currentSpeed using the linear interpolation formula
+                        float timeDifference = time[0] - time[1];
+
+                        // Define the points for linear interpolation
+                        float x1 = 0.15f, x2 = 0.8f;//tempo time[0]-time[1]
+                        float y1 = 9, y2 = 1;//max min speed output. could go to 11 but that seems too fast usually
+
+                        float calculatedSpeed;
+                        if (time[1] == 0.0f)
+                        { 
+                            calculatedSpeed = y2;// It's the first iteration, set speed to minimum
                         }
-                        else if (time[0] - time[1] >= 0.15 && time[0] - time[1] < 0.25)
+                        else if (timeDifference <= x1)
                         {
-                            currentSpeed = 7;
+                            calculatedSpeed = y1; // Maximum speed
                         }
-                        else if (time[0] - time[1] >= 0.25 && time[0] - time[1] < 0.5)
+                        else if (timeDifference >= x2)
                         {
-                            currentSpeed = 5;
-                        }
-                        else if (time[0] - time[1] >= 0.5 && time[0] - time[1] < 1)
-                        {
-                            currentSpeed = 3;
+                            calculatedSpeed = y2; // Minimum speed
                         }
                         else
                         {
-                            currentSpeed = 1;
+                            calculatedSpeed = y1 + ((y2 - y1) / (x2 - x1)) * (timeDifference - x1);
                         }
+ 
+                        currentSpeed = Mathf.RoundToInt(Mathf.Clamp(calculatedSpeed, y2, y1));// Ensure currentSpeed is within the range [1, 9] and convert to int
+
+                        /*Old version
+                        if (time[0] - time[1] < 0.15)
+                        {currentSpeed = 12;}
+                        else if (time[0] - time[1] >= 0.15 && time[0] - time[1] < 0.25)
+                        {currentSpeed = 7;}
+                        else if (time[0] - time[1] >= 0.25 && time[0] - time[1] < 0.5)
+                        {currentSpeed = 5;}
+                        else if (time[0] - time[1] >= 0.5 && time[0] - time[1] < 1)
+                        {currentSpeed = 3;}
+                        else{currentSpeed = 1;}
+                        */
 
                         // Add laser rotation if necessary
-                        if (needsLEFT && pattern[patternIndex] == 2 && lastLeftSpeed != currentSpeed)
+                        if (needsLEFT && pattern[patternIndex] == 2 && Math.Abs(currentSpeed - lastLeftSpeed) >= 2)
                         {
                             eventTempo.Add(new BasicEventData(time[0], EventType.LEFT_SPEED, (EventValue)currentSpeed));
                             lastLeftSpeed = currentSpeed; // Update the last speed for the left laser
@@ -608,17 +624,17 @@ namespace Beat360fyerPlugin
                         //else
                             //Plugin.Log.Info("2 Left Speed NO UPDATE");
 
-                        if (needsRIGHT && pattern[patternIndex] == 3 && lastRightSpeed != currentSpeed)
+                        if (needsRIGHT && pattern[patternIndex] == 3 && Math.Abs(currentSpeed - lastLeftSpeed) >= 2)
                         {
                             eventTempo.Add(new BasicEventData(time[0], EventType.RIGHT_SPEED, (EventValue)currentSpeed));
                             lastRightSpeed = currentSpeed; // Update the last speed for the right laser
                             //Plugin.Log.Info($"2 Right Speed updated to {currentSpeed}");
                         }
                         //else
-                            //Plugin.Log.Info("2 Right Speed NO UPDATE");
+                        //Plugin.Log.Info("2 Right Speed NO UPDATE");
+
 
                         // Place off event
-
                         if (Notes[Notes.Count - 1].time != note.time)
                         {
                             if (Notes[Notes.FindIndex(n => n == note) + 1].time == nextDouble)
@@ -627,15 +643,87 @@ namespace Beat360fyerPlugin
                                 {
                                     float value = (Notes[Notes.FindIndex(n => n == note) + 1].time - Notes[Notes.FindIndex(n => n == note)].time) / 2;
                                     if ((needsBACK && (EventType)pattern[patternIndex] == EventType.BACK) || (needsRING && (EventType)pattern[patternIndex] == EventType.RING) || (needsLEFT && (EventType)pattern[patternIndex] == EventType.LEFT) || (needsRIGHT && (EventType)pattern[patternIndex] == EventType.RIGHT) || (needsCENTER && (EventType)pattern[patternIndex] == EventType.CENTER))
-                                        eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], 0));
+                                    {
+                                        if (lightStyle == Type.FLASH || lightStyle == Type.TRANSITION)
+                                        {
+                                            if ((EventType)pattern[patternIndex] == EventType.LEFT)
+                                            {
+                                                eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], FadeEvent(lastLeftColor)));
+                                                //Plugin.Log.Info($"1 FADE LEFT instead of OFF");
+                                            }
+                                            else if ((EventType)pattern[patternIndex] == EventType.RIGHT)
+                                            {
+                                                eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], FadeEvent(lastRightColor)));
+                                                //Plugin.Log.Info($"1 FADE RIGHT instead of OFF");
+                                            }
+                                            else if ((EventType)pattern[patternIndex] == EventType.BACK)
+                                            {
+                                                eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], FadeEvent(lastBackColor)));
+                                                //Plugin.Log.Info($"1 FADE Back instead of OFF");
+                                            }
+                                            else if ((EventType)pattern[patternIndex] == EventType.RING)
+                                            {
+                                                eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], FadeEvent(lastRingColor)));
+                                                //Plugin.Log.Info($"1 FADE Ring instead of OFF");
+                                            }
+                                            else if ((EventType)pattern[patternIndex] == EventType.CENTER)
+                                            {
+                                                eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], FadeEvent(lastCenterColor)));
+                                                //Plugin.Log.Info($"1 FADE Center instead of OFF");
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note)].time + value, (EventType)pattern[patternIndex], EventValue.OFF));
+                                            //Plugin.Log.Info($"Off 1! {(EventType)pattern[patternIndex]}");
+                                        }
+                                    }
                                 }
                             }
                             else
                             {
                                 if ((needsBACK && (EventType)pattern[patternIndex] == EventType.BACK) || (needsRING && (EventType)pattern[patternIndex] == EventType.RING) || (needsLEFT && (EventType)pattern[patternIndex] == EventType.LEFT) || (needsRIGHT && (EventType)pattern[patternIndex] == EventType.RIGHT) || (needsCENTER && (EventType)pattern[patternIndex] == EventType.CENTER))
-                                    eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], 0));
+                                {
+
+                                    if (lightStyle == Type.FLASH || lightStyle == Type.TRANSITION)
+                                    {
+                                        if ((EventType)pattern[patternIndex] == EventType.LEFT)
+                                        {
+                                            eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], FadeEvent(lastLeftColor)));
+                                            //Plugin.Log.Info($"2 FADE LEFT instead of OFF");
+                                        }
+                                        else if ((EventType)pattern[patternIndex] == EventType.RIGHT)
+                                        {
+                                            eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], FadeEvent(lastRightColor)));
+                                            //Plugin.Log.Info($"2 FADE RIGHT instead of OFF");
+                                        }
+                                        else if ((EventType)pattern[patternIndex] == EventType.BACK)
+                                        {
+                                            eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], FadeEvent(lastBackColor)));
+                                            //Plugin.Log.Info($"2 FADE BACK instead of OFF");
+                                        }
+                                        else if ((EventType)pattern[patternIndex] == EventType.RING)
+                                        {
+                                            eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], FadeEvent(lastRingColor)));
+                                            //Plugin.Log.Info($"2 FADE RING instead of OFF");
+                                        }
+                                        else if ((EventType)pattern[patternIndex] == EventType.CENTER)
+                                        {
+                                            eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], FadeEvent(lastCenterColor)));
+                                            //Plugin.Log.Info($"2 FADE CENTER instead of OFF");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        eventTempo.Add(new BasicEventData(Notes[Notes.FindIndex(n => n == note) + 1].time, (EventType)pattern[patternIndex], EventValue.OFF));
+                                        //Plugin.Log.Info($"Off 2! {(EventType)pattern[patternIndex]}");
+                                    }
+                                    
+                                }
                             }
                         }
+
 
                         // Pattern have 5 notes in total (5 lights available)
                         if (patternIndex < 4)
@@ -821,6 +909,31 @@ namespace Beat360fyerPlugin
                     return baseColor;
             }
         }
+        //When style is set to flash or transition, will use FADE events instead of OFF events for the most part. This is designed to figure out what color fade to use to match the previous light color.
+        private static EventValue FadeEvent(EventValue currentColor)
+        {
+            switch (currentColor)
+            {
+                case EventValue.BLUE_ON:
+                case EventValue.BLUE_FLASH:
+                case EventValue.BLUE_FADE:
+                case EventValue.BLUE_TRANSITION:
+                    return EventValue.BLUE_FADE;
+                case EventValue.RED_ON:
+                case EventValue.RED_FLASH:
+                case EventValue.RED_FADE:
+                case EventValue.RED_TRANSITION:
+                    return EventValue.RED_FADE;
+                case EventValue.ON:
+                case EventValue.FLASH:
+                case EventValue.FADE:
+                case EventValue.TRANSITION:
+                    return EventValue.FADE;
+                default:
+                    return EventValue.OFF; // Return the same color if it's already a fade or an unhandled case
+            }
+        }
+
 
         //BW test to see if removes flickering if i don't add an event  with type and value that was added the last time
         private static void AddEventIfColorChanged(float time, EventType eventType, EventValue color, float floatValue, bool needsEventType, List<BasicEventData> eventTempo, Dictionary<EventType, EventValue> lastEventColors)
