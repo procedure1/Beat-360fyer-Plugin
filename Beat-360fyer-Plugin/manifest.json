@@ -1,7 +1,7 @@
 ﻿{
     "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
-    "id": "Beat360fyerPlugin",
-    "name": "Beat-360fyer-Plugin",
+    "id": "360fyer",
+    "name": "360fyer",
     "author": "codestix",
     "version": "1.3.0",
     "description": "A Beat Saber plugin that lets you play every map in 360/90 degrees.",
