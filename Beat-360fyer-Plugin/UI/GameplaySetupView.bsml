@@ -13,7 +13,7 @@
         <slider-setting text="Rotation Speed Multiplier" apply-on-change="true" value="RotationSpeedMultiplier" bind-value="true" show-buttons="true" increment=".1" min=".1" max="3" hover-hint="Increase or decrease rotations. Default is 1. Disables score submission if set below 0.8."></slider-setting>
         <toggle-setting text='Arc Fix' apply-on-change='true' value='ArcFixFull' bind-value='true' hover-hint="Remove rotations during arcs to keep the tails connected to tail notes. Turn this off for more rotations."></toggle-setting>
         <toggle-setting text='Add Extra Rotations' apply-on-change='true' value='AddXtraRotation' bind-value='true' hover-hint="Adds more rotations in a consistent direction. Useful for maps with low overall rotation."></toggle-setting>
-        <slider-setting text="Max Rotation Size" apply-on-change="true" value="MaxRotationSize" bind-value="true" show-buttons="false" increment="15" min="15" max="45" hover-hint="Default max is 30°. Rotations are typically 15° or 30°. 45° rotations may fall outside peripheral vision without a large FOV headset." rich-text='true'></slider-setting>
+        <slider-setting text="Max Rotation Size" apply-on-change="true" value="MaxRotationSize" bind-value="true" show-buttons="false" increment="15" min="15" max="45" hover-hint="Default max is 30°. Rotations are typically 15° and 30°. 45° rotations may fall outside peripheral vision without a large FOV headset." rich-text='true'></slider-setting>
       </vertical>
       <text text="Walls" align="Center" fontSize="2.5" />
       <vertical child-control-height='false' bg='panel-top' pad='2' pad-bottom='1' pad-top='1' preferred-width='80'>
