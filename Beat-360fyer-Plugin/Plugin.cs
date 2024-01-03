@@ -26,7 +26,7 @@ namespace Beat360fyerPlugin
             Instance = this;
             Log = logger;
             Config.Instance = conf.Generated<Config>();
-            Log.Info($"Beat-360fyer-Plugin initialized.");
+            Log.Info($"360fyer initialized.");
 
             zenjector.Install<MyInstaller>(Location.App);//or Location.Player or Location.Menu
         }
