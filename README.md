@@ -61,34 +61,6 @@ There is a settings menu in-game. (Or you can tweak settings in the `Beat Saber/
 ||Base Map|
 |`Based On`|Which game mode to generate the 360 mode from. Can be `"Standard"` (default), `"OneSaber"` or `"NoArrows"` or  `"90Degree"`. Requires restart for maps that have already been selected in the menu.|
 
-```js
-{
-  "Wireless360": false,
-  "LimitRotations360": 360.0,
-  "LimitRotations90": 90.0,
-  "EnableWallGenerator": true,
-  "BigWalls": true,
-  "BigLasers": true,
-  "BrightLights": true,
-  "BoostLighting": true,
-  "AllowCrouchWalls": false,
-  "AllowLeanWalls": false,
-  "RotationSpeedMultiplier": 1.0,
-  "ShowGenerated360": true,
-  "ShowGenerated90": false,
-  "OnlyOneSaber": false,
-  "LeftHandedOneSaber": false,
-  "AddXtraRotation": false,
-  "RotationGroupLimit": 10.0,
-  "RotationGroupSize": 12.0,
-  "ArcFixFull": true,
-  "BasedOn": "Standard"
-}
-```
-
-**Config file not working? Config not doing anything?** Make sure you saved the file in the original location, and make sure you didn't place a comma after the last option (see working example config above).
-
-
 ## How to build
 
 To test and build this project locally, do the following:
