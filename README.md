@@ -8,7 +8,7 @@ I added menu settings, lots of customization and now v3 maps are supported. Much
 
 [![showcase video](https://github.com/CodeStix/Beat-360fyer-Plugin/raw/master/preview.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
 ## Beat Saber PC Version
-v1.31.1
+v1.34.2
 
 ## Installation
 
