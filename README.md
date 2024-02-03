@@ -6,7 +6,7 @@ I have updated the mod since it has been dormant for a long time.
 
 I added menu settings, lots of customization and now v3 maps are supported. Much of the customization in this update is centered around rotation updates and flexibiity and attempted visual improvements for 360 maps. As you probably know, 360 maps have had the same environment since they first came out in 2019. The 360 environment is very low key with dim narrow lasers compared to modern environments. Since the 360 environment doesn't work with v3 GLS lights (Group Lighting System), new OST maps have no lights in the 360 environment. So I attempted to make 360 a bit flashier. Boost lighting events add more color to maps that don't have them. Automapper lights power larger and brighter lasers. If you hate it, disable it :) 
 
-Note: Noodle maps are currently incompatible and disabled for 360fyer.
+Note: Noodle maps are currently incompatible and disabled for 360fyer. Also precision note placement in Mapping Extensions is not supported.
 
 [![showcase video](https://github.com/procedure1/Beat-360fyer-Plugin/blob/BSv1.34/360fyer-Big-Lasers-Big-Walls.gif)](https://www.youtube.com/watch?v=xUDdStGQwq0)
 ## Beat Saber PC Version
